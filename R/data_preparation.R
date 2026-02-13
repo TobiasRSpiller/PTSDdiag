@@ -62,7 +62,7 @@ rename_ptsd_columns <- function(data) {
     stop("All columns must contain numeric values")
   }
 
-  invalid_values <- !all(sapply(data, function(x) all(x >= 0 & x <= 4 & x == floor(x))))
+  invalid_values <- !all(vapply(data, function(x) all(x >= 0 & x <= 4 & x == floor(x)), logical(1)))
   if (invalid_values) {
     stop("All values must be integers between 0 and 4")
   }

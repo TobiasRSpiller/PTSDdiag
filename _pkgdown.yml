@@ -1,0 +1,87 @@
+url: https://weidmannl.github.io/PTSDdiag/
+
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  bslib:
+    base_font: {google: "Roboto"}
+    heading_font: {google: "Roboto Slab"}
+    code_font: {google: "JetBrains Mono"}
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github]
+  components:
+    home:
+      icon: fas fa-home fa-lg
+      href: index.html
+    reference:
+      text: Reference
+      href: reference/index.html
+    articles:
+      text: Articles
+      menu:
+      - text: Introduction to PTSDdiag
+        href: articles/introduction.html
+    news:
+      text: News
+      href: news/index.html
+    github:
+      icon: fab fa-github fa-lg
+      href: https://github.com/WeidmannL/PTSDdiag
+
+reference:
+  - title: Data Preparation
+    desc: Functions for preparing and standardizing PCL-5 data
+    contents:
+    - rename_ptsd_columns
+    - binarize_data
+
+  - title: Diagnostic Scoring
+    desc: Functions for calculating PTSD diagnoses and total scores
+    contents:
+    - calculate_ptsd_total
+    - create_ptsd_diagnosis_binarized
+    - create_ptsd_diagnosis_nonbinarized
+
+  - title: Analysis Functions
+    desc: Functions for analyzing optimal symptom combinations
+    contents:
+    - analyze_best_six_symptoms_four_required
+    - analyze_best_six_symptoms_four_required_clusters
+
+  - title: Summary and Reporting
+    desc: Functions for creating summaries and comparing diagnostic approaches
+    contents:
+    - summarize_ptsd
+    - summarize_ptsd_changes
+    - create_readable_summary
+
+  - title: Validation
+    desc: Model validation methods
+    contents:
+    - holdout_validation
+    - cross_validation
+
+  - title: Datasets
+    desc: Example and simulated datasets
+    contents:
+    - simulated_ptsd
+
+authors:
+  Laura Weidmann:
+    href: https://github.com/WeidmannL
+  Tobias R. Spiller:
+    href: https://github.com/TobiasRSpiller
+  Flavio A. Schüepp:
+    href: https://github.com/flavioschuepp
+
+home:
+  title: PTSDdiag - PTSD Diagnostic Criteria Analysis
+  description: Tools for analyzing and simplifying PTSD diagnostic criteria using PCL-5 data
+
+footer:
+  structure:
+    left: developed_by
+    right: built_with

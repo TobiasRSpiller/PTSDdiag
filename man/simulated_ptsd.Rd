@@ -24,7 +24,7 @@ A data frame with 5,000 rows and 20 columns:
   \item{S14}{Trouble experiencing positive emotions}
   \item{S15}{Irritability/aggression}
   \item{S16}{Risk-taking behavior}
-  \item{S17}{Hypervigiliance}
+  \item{S17}{Hypervigilance}
   \item{S18}{Heightened startle reaction}
   \item{S19}{Difficulty concentrating}
   \item{S20}{Sleep problems}

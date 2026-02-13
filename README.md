@@ -6,6 +6,10 @@
 # PTSDdiag
 
 <!-- badges: start -->
+
+[![CRAN
+status](https://www.r-pkg.org/badges/version/PTSDdiag)](https://CRAN.R-project.org/package=PTSDdiag)
+[![R-CMD-check](https://github.com/WeidmannL/PTSDdiag/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/WeidmannL/PTSDdiag/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 ## Description
@@ -24,14 +28,23 @@ maintain diagnostic accuracy while reducing assessment burden.
   - Hierarchical (cluster-based) approach
   - Non-hierarchical approach
 - Comparison of different diagnostic approaches
+- Model validation using:
+  - Holdout Validation
+  - Cross-Validation
 
 ## Installation
 
-This package is currently only hosted on GitHub. It can be installed
-using the usual way:
+You can install the released version of PTSDdiag from
+[CRAN](https://CRAN.R-project.org/package=PTSDdiag):
 
 ``` r
-install.packages("devtools")
+install.packages("PTSDdiag")
+```
+
+Or install the development version from GitHub:
+
+``` r
+# install.packages("devtools")
 devtools::install_github("WeidmannL/PTSDdiag")
 ```
 
@@ -40,13 +53,16 @@ devtools::install_github("WeidmannL/PTSDdiag")
 The vignette demonstrates how to use the package to prepare the PCL-5
 data, calculate some basic descriptive statistics and reliability
 metrics, find the optimal minimal symptom combinations for PTSD
-diagnosis and compare different diagnostic approaches.
+diagnosis, compare different diagnostic approaches and perform
+validation methods for evaluating model performance.
 
-- [An Introduction to PTSDdiag](https://osf.io/73bgx)
+- [An Introduction to
+  PTSDdiag](https://weidmannl.github.io/PTSDdiag/articles/introduction.html)
+- [Package Website](https://weidmannl.github.io/PTSDdiag/)
 
 ## Bugs, Contributions
 
 - If you have any suggestions or if you find a bug, please report them
   using GitHub [issue
-  tracker](https:://github.com/WeidmannL/PTSDdiag/issues).
+  tracker](https://github.com/WeidmannL/PTSDdiag/issues).
 - Contributions are welcome! Please feel free to submit a Pull Request.

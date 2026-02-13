@@ -2,7 +2,7 @@
 #'
 #' @description
 #' Converts PCL-5 symptom scores from their original 0-4 scale to binary values
-#' (0/1) based on the clinical threshold for symptom presence (≥2).
+#' (0/1) based on the clinical threshold for symptom presence (>=2).
 #'
 #' @details
 #' The function implements the standard clinical threshold for PTSD symptom
@@ -69,16 +69,12 @@ binarize_data <- function(data) {
     stop("All columns must contain numeric values")
   }
 
-  if (!all(vapply(data, is.numeric, logical(1)))) {
-    stop("All columns must contain numeric values")
-  }
-
   if (any(is.na(data))) {
     stop("Data contains missing values (NA)")
   }
 
-  invalid_values <- !all(sapply(data, function(x)
-    all(x >= 0 & x <= 4 & x == floor(x))))
+  invalid_values <- !all(vapply(data, function(x)
+    all(x >= 0 & x <= 4 & x == floor(x)), logical(1)))
   if (invalid_values) {
     stop("All values must be integers between 0 and 4")
   }
@@ -172,8 +168,8 @@ create_ptsd_diagnosis_binarized <- function(data) {
   }
 
   # Validate value ranges and check for integers
-  invalid_values <- !all(sapply(data[expected_cols], function(x)
-    all(x >= 0 & x <= 4 & x == floor(x))))
+  invalid_values <- !all(vapply(data[expected_cols], function(x)
+    all(x >= 0 & x <= 4 & x == floor(x)), logical(1)))
   if (invalid_values) {
     stop("All symptom values must be integers between 0 and 4")
   }
@@ -279,12 +275,12 @@ summarize_ptsd_changes <- function(data) {
   }
 
   # Check if all columns contain logical values
-  if (!all(sapply(data, is.logical))) {
+  if (!all(vapply(data, is.logical, logical(1)))) {
     stop("All columns must contain logical (TRUE/FALSE) values")
   }
 
   # Check for missing values
-  if (any(sapply(data, anyNA))) {
+  if (any(vapply(data, anyNA, logical(1)))) {
     stop("Data contains missing values (NA)")
   }
 
@@ -323,10 +319,14 @@ summarize_ptsd_changes <- function(data) {
     summary_stats$true_negative[summary_stats$column == col] <- true_negative
     summary_stats$true_cases[summary_stats$column == col] <- true_positive + true_negative
     summary_stats$false_cases[summary_stats$column == col] <- newly_diagnosed + newly_nondiagnosed
-    summary_stats$sensitivity[summary_stats$column == col] <- true_positive / (true_positive + newly_nondiagnosed)
-    summary_stats$specificity[summary_stats$column == col] <- true_negative / (true_negative + newly_diagnosed)
-    summary_stats$ppv[summary_stats$column == col] <- true_positive / (true_positive + newly_diagnosed)
-    summary_stats$npv[summary_stats$column == col] <- true_negative / (true_negative + newly_nondiagnosed)
+    denom_sens <- true_positive + newly_nondiagnosed
+    summary_stats$sensitivity[summary_stats$column == col] <- if (denom_sens == 0) NA_real_ else true_positive / denom_sens
+    denom_spec <- true_negative + newly_diagnosed
+    summary_stats$specificity[summary_stats$column == col] <- if (denom_spec == 0) NA_real_ else true_negative / denom_spec
+    denom_ppv <- true_positive + newly_diagnosed
+    summary_stats$ppv[summary_stats$column == col] <- if (denom_ppv == 0) NA_real_ else true_positive / denom_ppv
+    denom_npv <- true_negative + newly_nondiagnosed
+    summary_stats$npv[summary_stats$column == col] <- if (denom_npv == 0) NA_real_ else true_negative / denom_npv
   }
 
   # Calculate percentages
@@ -405,18 +405,20 @@ create_readable_summary <- function(summary_stats) {
     stop("Missing required columns: ", paste(missing_cols, collapse = ", "))
   }
 
-  # Validate numeric columns
-  numeric_cols <- c("diagnosed", "non_diagnosed",
-                    "diagnosed_percent", "non_diagnosed_percent",
-                    "true_positive", "true_negative",
-                    "newly_diagnosed", "newly_nondiagnosed",
-                    "true_cases", "false_cases",
-                    "sensitivity", "specificity", "ppv", "npv")
+  # Validate numeric columns (NAs not allowed in count columns)
+  count_cols <- c("diagnosed", "non_diagnosed",
+                  "diagnosed_percent", "non_diagnosed_percent",
+                  "true_positive", "true_negative",
+                  "newly_diagnosed", "newly_nondiagnosed",
+                  "true_cases", "false_cases")
+  metric_cols <- c("sensitivity", "specificity", "ppv", "npv")
 
-  for (col in numeric_cols) {
+  for (col in c(count_cols, metric_cols)) {
     if (!is.numeric(summary_stats[[col]])) {
       stop(paste0("Column '", col, "' must contain numeric values"))
     }
+  }
+  for (col in count_cols) {
     if (any(is.na(summary_stats[[col]]))) {
       stop(paste0("Column '", col, "' contains missing values"))
     }
@@ -428,10 +430,10 @@ create_readable_summary <- function(summary_stats) {
     stop("Percentage values must be between 0 and 100")
   }
 
-  if (any(summary_stats$sensitivity < 0 | summary_stats$sensitivity > 1) ||
-      any(summary_stats$specificity < 0 | summary_stats$specificity > 1) ||
-      any(summary_stats$ppv < 0 | summary_stats$ppv > 1) ||
-      any(summary_stats$npv < 0 | summary_stats$npv > 1)) {
+  if (any(summary_stats$sensitivity < 0 | summary_stats$sensitivity > 1, na.rm = TRUE) ||
+      any(summary_stats$specificity < 0 | summary_stats$specificity > 1, na.rm = TRUE) ||
+      any(summary_stats$ppv < 0 | summary_stats$ppv > 1, na.rm = TRUE) ||
+      any(summary_stats$npv < 0 | summary_stats$npv > 1, na.rm = TRUE)) {
     stop("Diagnostic metrics (sensitivity, specificity, PPV, NPV) must be between 0 and 1")
   }
 

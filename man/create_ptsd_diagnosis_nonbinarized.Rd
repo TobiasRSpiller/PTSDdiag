@@ -38,12 +38,12 @@ item scores, using the original non-binarized values (0-4 scale).
 The function applies the DSM-5 diagnostic criteria for PTSD:
 
 \itemize{
-\item Criterion B (Intrusion): At least 1 symptom ≥ 2 from items 1-5
-\item Criterion C (Avoidance): At least 1 symptom ≥ 2 from items 6-7
+\item Criterion B (Intrusion): At least 1 symptom >= 2 from items 1-5
+\item Criterion C (Avoidance): At least 1 symptom >= 2 from items 6-7
 \item Criterion D (Negative alterations in cognitions and mood):
-  At least 2 symptoms ≥ 2 from items 8-14
+  At least 2 symptoms >= 2 from items 8-14
 \item Criterion E (Alterations in arousal and reactivity):
-  At least 2 symptoms ≥ 2 from items 15-20
+  At least 2 symptoms >= 2 from items 15-20
 }
 
 A symptom is considered present when rated 2 (Moderately) or higher.

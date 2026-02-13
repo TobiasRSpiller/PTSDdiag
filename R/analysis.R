@@ -11,7 +11,7 @@
 #'
 #' \enumerate{
 #'  \item Tests all possible combinations of 6 symptoms from the 20 PCL-5 items
-#'  \item Requires 4 symptoms to be present (≥2 on original 0-4 scale) for diagnosis
+#'  \item Requires 4 symptoms to be present (>=2 on original 0-4 scale) for diagnosis
 #'  \item Identifies the three combinations that best match the original DSM-5 diagnosis
 #' }
 #'
@@ -64,36 +64,24 @@
 #' @export
 #'
 #' @importFrom utils combn
-#' @importFrom DT datatable
 #'
 #' @examples
 #' # Create example data
 #' ptsd_data <- data.frame(matrix(sample(0:4, 200, replace=TRUE), ncol=20))
 #' names(ptsd_data) <- paste0("symptom_", 1:20)
 #'
+#' \donttest{
 #' # Find best combinations minimizing false cases
 #' results <- analyze_best_six_symptoms_four_required(ptsd_data, score_by = "false_cases")
 #'
-#' # Find best combinations minimizing false negatives
-#' results_min_fn <- analyze_best_six_symptoms_four_required(ptsd_data,
-#' score_by = "newly_nondiagnosed")
-#'
-#' ## Access results
 #' # Get symptom numbers
 #' results$best_symptoms
 #'
 #' # View raw comparison data
 #' results$diagnosis_comparison
 #'
-#' # View summary statistics (basic format)
-#' summary_data <- results$summary$x$data  # Extract underlying data
-#' print(summary_data)  # Display in basic format
-#'
-#' \dontrun{
-#' # For interactive table display
-#' if (requireNamespace("DT", quietly = TRUE)) {
-#'   results$summary  # Display as interactive table
-#' }
+#' # View summary statistics
+#' results$summary
 #' }
 #'
 analyze_best_six_symptoms_four_required <- function(data, score_by = "false_cases") {
@@ -129,8 +117,8 @@ analyze_best_six_symptoms_four_required <- function(data, score_by = "false_case
   }
 
   # Validate value ranges and check for integers
-  invalid_values <- !all(sapply(data[expected_cols], function(x)
-    all(x >= 0 & x <= 4 & x == floor(x))))
+  invalid_values <- !all(vapply(data[expected_cols], function(x)
+    all(x >= 0 & x <= 4 & x == floor(x)), logical(1)))
   if (invalid_values) {
     stop("All symptom values must be integers between 0 and 4")
   }
@@ -212,21 +200,21 @@ analyze_best_six_symptoms_four_required <- function(data, score_by = "false_case
   # Create comparison dataframe
   comparison_df <- data.frame(
     PTSD_orig = baseline_results,
-    sapply(1:3, function(i) top_combinations[[i]]$diagnoses)
+    vapply(1:3, function(i) top_combinations[[i]]$diagnoses, logical(nrow(data)))
   )
-  names(comparison_df)[2:4] <- sapply(1:3, function(i) {
+  names(comparison_df)[2:4] <- vapply(1:3, function(i) {
     paste0("symptom_", paste(top_combinations[[i]]$combination, collapse = "_"))
-  })
+  }, character(1))
+
+  summary_table <- create_readable_summary(summarize_ptsd_changes(comparison_df))
+  if (requireNamespace("DT", quietly = TRUE)) {
+    summary_table <- DT::datatable(summary_table, options = list(scrollX = TRUE))
+  }
 
   return(list(
     best_symptoms = lapply(1:3, function(i) top_combinations[[i]]$combination),
     diagnosis_comparison = comparison_df,
-    summary = DT::datatable(
-      create_readable_summary(
-        summarize_ptsd_changes(comparison_df)
-      ),
-      options = list(scrollX = TRUE)
-    )
+    summary = summary_table
   ))
 }
 
@@ -245,7 +233,7 @@ analyze_best_six_symptoms_four_required <- function(data, score_by = "false_case
 #'
 #' \enumerate{
 #' \item Generates valid combinations ensuring representation from all clusters
-#' \item Requires 4 symptoms to be present (≥2 on original 0-4 scale) for diagnosis
+#' \item Requires 4 symptoms to be present (>=2 on original 0-4 scale) for diagnosis
 #' \item Validates that present symptoms include at least one from each cluster
 #' \item Identifies the three combinations that best match the original DSM-5 diagnosis
 #'}
@@ -299,36 +287,24 @@ analyze_best_six_symptoms_four_required <- function(data, score_by = "false_case
 #' @export
 #'
 #' @importFrom utils combn
-#' @importFrom DT datatable
 #'
 #' @examples
 #' # Create example data
 #' ptsd_data <- data.frame(matrix(sample(0:4, 200, replace=TRUE), ncol=20))
 #' names(ptsd_data) <- paste0("symptom_", 1:20)
 #'
+#' \donttest{
 #' # Find best hierarchical combinations minimizing false cases
 #' results <- analyze_best_six_symptoms_four_required_clusters(ptsd_data, score_by = "false_cases")
 #'
-#' # Find best hierarchical combinations minimizing false negatives
-#' results_min_fn <- analyze_best_six_symptoms_four_required_clusters(ptsd_data,
-#' score_by = "newly_nondiagnosed")
-#'
-#' ## Access results
 #' # Get symptom numbers
 #' results$best_symptoms
 #'
 #' # View raw comparison data
 #' results$diagnosis_comparison
 #'
-#' # View summary statistics (basic format)
-#' summary_data <- results$summary$x$data  # Extract underlying data
-#' print(summary_data)  # Display in basic format
-#'
-#' \dontrun{
-#' # For interactive table display
-#' if (requireNamespace("DT", quietly = TRUE)) {
-#'   results$summary  # Display as interactive table
-#' }
+#' # View summary statistics
+#' results$summary
 #' }
 #'
 analyze_best_six_symptoms_four_required_clusters <- function(data, score_by = "false_cases") {
@@ -364,8 +340,8 @@ analyze_best_six_symptoms_four_required_clusters <- function(data, score_by = "f
   }
 
   # Validate value ranges and check for integers
-  invalid_values <- !all(sapply(data[expected_cols], function(x)
-    all(x >= 0 & x <= 4 & x == floor(x))))
+  invalid_values <- !all(vapply(data[expected_cols], function(x)
+    all(x >= 0 & x <= 4 & x == floor(x)), logical(1)))
   if (invalid_values) {
     stop("All symptom values must be integers between 0 and 4")
   }
@@ -510,20 +486,20 @@ analyze_best_six_symptoms_four_required_clusters <- function(data, score_by = "f
   # Create comparison dataframe
   comparison_df <- data.frame(
     PTSD_orig = baseline_results,
-    sapply(1:3, function(i) top_combinations[[i]]$diagnoses)
+    vapply(1:3, function(i) top_combinations[[i]]$diagnoses, logical(nrow(data)))
   )
-  names(comparison_df)[2:4] <- sapply(1:3, function(i) {
+  names(comparison_df)[2:4] <- vapply(1:3, function(i) {
     paste0("symptom_", paste(top_combinations[[i]]$combination, collapse = "_"))
-  })
+  }, character(1))
+
+  summary_table <- create_readable_summary(summarize_ptsd_changes(comparison_df))
+  if (requireNamespace("DT", quietly = TRUE)) {
+    summary_table <- DT::datatable(summary_table, options = list(scrollX = TRUE))
+  }
 
   return(list(
     best_symptoms = lapply(1:3, function(i) top_combinations[[i]]$combination),
     diagnosis_comparison = comparison_df,
-    summary = DT::datatable(
-      create_readable_summary(
-        summarize_ptsd_changes(comparison_df)
-      ),
-      options = list(scrollX = TRUE)
-    )
+    summary = summary_table
   ))
 }

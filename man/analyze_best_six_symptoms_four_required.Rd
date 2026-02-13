@@ -49,7 +49,7 @@ The function:
 
 \enumerate{
  \item Tests all possible combinations of 6 symptoms from the 20 PCL-5 items
- \item Requires 4 symptoms to be present (≥2 on original 0-4 scale) for diagnosis
+ \item Requires 4 symptoms to be present (>=2 on original 0-4 scale) for diagnosis
  \item Identifies the three combinations that best match the original DSM-5 diagnosis
 }
 
@@ -74,29 +74,18 @@ The symptom clusters in PCL-5 are:
 ptsd_data <- data.frame(matrix(sample(0:4, 200, replace=TRUE), ncol=20))
 names(ptsd_data) <- paste0("symptom_", 1:20)
 
+\donttest{
 # Find best combinations minimizing false cases
 results <- analyze_best_six_symptoms_four_required(ptsd_data, score_by = "false_cases")
 
-# Find best combinations minimizing false negatives
-results_min_fn <- analyze_best_six_symptoms_four_required(ptsd_data,
-score_by = "newly_nondiagnosed")
-
-## Access results
 # Get symptom numbers
 results$best_symptoms
 
 # View raw comparison data
 results$diagnosis_comparison
 
-# View summary statistics (basic format)
-summary_data <- results$summary$x$data  # Extract underlying data
-print(summary_data)  # Display in basic format
-
-\dontrun{
-# For interactive table display
-if (requireNamespace("DT", quietly = TRUE)) {
-  results$summary  # Display as interactive table
-}
+# View summary statistics
+results$summary
 }
 
 }

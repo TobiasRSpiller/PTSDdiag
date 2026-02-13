@@ -34,7 +34,7 @@ A dataframe with the same structure as input but with all symptom
 }
 \description{
 Converts PCL-5 symptom scores from their original 0-4 scale to binary values
-(0/1) based on the clinical threshold for symptom presence (≥2).
+(0/1) based on the clinical threshold for symptom presence (>=2).
 }
 \details{
 The function implements the standard clinical threshold for PTSD symptom

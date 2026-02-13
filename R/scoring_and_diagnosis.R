@@ -52,8 +52,8 @@ calculate_ptsd_total <- function(data) {
     stop("All symptom columns must contain numeric values")
   }
 
-  invalid_values <- !all(sapply(data[expected_names], function(x)
-    all(x >= 0 & x <= 4 & x == floor(x))))
+  invalid_values <- !all(vapply(data[expected_names], function(x)
+    all(x >= 0 & x <= 4 & x == floor(x)), logical(1)))
   if (invalid_values) {
     stop("All symptom values must be integers between 0 and 4")
   }
@@ -73,12 +73,12 @@ calculate_ptsd_total <- function(data) {
 #' The function applies the DSM-5 diagnostic criteria for PTSD:
 #'
 #' \itemize{
-#' \item Criterion B (Intrusion): At least 1 symptom ≥ 2 from items 1-5
-#' \item Criterion C (Avoidance): At least 1 symptom ≥ 2 from items 6-7
+#' \item Criterion B (Intrusion): At least 1 symptom >= 2 from items 1-5
+#' \item Criterion C (Avoidance): At least 1 symptom >= 2 from items 6-7
 #' \item Criterion D (Negative alterations in cognitions and mood):
-#'   At least 2 symptoms ≥ 2 from items 8-14
+#'   At least 2 symptoms >= 2 from items 8-14
 #' \item Criterion E (Alterations in arousal and reactivity):
-#'   At least 2 symptoms ≥ 2 from items 15-20
+#'   At least 2 symptoms >= 2 from items 15-20
 #'}
 #'
 #' A symptom is considered present when rated 2 (Moderately) or higher.
@@ -141,8 +141,8 @@ create_ptsd_diagnosis_nonbinarized <- function(data) {
   }
 
   # Validate value range (0-4) and check for missing values
-  invalid_values <- !all(sapply(symptom_cols, function(x)
-    all(x >= 0 & x <= 4 & x == floor(x) & !is.na(x))))
+  invalid_values <- !all(vapply(symptom_cols, function(x)
+    all(x >= 0 & x <= 4 & x == floor(x) & !is.na(x)), logical(1)))
   if (invalid_values) {
     stop("All symptom values must be integers between 0 and 4 with no missing values")
   }
