@@ -1,0 +1,579 @@
+# An introduction to PTSDdiag
+
+## 1. Introduction
+
+The `PTSDdiag` package provides tools for analyzing and optimizing PTSD
+diagnostic criteria using PCL-5 (PTSD Checklist for DSM-5) data.
+Post-Traumatic Stress Disorder (PTSD) diagnosis traditionally requires a
+complex evaluation of multiple symptom criteria across different
+clusters. This package aims to simplify this process while maintaining
+diagnostic accuracy.
+
+This vignette demonstrates how to use the package to:
+
+- Import and prepare PCL-5 data
+- Calculate basic descriptive statistics and reliability metrics
+- Find optimal six-symptom combinations for PTSD diagnosis
+- Compare different diagnostic approaches
+
+## 2. Installation
+
+### 2.1. Installing the Package
+
+You can install the released version from CRAN:
+
+``` r
+install.packages("PTSDdiag")
+```
+
+Or install the development version from GitHub:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("TobiasRSpiller/PTSDdiag")
+```
+
+### 2.2. Loading Required Packages
+
+Once the `PTSDdiag` is installed, it can be loaded the usual way.
+
+``` r
+library("PTSDdiag")
+```
+
+Load additional packages:
+
+``` r
+library(psych)     # For reliability analysis
+```
+
+## 3. Basic Usage
+
+### 3.1. Loading Sample Data
+
+This package includes a simulated dataset that mirrors hypothetical
+PCL-5-assessments. It contains 5,000 simulated patient responses, each
+rating 20 PTSD symptoms according to DSM-5 criteria.
+
+**Rating Scale**
+
+Each symptom is rated on a 5-point scale:
+
+- 0 = Not at all
+- 1 = A little bit
+- 2 = Moderately
+- 3 = Quite a bit
+- 4 = Extremely
+
+**Symptom Clusters**
+
+The PCL-5 organizes symptoms into four distinct clusters according to
+DSM-5 criteria:
+
+- Symptoms 1-5: Criterion B (Intrusion)
+- Symptoms 6-7: Criterion C (Avoidance)
+- Symptoms 8-14: Criterion D (Negative alterations in cognitions and
+  mood)
+- Symptoms 15-20: Criterion E (Alterations in arousal and reactivity)
+
+**Data Format Requirements**
+
+Input data must be:
+
+- Numeric values 0-4 only
+- No missing values
+- 20 columns (one per symptom)
+- Row-wise observations
+
+Let’s load the included sample data:
+
+``` r
+# Load the sample data
+data("simulated_ptsd")
+```
+
+and take a look at the first few rows of the sample data:
+
+``` r
+# Display first few rows
+head(simulated_ptsd)
+#>   S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20
+#> 1  2  1  4  1  4  3  3  3  4   4   4   4   4   4   4   4   3   3   4   3
+#> 2  3  3  4  3  3  2  3  3  3   3   4   2   4   4   3   4   3   3   3   4
+#> 3  0  1  1  2  2  2  3  0  3   2   3   3   2   1   3   1   2   2   1   3
+#> 4  3  3  3  3  3  3  4  1  4   4   2   3   4   2   2   2   4   3   3   3
+#> 5  2  3  3  2  3  1  2  1  4   3   2   3   3   4   3   3   4   4   3   3
+#> 6  1  1  2  1  2  2  1  0  2   1   2   3   3   3   1   2   1   0   3   3
+```
+
+### 3.2. Data Preparation
+
+The first step is to standardize column names for consistent analysis.
+Before standardization, columns might have various names:
+
+``` r
+#  Example of potential input formats
+names(simulated_ptsd)
+#>  [1] "S1"  "S2"  "S3"  "S4"  "S5"  "S6"  "S7"  "S8"  "S9"  "S10" "S11" "S12"
+#> [13] "S13" "S14" "S15" "S16" "S17" "S18" "S19" "S20"
+```
+
+After standardization, columns will be named systematically:
+
+``` r
+# Rename columns to standard format (symptom_1 through symptom_20)
+simulated_ptsd_renamed <- rename_ptsd_columns(simulated_ptsd)
+
+# Show new names
+names(simulated_ptsd_renamed)
+#>  [1] "symptom_1"  "symptom_2"  "symptom_3"  "symptom_4"  "symptom_5" 
+#>  [6] "symptom_6"  "symptom_7"  "symptom_8"  "symptom_9"  "symptom_10"
+#> [11] "symptom_11" "symptom_12" "symptom_13" "symptom_14" "symptom_15"
+#> [16] "symptom_16" "symptom_17" "symptom_18" "symptom_19" "symptom_20"
+```
+
+### 3.3. Basic Descriptive Statistics
+
+We’ll now process the data through several steps to calculate scores and
+determine diagnoses:
+
+``` r
+# Step 1: Calculate total scores (range 0-80)
+simulated_ptsd_total <- calculate_ptsd_total(simulated_ptsd_renamed)
+
+# Step 2: Apply DSM-5 diagnostic criteria and determine PTSD diagnoses
+simulated_ptsd_total_diagnosed <- create_ptsd_diagnosis_nonbinarized(simulated_ptsd_total)
+
+# Step 3: Generate summary statistics
+summary_stats <- summarize_ptsd(simulated_ptsd_total_diagnosed)
+print(summary_stats)
+#>   mean_total sd_total n_diagnosed
+#> 1     57.772 12.36218        4710
+```
+
+The summary statistics provide:
+
+- Mean total score: Indicates average symptom severity in the sample
+- Standard deviation: Shows the spread of severity scores
+- Number of diagnosed cases: Based on full DSM-5 criteria
+
+### 3.4. Reliability Analysis
+
+Cronbach’s alpha is calculated to assess the internal consistency of the
+PCL-5:
+
+``` r
+cronbach <- psych::alpha(subset(simulated_ptsd_total_diagnosed, select = (-total)))
+#> Warning in response.frequencies(x, max = max): response.frequency has been
+#> deprecated and replaced with responseFrequecy.  Please fix your call
+print(cronbach$total)
+#>  raw_alpha std.alpha   G6(smc) average_r      S/N         ase     mean
+#>   0.912677 0.9156217 0.9212097  0.340688 10.85138 0.001758793 2.795905
+#>         sd  median_r
+#>  0.5937591 0.3318068
+```
+
+## 4. Finding Optimal Symptom Combinations
+
+Now we come to the actual analysis. Current PTSD diagnosis requires
+evaluating 20 symptoms across four clusters with complex rules. Our goal
+is to identify simplified diagnostic criteria that:
+
+- Reduce the number of symptoms to evaluate (from 20 to 6)
+- Preserve the polythetic nature of the diagnosis and allow
+  representation from each cluster, so that at least four of the
+  evaluated six symptoms must be present for diagnosis.
+- Maintain diagnostic accuracy
+
+We would like to identify the three six-symptom combinations that best
+represent the group of PTSD patients compared to the original DSM-5
+criteria. We determine these optimal six-symptom combinations under two
+different structural approaches (a hierarchical approach, requiring at
+least one symptom from each cluster, and a non-hierarchical approach,
+ignoring cluster membership).
+
+### 4.1. Hierarchical Analysis
+
+First, let’s find out the three optimal six-symptom combinations, of
+which at least four symptoms must be present for the diagnosis, where
+one symptom from each DSM-5 criterion cluster must be included. This
+approach maintains the hierarchical structure of PTSD diagnosis. As a
+reminder, these are the symptom clusters in the PCL-5:
+
+- Items 1-5: Intrusion symptoms (Criterion B)
+- Items 6-7: Avoidance symptoms (Criterion C)
+- Items 8-14: Negative alterations in cognitions and mood (Criterion D)
+- Items 15-20: Alterations in arousal and reactivity (Criterion E)
+
+The definition of the “optimal combination” can be determined with the
+score_by argument. Optimization can be based on either:
+
+- Minimizing false cases (both false positives and false negatives)
+- Minimizing only false negatives (newly non-diagnosed cases)
+
+In our example, we want to miss as few diagnoses as possible compared to
+the original DSM-5 criteria, so we want to minimize the false negative
+cases (newly_nondiagnosed).
+
+``` r
+# Find best combinations with hierarchical approach, minimizing false negatives
+best_combinations_hierarchical <- analyze_best_six_symptoms_four_required_clusters(
+  simulated_ptsd_renamed,
+  score_by = "newly_nondiagnosed"
+)
+```
+
+**Understanding the Output**
+
+The function returns three key elements. Let’s take a look at it.
+
+1.  Selected Symptom Combinations:
+
+``` r
+best_combinations_hierarchical$best_symptoms
+```
+
+2.  Data comparing original DSM-5 diagnosis with diagnoses based on the
+    three best combinations
+
+``` r
+# Shows true/false values for original vs. new criteria
+head(best_combinations_hierarchical$diagnosis_comparison, 10)
+```
+
+3.  Summary table showing diagnostic accuracy metrics for each
+    combination
+
+``` r
+best_combinations_hierarchical$summary
+```
+
+The summary table includes:
+
+- Total Diagnosed: Number and percentage of cases diagnosed
+- Total Non-Diagnosed: Number and percentage of non-diagnosed cases
+- True Positive/Negative: Agreement with original criteria
+- False Positive/Negative: Disagreement with original criteria
+- Sensitivity/Specificity: Diagnostic accuracy measures
+- PPV/NPV: Predictive values
+
+### 4.2. Non-Hierarchical Analysis
+
+Now we do the same for the non-hierarchical approach. We want to find
+the three optimal six-symptom combinations, of which at least four
+symptoms must be present for the diagnosis, regardless of cluster
+membership.
+
+Here too, the definition of the “optimal combination” can be determined
+using the score_by argument. Optimization again can be based on either:
+
+- Minimizing false cases (both false positives and false negatives)
+- Minimizing only false negatives (newly non-diagnosed cases)
+
+In our example, we want to miss as few diagnoses as possible compared to
+the original DSM-5 criteria, so we want to minimize the false negative
+cases (newly_nondiagnosed) in the non-hierarchical approach as well.
+
+``` r
+# Find best combinations with non-hierarchical approach, minimizing false negatives
+best_combinations_nonhierarchical <- analyze_best_six_symptoms_four_required(
+  simulated_ptsd_renamed,
+  score_by = "newly_nondiagnosed"
+)
+```
+
+**Understanding the Output**
+
+Again, let’s take a look at the output
+
+1.  Selected Symptom Combinations:
+
+``` r
+best_combinations_nonhierarchical$best_symptoms
+```
+
+2.  Data comparing original DSM-5 diagnosis with diagnoses based on the
+    three best combinations
+
+``` r
+# Shows true/false values for original vs. new criteria
+head(best_combinations_nonhierarchical$diagnosis_comparison, 10)
+```
+
+3.  Summary table showing diagnostic accuracy metrics for each
+    combination
+
+``` r
+best_combinations_nonhierarchical$summary
+```
+
+## 5. Exporting and Importing Combinations
+
+Once you have identified optimal symptom combinations, you may want to
+share them with collaborators or save them for later use. The
+[`write_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/write_combinations.md)
+and
+[`read_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/read_combinations.md)
+functions allow you to export and import combinations as human-readable
+JSON files.
+
+### 5.1. Saving Derived Combinations
+
+After running an optimization, you can export the results directly:
+
+``` r
+# Export the hierarchical combinations
+write_combinations(
+  best_combinations_hierarchical$best_symptoms,
+  file = "hierarchical_combos.json",
+  n_required = 4,
+  clusters = list(B = 1:5, C = 6:7, D = 8:14, E = 15:20),
+  score_by = "newly_nondiagnosed",
+  description = "Top 3 hierarchical combinations from simulated veteran sample"
+)
+
+# Export the non-hierarchical combinations
+write_combinations(
+  best_combinations_nonhierarchical$best_symptoms,
+  file = "nonhierarchical_combos.json",
+  n_required = 4,
+  score_by = "newly_nondiagnosed",
+  description = "Top 3 non-hierarchical combinations from simulated veteran sample"
+)
+```
+
+You can also pass the full result object directly — the function
+automatically extracts `$best_symptoms`:
+
+``` r
+# This also works (auto-detects the optimization result object)
+write_combinations(best_combinations_hierarchical, file = "hierarchical_combos.json",
+                   n_required = 4,
+                   clusters = list(B = 1:5, C = 6:7, D = 8:14, E = 15:20),
+                   score_by = "newly_nondiagnosed")
+```
+
+### 5.2. Loading Saved Combinations
+
+A collaborator (or you in a future session) can load the combinations
+and apply them to new data:
+
+``` r
+# Read the exported combinations
+spec <- read_combinations("hierarchical_combos.json")
+
+# Inspect what was loaded
+spec$combinations    # The symptom combinations
+spec$n_required      # Required symptom threshold
+spec$clusters        # Cluster structure (NULL if non-hierarchical)
+spec$description     # Description provided during export
+
+# Apply to any dataset
+comparison <- apply_symptom_combinations(
+  simulated_ptsd_renamed,
+  combinations = spec$combinations,
+  n_required = spec$n_required,
+  clusters = spec$clusters
+)
+
+# Compute diagnostic metrics
+metrics <- summarize_ptsd_changes(comparison)
+create_readable_summary(metrics)
+```
+
+This is particularly useful for external validation workflows where one
+research group derives the criteria and another group validates them on
+an independent dataset. See the *External Validation* vignette for a
+full worked example.
+
+## 6. Model Validation
+
+After identifying optimal symptom combinations, it’s crucial to validate
+their performance on independent data. The `PTSDdiag` package provides
+two validation approaches: Holdout Validation and Cross-Validation.
+
+### 6.1. Holdout Validation
+
+Holdout Validation splits the data into training and test sets, allowing
+us to evaluate how well the identified symptom combinations generalize
+to new data.
+
+``` r
+# Perform holdout validation with 70/30 split
+validation_results <- holdout_validation(
+  simulated_ptsd_renamed,
+  train_ratio = 0.7,
+  score_by = "newly_nondiagnosed",
+  seed = 123
+)
+```
+
+**Results**
+
+The Holdout Validation results show how the symptom combinations perform
+on data they weren’t trained on, providing a more realistic estimate of
+their diagnostic accuracy.
+
+Examining Results for Non-Hierarchical Model:
+
+``` r
+# Best combinations identified on training data
+validation_results$without_clusters$best_combinations
+
+# Performance summary on test data
+validation_results$without_clusters$summary
+```
+
+Examining Results for Hierarchical Model:
+
+``` r
+# Best combinations identified on training data (with cluster representation)
+validation_results$with_clusters$best_combinations
+
+# Performance summary on test data
+validation_results$with_clusters$summary
+```
+
+### 6.2. Cross-Validation
+
+For a more robust assessment, k-fold Cross-Validation tests the
+stability of symptom combinations across multiple data splits.
+
+``` r
+# Perform 5-fold cross-validation
+cv_results <- cross_validation(
+  simulated_ptsd_renamed,
+  k = 5,
+  score_by = "newly_nondiagnosed",
+  seed = 123
+)
+```
+
+**Results by Fold**
+
+The function provides detailed results for each fold.
+
+Examining Results for Non-Hierarchical Model:
+
+``` r
+# Summary statistics for each fold (non-hierarchical model)
+cv_results$without_clusters$summary_by_fold
+```
+
+Examining Results for Hierarchical Model:
+
+``` r
+# Summary statistics for each fold (hierarchical model)
+cv_results$with_clusters$summary_by_fold
+```
+
+**Stable Combinations Across Folds**
+
+If certain symptom combinations appear in multiple folds, the function
+calculates their average performance.
+
+Examining Results for Non-Hierarchical Model:
+
+``` r
+# Check for combinations that appeared in multiple folds (non-hierarchical)
+if (!is.null(cv_results$without_clusters$combinations_summary)) {
+  print("Stable combinations in non-hierarchical model:")
+  cv_results$without_clusters$combinations_summary
+} else {
+  print("No combinations appeared in multiple folds for the non-hierarchical model")
+}
+```
+
+Examining Results for Hierarchical Model:
+
+``` r
+# Check for combinations that appeared in multiple folds (hierarchical)
+if (!is.null(cv_results$with_clusters$combinations_summary)) {
+  print("Stable combinations in hierarchical model:")
+  cv_results$with_clusters$combinations_summary
+} else {
+  print("No combinations appeared in multiple folds for the hierarchical model")
+}
+```
+
+**Interpreting Cross-Validation Results**
+
+Cross-Validation helps identify:
+
+1.  Consistency: Whether the same symptom combinations are selected
+    across different data subsets
+2.  Stability: How diagnostic accuracy varies across folds
+3.  Generalization: Average performance metrics provide robust estimates
+    of real-world performance
+
+Key metrics to examine:
+
+- Splits_Appeared: How many folds selected this combination (higher =
+  more stable)
+- Sensitivity: Proportion of true PTSD cases correctly identified
+- Specificity: Proportion of non-PTSD cases correctly identified
+- PPV/NPV: Predictive values indicating diagnostic confidence
+
+### 6.3. Comparing Validation Approaches
+
+Both validation methods serve complementary purposes.
+
+Holdout Validation:
+
+- Simpler and faster
+- Single train-test split
+- Good for initial assessment
+- May be less stable with small datasets
+
+Cross-Validation:
+
+- More computationally intensive
+- Multiple train-test splits
+- Better estimate of generalization
+- Identifies stable symptom patterns
+
+``` r
+# Example: Compare sensitivity from both methods
+# Note: Results will vary based on random splits
+
+# Holdout Validation sensitivity (first combination, non-hierarchical)
+holdout_summary <- validation_results$without_clusters$summary$x$data
+if (nrow(holdout_summary) > 1) {
+  holdout_sensitivity <- holdout_summary[2, "Sensitivity"]
+  print(paste("Holdout sensitivity for first combination:", 
+              round(holdout_sensitivity, 3)))
+}
+
+# Cross-Validation average sensitivity (if stable combinations exist)
+if (!is.null(cv_results$without_clusters$combinations_summary)) {
+  cv_summary <- cv_results$without_clusters$combinations_summary$x$data
+  if (nrow(cv_summary) > 0) {
+    cv_sensitivity <- cv_summary[1, "Sensitivity"]
+    print(paste("Cross-validation average sensitivity:", 
+                round(cv_sensitivity, 3)))
+  }
+}
+```
+
+### 6.4. Validation Best Practices
+
+When validating PTSD diagnostic models:
+
+1.  Set a seed for reproducibility: `seed = 123`
+2.  Choose appropriate validation:
+    - Use holdout for quick assessment
+    - Use cross-validation for publication-quality results
+3.  Consider your optimization goal:
+    - `score_by = "newly_nondiagnosed"` to minimize missed diagnoses
+    - `score_by = "false_cases"` to minimize total misclassifications
+4.  Examine multiple metrics:
+    - Sensitivity is crucial for screening
+    - Specificity matters for differential diagnosis
+    - PPV/NPV inform clinical decision-making
+
+## 7. Conclusion
+
+With the `PTSDdiag` package, PCL-5 data can be processed and analyzed
+efficiently. It allows to identify reduced optimal symptom combinations
+for PTSD diagnosis and to compare different diagnostic approaches by
+generating detailed diagnostic accuracy metrics.

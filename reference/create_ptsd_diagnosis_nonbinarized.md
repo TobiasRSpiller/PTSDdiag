@@ -1,0 +1,81 @@
+# Determine PTSD diagnosis based on DSM-5 criteria using non-binarized scores
+
+Determines whether DSM-5 diagnostic criteria for PTSD are met based on
+PCL-5 item scores, using the original non-binarized values (0-4 scale).
+
+## Usage
+
+``` r
+create_ptsd_diagnosis_nonbinarized(data)
+```
+
+## Arguments
+
+- data:
+
+  A dataframe that can be either:
+
+  - Output of rename_ptsd_columns(): 20 columns named symptom_1 to
+    symptom_20
+
+  - Output of calculate_ptsd_total(): 21 columns including symptom_1 to
+    symptom_20 plus a 'total' column
+
+  Each symptom should be scored on a 0-4 scale where:
+
+  - 0 = Not at all
+
+  - 1 = A little bit
+
+  - 2 = Moderately
+
+  - 3 = Quite a bit
+
+  - 4 = Extremely
+
+## Value
+
+A dataframe with all original columns (including 'total' if present)
+plus an additional column "PTSD_Diagnosis" containing TRUE/FALSE values
+indicating whether DSM-5 diagnostic criteria are met
+
+## Details
+
+The function applies the DSM-5 diagnostic criteria for PTSD:
+
+- Criterion B (Intrusion): At least 1 symptom \>= 2 from items 1-5
+
+- Criterion C (Avoidance): At least 1 symptom \>= 2 from items 6-7
+
+- Criterion D (Negative alterations in cognitions and mood): At least 2
+  symptoms \>= 2 from items 8-14
+
+- Criterion E (Alterations in arousal and reactivity): At least 2
+  symptoms \>= 2 from items 15-20
+
+A symptom is considered present when rated 2 (Moderately) or higher.
+
+## Examples
+
+``` r
+# Example with output from rename_ptsd_columns
+sample_data1 <- data.frame(
+  matrix(sample(0:4, 20 * 10, replace = TRUE),
+         nrow = 10,
+         ncol = 20)
+)
+colnames(sample_data1) <- paste0("symptom_", 1:20)
+diagnosed_data1 <- create_ptsd_diagnosis_nonbinarized(sample_data1)
+
+# Check diagnosis results
+diagnosed_data1$PTSD_Diagnosis
+#>  [1]  TRUE  TRUE  TRUE  TRUE FALSE  TRUE FALSE  TRUE  TRUE  TRUE
+
+# Example with output from calculate_ptsd_total
+sample_data2 <- calculate_ptsd_total(sample_data1)
+diagnosed_data2 <- create_ptsd_diagnosis_nonbinarized(sample_data2)
+
+# Check diagnosis results
+diagnosed_data2$PTSD_Diagnosis
+#>  [1]  TRUE  TRUE  TRUE  TRUE FALSE  TRUE FALSE  TRUE  TRUE  TRUE
+```
