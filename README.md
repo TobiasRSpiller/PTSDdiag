@@ -9,7 +9,7 @@
 
 [![CRAN
 status](https://www.r-pkg.org/badges/version/PTSDdiag)](https://CRAN.R-project.org/package=PTSDdiag)
-[![R-CMD-check](https://github.com/WeidmannL/PTSDdiag/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/WeidmannL/PTSDdiag/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/TobiasRSpiller/PTSDdiag/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/TobiasRSpiller/PTSDdiag/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 ## Description
@@ -45,7 +45,7 @@ Or install the development version from GitHub:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("WeidmannL/PTSDdiag")
+devtools::install_github("TobiasRSpiller/PTSDdiag")
 ```
 
 ## Getting Started
@@ -57,12 +57,12 @@ diagnosis, compare different diagnostic approaches and perform
 validation methods for evaluating model performance.
 
 - [An Introduction to
-  PTSDdiag](https://weidmannl.github.io/PTSDdiag/articles/introduction.html)
-- [Package Website](https://weidmannl.github.io/PTSDdiag/)
+  PTSDdiag](https://tobiasrspiller.github.io/PTSDdiag/articles/introduction.html)
+- [Package Website](https://tobiasrspiller.github.io/PTSDdiag/)
 
 ## Bugs, Contributions
 
 - If you have any suggestions or if you find a bug, please report them
   using GitHub [issue
-  tracker](https://github.com/WeidmannL/PTSDdiag/issues).
+  tracker](https://github.com/TobiasRSpiller/PTSDdiag/issues).
 - Contributions are welcome! Please feel free to submit a Pull Request.

@@ -39,10 +39,11 @@ A list containing:
 }
 }
 \description{
+Convenience wrapper around \code{\link{optimize_combinations}} with the
+original PCL-5 defaults: 6 symptoms, 4 required, top 3 returned.
+
 Identifies the three best six-symptom combinations for PTSD diagnosis
 where any four symptoms must be present, regardless of their cluster membership.
-This function implements a simplified diagnostic approach compared to the full
-DSM-5 criteria.
 }
 \details{
 The function:
@@ -88,4 +89,8 @@ results$diagnosis_comparison
 results$summary
 }
 
+}
+\seealso{
+\code{\link{optimize_combinations}} for the generalized version with
+  configurable parameters.
 }

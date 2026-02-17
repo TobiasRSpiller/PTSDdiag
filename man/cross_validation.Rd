@@ -4,7 +4,15 @@
 \alias{cross_validation}
 \title{Perform k-fold cross-validation for PTSD diagnostic models}
 \usage{
-cross_validation(data, k = 5, score_by = "newly_nondiagnosed", seed = 123)
+cross_validation(
+  data,
+  k = 5,
+  score_by = "newly_nondiagnosed",
+  seed = 123,
+  n_symptoms = 6,
+  n_required = 4,
+  n_top = 3
+)
 }
 \arguments{
 \item{data}{A dataframe containing exactly 20 columns with PCL-5 item scores
@@ -19,6 +27,15 @@ cross_validation(data, k = 5, score_by = "newly_nondiagnosed", seed = 123)
 }}
 
 \item{seed}{Integer for random number generation reproducibility (default: 123)}
+
+\item{n_symptoms}{Integer specifying how many symptoms per combination
+(default: 6). Must be between 1 and 20.}
+
+\item{n_required}{Integer specifying how many symptoms must be present for
+diagnosis (default: 4). Must be between 1 and \code{n_symptoms}.}
+
+\item{n_top}{Integer specifying how many top combinations to return
+(default: 3). Must be a positive integer.}
 }
 \value{
 A list containing:
@@ -54,8 +71,10 @@ The function:
 
 Two models are evaluated:
 \itemize{
-  \item Model without cluster representation: Any 4 of 6 symptoms
-  \item Model with cluster representation: 4 of 6 symptoms with at least one from each cluster
+  \item Model without cluster representation: Any \code{n_required} of
+    \code{n_symptoms} symptoms
+  \item Model with cluster representation: \code{n_required} of
+    \code{n_symptoms} symptoms with at least one from each cluster
 }
 }
 \examples{

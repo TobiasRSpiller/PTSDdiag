@@ -8,7 +8,10 @@ holdout_validation(
   data,
   train_ratio = 0.7,
   score_by = "newly_nondiagnosed",
-  seed = 123
+  seed = 123,
+  n_symptoms = 6,
+  n_required = 4,
+  n_top = 3
 )
 }
 \arguments{
@@ -25,19 +28,30 @@ holdout_validation(
 }}
 
 \item{seed}{Integer for random number generation reproducibility (default: 123)}
+
+\item{n_symptoms}{Integer specifying how many symptoms per combination
+(default: 6). Must be between 1 and 20.}
+
+\item{n_required}{Integer specifying how many symptoms must be present for
+diagnosis (default: 4). Must be between 1 and \code{n_symptoms}.}
+
+\item{n_top}{Integer specifying how many top combinations to return
+(default: 3). Must be a positive integer.}
 }
 \value{
 A list containing:
 \itemize{
   \item without_clusters: Results for model without cluster representation
     \itemize{
-      \item best_combinations: The 3 best six-symptom combinations from training
+      \item best_combinations: The \code{n_top} best symptom combinations
+        from training
       \item test_results: Diagnostic comparison on test data
       \item summary: Formatted summary statistics
     }
   \item with_clusters: Results for model with cluster representation
     \itemize{
-      \item best_combinations: The 3 best six-symptom combinations from training
+      \item best_combinations: The \code{n_top} best symptom combinations
+        from training
       \item test_results: Diagnostic comparison on test data
       \item summary: Formatted summary statistics
     }
@@ -50,7 +64,7 @@ Trains the model on a portion of the data and evaluates performance on the held-
 \details{
 The function:
 \enumerate{
-  \item Splits data into training (70%) and test (30%) sets
+  \item Splits data into training and test sets based on \code{train_ratio}
   \item Finds optimal symptom combinations on training data
   \item Evaluates these combinations on test data
   \item Compares results to original DSM-5 diagnoses
@@ -58,8 +72,10 @@ The function:
 
 Two models are evaluated:
 \itemize{
-  \item Model without cluster representation: Any 4 of 6 symptoms
-  \item Model with cluster representation: 4 of 6 symptoms with at least one from each cluster
+  \item Model without cluster representation: Any \code{n_required} of
+    \code{n_symptoms} symptoms
+  \item Model with cluster representation: \code{n_required} of
+    \code{n_symptoms} symptoms with at least one from each cluster
 }
 }
 \examples{

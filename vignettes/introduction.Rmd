@@ -27,14 +27,15 @@ This vignette demonstrates how to use the package to:
 # 2. Installation
 ## 2.1. Installing the Package
 
-This package is currently only hosted on GitHub. Installation requires the `devtools` package to be installed and loaded.
-```{r Installation, eval=FALSE, include=TRUE}
-# Install devtools if not already installed
-if (!require("devtools")) install.packages("devtools")
+You can install the released version from CRAN:
+```{r Installation CRAN, eval=FALSE, include=TRUE}
+install.packages("PTSDdiag")
+```
 
-# Install PTSDdiag
-library("devtools")
-devtools::install_github("WeidmannL/PTSDdiag")
+Or install the development version from GitHub:
+```{r Installation GitHub, eval=FALSE, include=TRUE}
+# install.packages("devtools")
+devtools::install_github("TobiasRSpiller/PTSDdiag")
 ```
 
 ## 2.2. Loading Required Packages
@@ -236,10 +237,78 @@ head(best_combinations_nonhierarchical$diagnosis_comparison, 10)
 best_combinations_nonhierarchical$summary
 ```
 
-# 5. Model Validation
+# 5. Exporting and Importing Combinations
+
+Once you have identified optimal symptom combinations, you may want to share them with collaborators or save them for later use. The `write_combinations()` and `read_combinations()` functions allow you to export and import combinations as human-readable JSON files.
+
+## 5.1. Saving Derived Combinations
+
+After running an optimization, you can export the results directly:
+
+```{r Export combinations intro, echo=TRUE, eval=FALSE}
+# Export the hierarchical combinations
+write_combinations(
+  best_combinations_hierarchical$best_symptoms,
+  file = "hierarchical_combos.json",
+  n_required = 4,
+  clusters = list(B = 1:5, C = 6:7, D = 8:14, E = 15:20),
+  score_by = "newly_nondiagnosed",
+  description = "Top 3 hierarchical combinations from simulated veteran sample"
+)
+
+# Export the non-hierarchical combinations
+write_combinations(
+  best_combinations_nonhierarchical$best_symptoms,
+  file = "nonhierarchical_combos.json",
+  n_required = 4,
+  score_by = "newly_nondiagnosed",
+  description = "Top 3 non-hierarchical combinations from simulated veteran sample"
+)
+```
+
+You can also pass the full result object directly — the function automatically extracts `$best_symptoms`:
+
+```{r Export shorthand, echo=TRUE, eval=FALSE}
+# This also works (auto-detects the optimization result object)
+write_combinations(best_combinations_hierarchical, file = "hierarchical_combos.json",
+                   n_required = 4,
+                   clusters = list(B = 1:5, C = 6:7, D = 8:14, E = 15:20),
+                   score_by = "newly_nondiagnosed")
+```
+
+## 5.2. Loading Saved Combinations
+
+A collaborator (or you in a future session) can load the combinations and apply them to new data:
+
+```{r Import combinations intro, echo=TRUE, eval=FALSE}
+# Read the exported combinations
+spec <- read_combinations("hierarchical_combos.json")
+
+# Inspect what was loaded
+spec$combinations    # The symptom combinations
+spec$n_required      # Required symptom threshold
+spec$clusters        # Cluster structure (NULL if non-hierarchical)
+spec$description     # Description provided during export
+
+# Apply to any dataset
+comparison <- apply_symptom_combinations(
+  simulated_ptsd_renamed,
+  combinations = spec$combinations,
+  n_required = spec$n_required,
+  clusters = spec$clusters
+)
+
+# Compute diagnostic metrics
+metrics <- summarize_ptsd_changes(comparison)
+create_readable_summary(metrics)
+```
+
+This is particularly useful for external validation workflows where one research group derives the criteria and another group validates them on an independent dataset. See the *External Validation* vignette for a full worked example.
+
+# 6. Model Validation
 After identifying optimal symptom combinations, it's crucial to validate their performance on independent data. The `PTSDdiag` package provides two validation approaches: Holdout Validation and Cross-Validation.
 
-## 5.1. Holdout Validation
+## 6.1. Holdout Validation
 Holdout Validation splits the data into training and test sets, allowing us to evaluate how well the identified symptom combinations generalize to new data.
 
 ```{r Holdout Validation, echo=TRUE, eval=FALSE}
@@ -276,7 +345,7 @@ validation_results$with_clusters$best_combinations
 validation_results$with_clusters$summary
 ```
 
-## 5.2. Cross-Validation
+## 6.2. Cross-Validation
 For a more robust assessment, k-fold Cross-Validation tests the stability of symptom combinations across multiple data splits.
 
 ```{r Cross Validation, echo=TRUE, eval=FALSE}
@@ -350,7 +419,7 @@ Key metrics to examine:
  * Specificity: Proportion of non-PTSD cases correctly identified
  * PPV/NPV: Predictive values indicating diagnostic confidence
 
-## 5.3. Comparing Validation Approaches
+## 6.3. Comparing Validation Approaches
 Both validation methods serve complementary purposes.
 
 Holdout Validation:
@@ -390,7 +459,7 @@ if (!is.null(cv_results$without_clusters$combinations_summary)) {
 }
 ```
 
-## 5.4. Validation Best Practices
+## 6.4. Validation Best Practices
 When validating PTSD diagnostic models:
 
 1. Set a seed for reproducibility: `seed = 123`
@@ -405,5 +474,5 @@ When validating PTSD diagnostic models:
    - Specificity matters for differential diagnosis
    - PPV/NPV inform clinical decision-making
 
-# 6. Conclusion
+# 7. Conclusion
 With the `PTSDdiag` package, PCL-5 data can be processed and analyzed efficiently. It allows to identify reduced optimal symptom combinations for PTSD diagnosis and to compare different diagnostic approaches by generating detailed diagnostic accuracy metrics.

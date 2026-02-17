@@ -1,4 +1,4 @@
-url: https://weidmannl.github.io/PTSDdiag/
+url: https://tobiasrspiller.github.io/PTSDdiag/
 
 template:
   bootstrap: 5
@@ -24,12 +24,14 @@ navbar:
       menu:
       - text: Introduction to PTSDdiag
         href: articles/introduction.html
+      - text: External Validation
+        href: articles/external_validation.html
     news:
       text: News
       href: news/index.html
     github:
       icon: fab fa-github fa-lg
-      href: https://github.com/WeidmannL/PTSDdiag
+      href: https://github.com/TobiasRSpiller/PTSDdiag
 
 reference:
   - title: Data Preparation
@@ -48,8 +50,17 @@ reference:
   - title: Analysis Functions
     desc: Functions for analyzing optimal symptom combinations
     contents:
+    - optimize_combinations
+    - optimize_combinations_clusters
+    - apply_symptom_combinations
     - analyze_best_six_symptoms_four_required
     - analyze_best_six_symptoms_four_required_clusters
+
+  - title: Import/Export
+    desc: Functions for sharing symptom combinations across research groups
+    contents:
+    - write_combinations
+    - read_combinations
 
   - title: Summary and Reporting
     desc: Functions for creating summaries and comparing diagnostic approaches
@@ -68,6 +79,7 @@ reference:
     desc: Example and simulated datasets
     contents:
     - simulated_ptsd
+    - simulated_ptsd_genpop
 
 authors:
   Laura Weidmann:
