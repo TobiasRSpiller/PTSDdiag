@@ -62,6 +62,11 @@
 #'   \item "newly_nondiagnosed": Minimize false negatives only
 #'}
 #'
+#' @param DT Logical. If \code{TRUE}, return the summary as an interactive
+#'   \code{\link[DT]{datatable}} widget. If \code{FALSE} (default), return a
+#'   plain data.frame. The \pkg{DT} package must be installed when
+#'   \code{DT = TRUE}.
+#'
 #' @returns A list containing:
 #'
 #' \itemize{
@@ -69,8 +74,9 @@
 #'     \code{n_symptoms} symptom numbers representing the best combinations found
 #'   \item diagnosis_comparison: Dataframe comparing original DSM-5 diagnosis with
 #'     diagnoses based on the best combinations
-#'   \item summary: Interactive datatable (DT) showing diagnostic accuracy metrics
-#'     for each combination
+#'   \item summary: Diagnostic accuracy metrics for each combination. A data.frame
+#'     by default, or an interactive \code{\link[DT]{datatable}} if
+#'     \code{DT = TRUE}.
 #'}
 #'
 #' @export
@@ -99,7 +105,8 @@
 #' }
 #'
 optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
-                                  n_top = 3, score_by = "false_cases") {
+                                  n_top = 3, score_by = "false_cases",
+                                  DT = FALSE) {
   # Validate inputs
   .validate_pcl5_data(data)
   .validate_score_by(score_by)
@@ -126,7 +133,13 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
 
   # Build output
   comparison_df <- .build_comparison_df(baseline_results, top_combinations, nrow(data))
-  summary_table <- .wrap_summary(comparison_df)
+
+  best_combo <- top_combinations[[1]]$combination
+  if (!is.null(best_combo)) {
+    cli::cli_alert_info("Evaluated {length(combinations)} combination{?s}. Best: {paste(best_combo, collapse = ', ')}")
+  }
+
+  summary_table <- .wrap_summary(comparison_df, DT = DT)
 
   return(list(
     best_symptoms = lapply(
@@ -212,6 +225,11 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
 #'   For PCL-5:
 #'   \code{list(B = 1:5, C = 6:7, D = 8:14, E = 15:20)}
 #'
+#' @param DT Logical. If \code{TRUE}, return the summary as an interactive
+#'   \code{\link[DT]{datatable}} widget. If \code{FALSE} (default), return a
+#'   plain data.frame. The \pkg{DT} package must be installed when
+#'   \code{DT = TRUE}.
+#'
 #' @returns A list containing:
 #'
 #' \itemize{
@@ -219,8 +237,9 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
 #'     \code{n_symptoms} symptom numbers representing the best combinations found
 #'   \item diagnosis_comparison: Dataframe comparing original DSM-5 diagnosis with
 #'     diagnoses based on the best combinations
-#'   \item summary: Interactive datatable (DT) showing diagnostic accuracy metrics
-#'     for each combination
+#'   \item summary: Diagnostic accuracy metrics for each combination. A data.frame
+#'     by default, or an interactive \code{\link[DT]{datatable}} if
+#'     \code{DT = TRUE}.
 #'}
 #'
 #' @export
@@ -247,7 +266,7 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
 #'
 optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
                                            n_top = 3, score_by = "false_cases",
-                                           clusters) {
+                                           clusters, DT = FALSE) {
   # Validate inputs
   .validate_pcl5_data(data)
   .validate_score_by(score_by)
@@ -308,6 +327,8 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
   valid_combinations <- valid_combinations[seq_len(combination_count)]
   valid_combinations <- unique(valid_combinations)
 
+  cli::cli_alert_info("Generated {length(valid_combinations)} valid cluster-constrained combination{?s}")
+
   # Diagnosis function for hierarchical mode
   diagnose_fn <- function(bdata, symptoms) {
     .diagnose_combination(bdata, symptoms, n_required, clusters = clusters)
@@ -319,7 +340,13 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
 
   # Build output
   comparison_df <- .build_comparison_df(baseline_results, top_combinations, nrow(data))
-  summary_table <- .wrap_summary(comparison_df)
+
+  best_combo <- top_combinations[[1]]$combination
+  if (!is.null(best_combo)) {
+    cli::cli_alert_info("Evaluated {length(valid_combinations)} combination{?s}. Best: {paste(best_combo, collapse = ', ')}")
+  }
+
+  summary_table <- .wrap_summary(comparison_df, DT = DT)
 
   return(list(
     best_symptoms = lapply(
@@ -335,6 +362,8 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
 #' Find optimal non-hierarchical six-symptom combinations for PTSD diagnosis
 #'
 #' @description
+#' `r lifecycle::badge("deprecated")`
+#'
 #' Convenience wrapper around \code{\link{optimize_combinations}} with the
 #' original PCL-5 defaults: 6 symptoms, 4 required, top 3 returned.
 #'
@@ -385,6 +414,10 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
 #'   \item "newly_nondiagnosed": Minimize false negatives only
 #'}
 #'
+#' @param DT Logical. If \code{TRUE}, return the summary as an interactive
+#'   \code{\link[DT]{datatable}} widget. If \code{FALSE} (default), return a
+#'   plain data.frame.
+#'
 #' @returns A list containing:
 #'
 #' \itemize{
@@ -392,8 +425,9 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
 #'     representing the best combinations found
 #'   \item diagnosis_comparison: Dataframe comparing original DSM-5 diagnosis with
 #'     diagnoses based on the three best combinations
-#'   \item summary: Interactive datatable (DT) showing diagnostic accuracy metrics
-#'     for each combination
+#'   \item summary: Diagnostic accuracy metrics for each combination. A data.frame
+#'     by default, or an interactive \code{\link[DT]{datatable}} if
+#'     \code{DT = TRUE}.
 #'}
 #'
 #' @seealso \code{\link{optimize_combinations}} for the generalized version with
@@ -422,15 +456,23 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
 #' results$summary
 #' }
 #'
-analyze_best_six_symptoms_four_required <- function(data, score_by = "false_cases") {
+analyze_best_six_symptoms_four_required <- function(data, score_by = "false_cases",
+                                                    DT = FALSE) {
+  lifecycle::deprecate_warn(
+    "0.2.1",
+    "analyze_best_six_symptoms_four_required()",
+    "optimize_combinations()"
+  )
   optimize_combinations(data, n_symptoms = 6, n_required = 4,
-                        n_top = 3, score_by = score_by)
+                        n_top = 3, score_by = score_by, DT = DT)
 }
 
 
 #' Find optimal hierarchical six-symptom combinations for PTSD diagnosis
 #'
 #' @description
+#' `r lifecycle::badge("deprecated")`
+#'
 #' Convenience wrapper around \code{\link{optimize_combinations_clusters}} with
 #' the original PCL-5 defaults: 6 symptoms, 4 required, top 3 returned, and
 #' standard DSM-5 cluster structure.
@@ -484,6 +526,10 @@ analyze_best_six_symptoms_four_required <- function(data, score_by = "false_case
 #'   \item "newly_nondiagnosed": Minimize false negatives only
 #'}
 #'
+#' @param DT Logical. If \code{TRUE}, return the summary as an interactive
+#'   \code{\link[DT]{datatable}} widget. If \code{FALSE} (default), return a
+#'   plain data.frame.
+#'
 #' @returns A list containing:
 #'
 #' \itemize{
@@ -491,8 +537,9 @@ analyze_best_six_symptoms_four_required <- function(data, score_by = "false_case
 #'     representing the best combinations found
 #'   \item diagnosis_comparison: Dataframe comparing original DSM-5 diagnosis with
 #'     diagnoses based on the three best combinations
-#'   \item summary: Interactive datatable (DT) showing diagnostic accuracy metrics
-#'     for each combination
+#'   \item summary: Diagnostic accuracy metrics for each combination. A data.frame
+#'     by default, or an interactive \code{\link[DT]{datatable}} if
+#'     \code{DT = TRUE}.
 #'}
 #'
 #' @seealso \code{\link{optimize_combinations_clusters}} for the generalized
@@ -521,8 +568,14 @@ analyze_best_six_symptoms_four_required <- function(data, score_by = "false_case
 #' results$summary
 #' }
 #'
-analyze_best_six_symptoms_four_required_clusters <- function(data, score_by = "false_cases") {
+analyze_best_six_symptoms_four_required_clusters <- function(data, score_by = "false_cases",
+                                                             DT = FALSE) {
+  lifecycle::deprecate_warn(
+    "0.2.1",
+    "analyze_best_six_symptoms_four_required_clusters()",
+    "optimize_combinations_clusters()"
+  )
   optimize_combinations_clusters(data, n_symptoms = 6, n_required = 4,
                                  n_top = 3, score_by = score_by,
-                                 clusters = .get_default_clusters())
+                                 clusters = .get_default_clusters(), DT = DT)
 }

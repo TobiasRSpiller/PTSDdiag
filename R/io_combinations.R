@@ -121,6 +121,12 @@ write_combinations <- function(combinations, file, n_required = 4,
     stop("'description' must be a single character string")
   }
 
+  # Compute canonical combination IDs and ranks
+  combination_ids <- vapply(combinations, function(combo) {
+    paste(sort(combo), collapse = "_")
+  }, character(1))
+  ranks <- seq_along(combinations)
+
   # Build output structure
   output <- list(
     ptsddiag_version = as.character(utils::packageVersion("PTSDdiag")),
@@ -132,7 +138,9 @@ write_combinations <- function(combinations, file, n_required = 4,
       score_by = score_by,
       clusters = clusters
     ),
-    combinations = combinations
+    combinations = combinations,
+    combination_ids = combination_ids,
+    ranks = ranks
   )
 
   # Write JSON
@@ -168,6 +176,12 @@ write_combinations <- function(combinations, file, n_required = 4,
 #' \describe{
 #'   \item{combinations}{List of numeric vectors. Each vector contains symptom
 #'     indices for one combination.}
+#'   \item{combination_ids}{Character vector of canonical combination IDs (sorted
+#'     symptom indices joined by underscores, e.g. \code{"4_6_7_17_19_20"}).
+#'     Computed from the combinations if not present in the file (backward
+#'     compatibility with files created before v0.2.1).}
+#'   \item{ranks}{Integer vector of ranks (1 = best). Computed from list
+#'     position if not present in the file.}
 #'   \item{n_required}{Numeric. Number of symptoms required for a positive
 #'     diagnosis.}
 #'   \item{clusters}{\code{NULL} for non-hierarchical combinations, or a named
@@ -272,9 +286,25 @@ read_combinations <- function(file) {
     }
   }
 
+  # Extract combination_ids and ranks (fall back for older files)
+  combination_ids <- if (!is.null(raw$combination_ids)) {
+    unlist(raw$combination_ids)
+  } else {
+    vapply(combinations, function(combo) {
+      paste(sort(combo), collapse = "_")
+    }, character(1))
+  }
+  ranks <- if (!is.null(raw$ranks)) {
+    unlist(raw$ranks)
+  } else {
+    seq_along(combinations)
+  }
+
   # Build return list with top-level convenience fields
   result <- list(
     combinations = combinations,
+    combination_ids = combination_ids,
+    ranks = ranks,
     n_required = n_required,
     clusters = clusters,
     parameters = list(

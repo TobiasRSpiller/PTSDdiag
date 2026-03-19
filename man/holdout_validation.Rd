@@ -11,7 +11,8 @@ holdout_validation(
   seed = 123,
   n_symptoms = 6,
   n_required = 4,
-  n_top = 3
+  n_top = 3,
+  DT = FALSE
 )
 }
 \arguments{
@@ -37,6 +38,11 @@ diagnosis (default: 4). Must be between 1 and \code{n_symptoms}.}
 
 \item{n_top}{Integer specifying how many top combinations to return
 (default: 3). Must be a positive integer.}
+
+\item{DT}{Logical. If \code{TRUE}, return summaries as interactive
+\code{\link[DT]{datatable}} widgets. If \code{FALSE} (default), return
+plain data.frames. The \pkg{DT} package must be installed when
+\code{DT = TRUE}.}
 }
 \value{
 A list containing:
@@ -46,14 +52,14 @@ A list containing:
       \item best_combinations: The \code{n_top} best symptom combinations
         from training
       \item test_results: Diagnostic comparison on test data
-      \item summary: Formatted summary statistics
+      \item summary: Formatted summary statistics (data.frame or DT widget)
     }
   \item with_clusters: Results for model with cluster representation
     \itemize{
       \item best_combinations: The \code{n_top} best symptom combinations
         from training
       \item test_results: Diagnostic comparison on test data
-      \item summary: Formatted summary statistics
+      \item summary: Formatted summary statistics (data.frame or DT widget)
     }
 }
 }
