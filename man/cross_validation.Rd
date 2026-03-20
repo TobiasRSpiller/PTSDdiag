@@ -11,7 +11,8 @@ cross_validation(
   seed = 123,
   n_symptoms = 6,
   n_required = 4,
-  n_top = 3
+  n_top = 3,
+  DT = FALSE
 )
 }
 \arguments{
@@ -36,6 +37,11 @@ diagnosis (default: 4). Must be between 1 and \code{n_symptoms}.}
 
 \item{n_top}{Integer specifying how many top combinations to return
 (default: 3). Must be a positive integer.}
+
+\item{DT}{Logical. If \code{TRUE}, return summaries as interactive
+\code{\link[DT]{datatable}} widgets. If \code{FALSE} (default), return
+plain data.frames. The \pkg{DT} package must be installed when
+\code{DT = TRUE}.}
 }
 \value{
 A list containing:
@@ -43,16 +49,20 @@ A list containing:
   \item without_clusters: Results for model without cluster representation
     \itemize{
       \item fold_results: List of diagnostic comparisons for each fold
-      \item summary_by_fold: Detailed results for each fold
+      \item summary_by_fold: Detailed results for each fold (data.frame or DT
+        widget)
       \item combinations_summary: Average performance for combinations appearing
-        in multiple folds (NULL if no combinations repeat)
+        in multiple folds (data.frame, DT widget, or NULL if no combinations
+        repeat)
     }
   \item with_clusters: Results for model with cluster representation
     \itemize{
       \item fold_results: List of diagnostic comparisons for each fold
-      \item summary_by_fold: Detailed results for each fold
+      \item summary_by_fold: Detailed results for each fold (data.frame or DT
+        widget)
       \item combinations_summary: Average performance for combinations appearing
-        in multiple folds (NULL if no combinations repeat)
+        in multiple folds (data.frame, DT widget, or NULL if no combinations
+        repeat)
     }
 }
 }
@@ -76,6 +86,13 @@ Two models are evaluated:
   \item Model with cluster representation: \code{n_required} of
     \code{n_symptoms} symptoms with at least one from each cluster
 }
+
+If the \pkg{future.apply} package is installed and a
+\code{\link[future]{plan}} has been set (e.g.,
+\code{future::plan(future::multisession)}), folds are processed in
+parallel via \code{\link[future.apply]{future_lapply}}. On macOS
+(including Apple Silicon), use \code{future::multisession} rather than
+\code{future::multicore}, especially inside RStudio.
 }
 \examples{
 # Create sample data

@@ -250,21 +250,23 @@ test_that("cross_validation combinations_summary works correctly", {
   
   # Check combinations_summary structure if it exists (can be NULL)
   if (!is.null(results$without_clusters$combinations_summary)) {
-    # If combinations repeat, check the summary structure
-    summary_data <- results$without_clusters$combinations_summary$x$data
+    # Default is data.frame (DT = FALSE)
+    summary_data <- results$without_clusters$combinations_summary
+    expect_true(is.data.frame(summary_data))
     expect_true("Splits_Appeared" %in% names(summary_data))
     expect_true("Sensitivity" %in% names(summary_data))
     expect_true("Specificity" %in% names(summary_data))
     expect_true("PPV" %in% names(summary_data))
     expect_true("NPV" %in% names(summary_data))
-    
+
     # Splits_Appeared should be > 1 for all rows
     expect_true(all(summary_data$Splits_Appeared > 1))
   }
-  
+
   # Same for with_clusters
   if (!is.null(results$with_clusters$combinations_summary)) {
-    summary_data <- results$with_clusters$combinations_summary$x$data
+    summary_data <- results$with_clusters$combinations_summary
+    expect_true(is.data.frame(summary_data))
     expect_true("Splits_Appeared" %in% names(summary_data))
     expect_true(all(summary_data$Splits_Appeared > 1))
   }
@@ -295,6 +297,38 @@ test_that("holdout_validation produces consistent results with same seed", {
   # Results might differ (though not guaranteed for small datasets)
   # At least the structure should be the same
   expect_equal(names(results1), names(results3))
+})
+
+test_that("holdout_validation returns data.frame by default and DT when requested", {
+  test_data <- data.frame(
+    matrix(sample(0:4, 20 * 50, replace = TRUE), nrow = 50, ncol = 20)
+  )
+  colnames(test_data) <- paste0("symptom_", 1:20)
+
+  results <- holdout_validation(test_data, seed = 42)
+  expect_true(is.data.frame(results$without_clusters$summary))
+  expect_true(is.data.frame(results$with_clusters$summary))
+
+  skip_if_not_installed("DT")
+  results_dt <- holdout_validation(test_data, seed = 42, DT = TRUE)
+  expect_s3_class(results_dt$without_clusters$summary, "datatables")
+  expect_s3_class(results_dt$with_clusters$summary, "datatables")
+})
+
+test_that("cross_validation returns data.frame by default and DT when requested", {
+  test_data <- data.frame(
+    matrix(sample(0:4, 20 * 100, replace = TRUE), nrow = 100, ncol = 20)
+  )
+  colnames(test_data) <- paste0("symptom_", 1:20)
+
+  results <- cross_validation(test_data, k = 3, seed = 42)
+  expect_true(is.data.frame(results$without_clusters$summary_by_fold))
+  expect_true(is.data.frame(results$with_clusters$summary_by_fold))
+
+  skip_if_not_installed("DT")
+  results_dt <- cross_validation(test_data, k = 3, seed = 42, DT = TRUE)
+  expect_s3_class(results_dt$without_clusters$summary_by_fold, "datatables")
+  expect_s3_class(results_dt$with_clusters$summary_by_fold, "datatables")
 })
 
 test_that("cross_validation produces consistent results with same seed", {

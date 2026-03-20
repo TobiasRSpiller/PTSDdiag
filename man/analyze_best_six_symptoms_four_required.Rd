@@ -4,7 +4,11 @@
 \alias{analyze_best_six_symptoms_four_required}
 \title{Find optimal non-hierarchical six-symptom combinations for PTSD diagnosis}
 \usage{
-analyze_best_six_symptoms_four_required(data, score_by = "false_cases")
+analyze_best_six_symptoms_four_required(
+  data,
+  score_by = "false_cases",
+  DT = FALSE
+)
 }
 \arguments{
 \item{data}{A dataframe containing exactly 20 columns with PCL-5 item scores
@@ -25,6 +29,10 @@ analyze_best_six_symptoms_four_required(data, score_by = "false_cases")
   \item "false_cases": Minimize total misclassifications
   \item "newly_nondiagnosed": Minimize false negatives only
 }}
+
+\item{DT}{Logical. If \code{TRUE}, return the summary as an interactive
+\code{\link[DT]{datatable}} widget. If \code{FALSE} (default), return a
+plain data.frame.}
 }
 \value{
 A list containing:
@@ -34,11 +42,14 @@ A list containing:
     representing the best combinations found
   \item diagnosis_comparison: Dataframe comparing original DSM-5 diagnosis with
     diagnoses based on the three best combinations
-  \item summary: Interactive datatable (DT) showing diagnostic accuracy metrics
-    for each combination
+  \item summary: Diagnostic accuracy metrics for each combination. A data.frame
+    by default, or an interactive \code{\link[DT]{datatable}} if
+    \code{DT = TRUE}.
 }
 }
 \description{
+`r lifecycle::badge("deprecated")`
+
 Convenience wrapper around \code{\link{optimize_combinations}} with the
 original PCL-5 defaults: 6 symptoms, 4 required, top 3 returned.
 

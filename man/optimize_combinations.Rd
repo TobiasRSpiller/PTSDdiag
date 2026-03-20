@@ -9,7 +9,8 @@ optimize_combinations(
   n_symptoms = 6,
   n_required = 4,
   n_top = 3,
-  score_by = "false_cases"
+  score_by = "false_cases",
+  DT = FALSE
 )
 }
 \arguments{
@@ -40,6 +41,11 @@ diagnosis (default: 4). Must be between 1 and \code{n_symptoms}.}
   \item "false_cases": Minimize total misclassifications
   \item "newly_nondiagnosed": Minimize false negatives only
 }}
+
+\item{DT}{Logical. If \code{TRUE}, return the summary as an interactive
+\code{\link[DT]{datatable}} widget. If \code{FALSE} (default), return a
+plain data.frame. The \pkg{DT} package must be installed when
+\code{DT = TRUE}.}
 }
 \value{
 A list containing:
@@ -49,8 +55,9 @@ A list containing:
     \code{n_symptoms} symptom numbers representing the best combinations found
   \item diagnosis_comparison: Dataframe comparing original DSM-5 diagnosis with
     diagnoses based on the best combinations
-  \item summary: Interactive datatable (DT) showing diagnostic accuracy metrics
-    for each combination
+  \item summary: Diagnostic accuracy metrics for each combination. A data.frame
+    by default, or an interactive \code{\link[DT]{datatable}} if
+    \code{DT = TRUE}.
 }
 }
 \description{

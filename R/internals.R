@@ -299,12 +299,74 @@
 #' Wrap summary with optional DT
 #'
 #' @param comparison_df Data.frame with PTSD_orig + diagnosis columns.
-#' @return Formatted summary (DT datatable if available, otherwise data.frame).
+#' @param DT Logical. If TRUE, return a DT datatable widget. If FALSE
+#'   (default), return a plain data.frame.
+#' @return Formatted summary (DT datatable if DT = TRUE, otherwise data.frame).
+#'   Includes combination_id and rank columns.
 #' @noRd
-.wrap_summary <- function(comparison_df) {
+.wrap_summary <- function(comparison_df, DT = FALSE) {
   summary_table <- create_readable_summary(summarize_ptsd_changes(comparison_df))
-  if (requireNamespace("DT", quietly = TRUE)) {
+
+  # Add combination_id: strip "symptom_" prefix; NA for PTSD_orig
+  summary_table$combination_id <- vapply(summary_table$Scenario, function(s) {
+    if (s == "PTSD_orig") return(NA_character_)
+    sub("^symptom_", "", s)
+  }, character(1), USE.NAMES = FALSE)
+
+  # Add rank: sequential for non-PTSD_orig rows (position = rank)
+  non_orig <- summary_table$Scenario != "PTSD_orig"
+  summary_table$rank <- NA_integer_
+  summary_table$rank[non_orig] <- seq_len(sum(non_orig))
+
+  # Reorder columns: Scenario, combination_id, rank, then the rest
+  other_cols <- setdiff(names(summary_table), c("Scenario", "combination_id", "rank"))
+  summary_table <- summary_table[, c("Scenario", "combination_id", "rank", other_cols)]
+
+  if (isTRUE(DT)) {
+    if (!requireNamespace("DT", quietly = TRUE)) {
+      stop("Package 'DT' is required when DT = TRUE. Install it with install.packages('DT').")
+    }
     summary_table <- DT::datatable(summary_table, options = list(scrollX = TRUE))
   }
   return(summary_table)
+}
+
+#' Run a single cross-validation fold
+#'
+#' @param i Integer fold index.
+#' @param cv_splits Object from modelr::crossv_kfold().
+#' @param n_symptoms Integer.
+#' @param n_required Integer.
+#' @param n_top Integer.
+#' @param score_by Character.
+#' @param default_clusters Named list of cluster definitions.
+#' @return List with $without and $with comparison data frames.
+#' @noRd
+.run_cv_fold <- function(i, cv_splits, n_symptoms, n_required, n_top,
+                         score_by, default_clusters) {
+  train_data <- as.data.frame(cv_splits$train[[i]])
+  test_data <- as.data.frame(cv_splits$test[[i]])
+
+  # Model without cluster representation
+  train_results_without <- optimize_combinations(
+    train_data, n_symptoms = n_symptoms, n_required = n_required,
+    n_top = n_top, score_by = score_by
+  )
+  top_combos_without <- train_results_without$best_symptoms
+  result_without <- apply_symptom_combinations(
+    test_data, top_combos_without, n_required = n_required, clusters = NULL
+  )
+
+  # Model with cluster representation
+  train_results_with <- optimize_combinations_clusters(
+    train_data, n_symptoms = n_symptoms, n_required = n_required,
+    n_top = n_top, score_by = score_by, clusters = default_clusters
+  )
+  top_combos_with <- train_results_with$best_symptoms
+  result_with <- apply_symptom_combinations(
+    test_data, top_combos_with, n_required = n_required,
+    clusters = default_clusters
+  )
+
+  list(without = result_without, with = result_with)
 }

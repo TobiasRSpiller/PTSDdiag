@@ -2,7 +2,7 @@
 utils::globalVariables(c(
   "true_positive", "newly_nondiagnosed", "true_negative", "newly_diagnosed",
   "sensitivity", "specificity", "ppv", "npv", "across", "Split",
-  "Total Diagnosed", "Total Non-Diagnosed", "Scenario",
+  "Total Diagnosed", "Total Non-Diagnosed", "Scenario", "combination_id",
   "Total_Diagnosed_N", "Total_Diagnosed_Pct",
   "Total_Non_Diagnosed_N", "Total_Non_Diagnosed_Pct",
   "True Positive", "True Negative", "Newly Diagnosed", "Newly Non-Diagnosed",
@@ -51,6 +51,11 @@ utils::globalVariables(c(
 #' @param n_top Integer specifying how many top combinations to return
 #'   (default: 3). Must be a positive integer.
 #'
+#' @param DT Logical. If \code{TRUE}, return summaries as interactive
+#'   \code{\link[DT]{datatable}} widgets. If \code{FALSE} (default), return
+#'   plain data.frames. The \pkg{DT} package must be installed when
+#'   \code{DT = TRUE}.
+#'
 #' @returns A list containing:
 #' \itemize{
 #'   \item without_clusters: Results for model without cluster representation
@@ -58,14 +63,14 @@ utils::globalVariables(c(
 #'       \item best_combinations: The \code{n_top} best symptom combinations
 #'         from training
 #'       \item test_results: Diagnostic comparison on test data
-#'       \item summary: Formatted summary statistics
+#'       \item summary: Formatted summary statistics (data.frame or DT widget)
 #'     }
 #'   \item with_clusters: Results for model with cluster representation
 #'     \itemize{
 #'       \item best_combinations: The \code{n_top} best symptom combinations
 #'         from training
 #'       \item test_results: Diagnostic comparison on test data
-#'       \item summary: Formatted summary statistics
+#'       \item summary: Formatted summary statistics (data.frame or DT widget)
 #'     }
 #' }
 #'
@@ -93,7 +98,8 @@ utils::globalVariables(c(
 #'
 holdout_validation <- function(data, train_ratio = 0.7,
                                score_by = "newly_nondiagnosed", seed = 123,
-                               n_symptoms = 6, n_required = 4, n_top = 3) {
+                               n_symptoms = 6, n_required = 4, n_top = 3,
+                               DT = FALSE) {
   # Input validation
   .validate_pcl5_data(data)
   .validate_score_by(score_by)
@@ -112,6 +118,8 @@ holdout_validation <- function(data, train_ratio = 0.7,
   train_index <- sample(seq_len(nrow(data)), size = train_ratio * nrow(data))
   train_data <- data[train_index, ]
   test_data <- data[-train_index, ]
+
+  cli::cli_alert_info("Training on {nrow(train_data)} observations, testing on {nrow(test_data)}")
 
   # Default PCL-5 clusters for hierarchical model
   default_clusters <- .get_default_clusters()
@@ -142,8 +150,10 @@ holdout_validation <- function(data, train_ratio = 0.7,
   )
 
   # Create summaries
-  summary_without <- .wrap_summary(comparison_df_without)
-  summary_with <- .wrap_summary(comparison_df_with)
+  summary_without <- .wrap_summary(comparison_df_without, DT = DT)
+  summary_with <- .wrap_summary(comparison_df_with, DT = DT)
+
+  cli::cli_alert_success("Holdout validation complete")
 
   list(
     without_clusters = list(
@@ -183,6 +193,13 @@ holdout_validation <- function(data, train_ratio = 0.7,
 #'     \code{n_symptoms} symptoms with at least one from each cluster
 #' }
 #'
+#' If the \pkg{future.apply} package is installed and a
+#' \code{\link[future]{plan}} has been set (e.g.,
+#' \code{future::plan(future::multisession)}), folds are processed in
+#' parallel via \code{\link[future.apply]{future_lapply}}. On macOS
+#' (including Apple Silicon), use \code{future::multisession} rather than
+#' \code{future::multicore}, especially inside RStudio.
+#'
 #' @param data A dataframe containing exactly 20 columns with PCL-5 item scores
 #'   (output of rename_ptsd_columns). Each symptom should be scored on a 0-4 scale.
 #' @param k Number of folds for cross-validation (default: 5)
@@ -199,21 +216,30 @@ holdout_validation <- function(data, train_ratio = 0.7,
 #' @param n_top Integer specifying how many top combinations to return
 #'   (default: 3). Must be a positive integer.
 #'
+#' @param DT Logical. If \code{TRUE}, return summaries as interactive
+#'   \code{\link[DT]{datatable}} widgets. If \code{FALSE} (default), return
+#'   plain data.frames. The \pkg{DT} package must be installed when
+#'   \code{DT = TRUE}.
+#'
 #' @returns A list containing:
 #' \itemize{
 #'   \item without_clusters: Results for model without cluster representation
 #'     \itemize{
 #'       \item fold_results: List of diagnostic comparisons for each fold
-#'       \item summary_by_fold: Detailed results for each fold
+#'       \item summary_by_fold: Detailed results for each fold (data.frame or DT
+#'         widget)
 #'       \item combinations_summary: Average performance for combinations appearing
-#'         in multiple folds (NULL if no combinations repeat)
+#'         in multiple folds (data.frame, DT widget, or NULL if no combinations
+#'         repeat)
 #'     }
 #'   \item with_clusters: Results for model with cluster representation
 #'     \itemize{
 #'       \item fold_results: List of diagnostic comparisons for each fold
-#'       \item summary_by_fold: Detailed results for each fold
+#'       \item summary_by_fold: Detailed results for each fold (data.frame or DT
+#'         widget)
 #'       \item combinations_summary: Average performance for combinations appearing
-#'         in multiple folds (NULL if no combinations repeat)
+#'         in multiple folds (data.frame, DT widget, or NULL if no combinations
+#'         repeat)
 #'     }
 #' }
 #'
@@ -245,7 +271,7 @@ holdout_validation <- function(data, train_ratio = 0.7,
 #'
 cross_validation <- function(data, k = 5, score_by = "newly_nondiagnosed",
                              seed = 123, n_symptoms = 6, n_required = 4,
-                             n_top = 3) {
+                             n_top = 3, DT = FALSE) {
   # Input validation
   .validate_pcl5_data(data)
   .validate_score_by(score_by)
@@ -262,10 +288,6 @@ cross_validation <- function(data, k = 5, score_by = "newly_nondiagnosed",
 
   # Create cross-validation folds
   cv_splits <- modelr::crossv_kfold(data, k = k)
-
-  # Initialize result lists
-  cv_results_without <- list()
-  cv_results_with <- list()
 
   # Default PCL-5 clusters for hierarchical model
   default_clusters <- .get_default_clusters()
@@ -297,6 +319,16 @@ cross_validation <- function(data, k = 5, score_by = "newly_nondiagnosed",
 
       # Convert to a readable summary table
       readable <- create_readable_summary(summary_stats)
+
+      # Add combination_id and rank
+      readable$combination_id <- vapply(readable$Scenario, function(s) {
+        if (s == "PTSD_orig") return(NA_character_)
+        sub("^symptom_", "", s)
+      }, character(1), USE.NAMES = FALSE)
+      non_orig <- readable$Scenario != "PTSD_orig"
+      readable$rank <- NA_integer_
+      readable$rank[non_orig] <- seq_len(sum(non_orig))
+
       readable$Split <- paste0("Split ", i)
       return(readable)
     })
@@ -317,7 +349,7 @@ cross_validation <- function(data, k = 5, score_by = "newly_nondiagnosed",
         Total_Non_Diagnosed_N = as.numeric(gsub(" \\(.*\\)", "", `Total Non-Diagnosed`)),
         Total_Non_Diagnosed_Pct = as.numeric(gsub(".*\\((.*)%\\)", "\\1", `Total Non-Diagnosed`))
       ) %>%
-      dplyr::group_by(Scenario) %>%
+      dplyr::group_by(Scenario, combination_id) %>%
       dplyr::summarise(
         Splits_Appeared = dplyr::n(),
         Total_Diagnosed = paste0(
@@ -352,37 +384,31 @@ cross_validation <- function(data, k = 5, score_by = "newly_nondiagnosed",
     }
   }
 
-  # Loop for cross-validation
-  for (i in seq_len(k)) {
-    # Extract training and test data
-    train_data <- as.data.frame(cv_splits$train[[i]])
-    test_data <- as.data.frame(cv_splits$test[[i]])
-
-    # Model without cluster representation
-    train_results_without <- optimize_combinations(
-      train_data, n_symptoms = n_symptoms, n_required = n_required,
-      n_top = n_top, score_by = score_by
+  # Run cross-validation folds (parallel if future.apply is available)
+  if (requireNamespace("future.apply", quietly = TRUE)) {
+    fold_results <- future.apply::future_lapply(
+      seq_len(k),
+      .run_cv_fold,
+      cv_splits = cv_splits,
+      n_symptoms = n_symptoms, n_required = n_required,
+      n_top = n_top, score_by = score_by,
+      default_clusters = default_clusters,
+      future.seed = TRUE
     )
-    top_combos_without <- train_results_without$best_symptoms
-
-    # Apply to test data (non-hierarchical)
-    cv_results_without[[i]] <- apply_symptom_combinations(
-      test_data, top_combos_without, n_required = n_required, clusters = NULL
-    )
-
-    # Model with cluster representation
-    train_results_with <- optimize_combinations_clusters(
-      train_data, n_symptoms = n_symptoms, n_required = n_required,
-      n_top = n_top, score_by = score_by, clusters = default_clusters
-    )
-    top_combos_with <- train_results_with$best_symptoms
-
-    # Apply to test data (hierarchical)
-    cv_results_with[[i]] <- apply_symptom_combinations(
-      test_data, top_combos_with, n_required = n_required,
-      clusters = default_clusters
-    )
+  } else {
+    fold_results <- vector("list", k)
+    cli::cli_progress_bar("Processing folds", total = k)
+    for (i in seq_len(k)) {
+      fold_results[[i]] <- .run_cv_fold(
+        i, cv_splits, n_symptoms, n_required, n_top, score_by, default_clusters
+      )
+      cli::cli_progress_update()
+    }
+    cli::cli_progress_done()
   }
+
+  cv_results_without <- lapply(fold_results, `[[`, "without")
+  cv_results_with <- lapply(fold_results, `[[`, "with")
 
   # Apply summary functions
   cv_summary_without <- summarize_cv_splits(cv_results_without)
@@ -392,9 +418,12 @@ cross_validation <- function(data, k = 5, score_by = "newly_nondiagnosed",
   combo_summary_without <- summarize_combinations_across_splits(cv_summary_without)
   combo_summary_with <- summarize_combinations_across_splits(cv_summary_with)
 
-  # Format results (use DT if available)
-  wrap_dt <- function(x) {
-    if (!is.null(x) && requireNamespace("DT", quietly = TRUE)) {
+  # Format results (optionally wrap with DT)
+  wrap_output <- function(x) {
+    if (!is.null(x) && isTRUE(DT)) {
+      if (!requireNamespace("DT", quietly = TRUE)) {
+        stop("Package 'DT' is required when DT = TRUE. Install it with install.packages('DT').")
+      }
       DT::datatable(x, options = list(scrollX = TRUE))
     } else {
       x
@@ -404,13 +433,13 @@ cross_validation <- function(data, k = 5, score_by = "newly_nondiagnosed",
   list(
     without_clusters = list(
       fold_results = cv_results_without,
-      summary_by_fold = wrap_dt(cv_summary_without),
-      combinations_summary = wrap_dt(combo_summary_without)
+      summary_by_fold = wrap_output(cv_summary_without),
+      combinations_summary = wrap_output(combo_summary_without)
     ),
     with_clusters = list(
       fold_results = cv_results_with,
-      summary_by_fold = wrap_dt(cv_summary_with),
-      combinations_summary = wrap_dt(combo_summary_with)
+      summary_by_fold = wrap_output(cv_summary_with),
+      combinations_summary = wrap_output(combo_summary_with)
     )
   )
 }
