@@ -68,5 +68,5 @@ colnames(sample_data) <- paste0("symptom_", 1:20)
 # Get diagnosis using binarized approach
 diagnosis_results <- create_ptsd_diagnosis_binarized(sample_data)
 diagnosis_results$PTSD_orig
-#>  [1]  TRUE  TRUE  TRUE FALSE  TRUE  TRUE FALSE FALSE  TRUE  TRUE
+#>  [1]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE FALSE
 ```

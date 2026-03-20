@@ -14,7 +14,8 @@ optimize_combinations(
   n_symptoms = 6,
   n_required = 4,
   n_top = 3,
-  score_by = "false_cases"
+  score_by = "false_cases",
+  DT = FALSE
 )
 ```
 
@@ -60,6 +61,13 @@ optimize_combinations(
 
   - "newly_nondiagnosed": Minimize false negatives only
 
+- DT:
+
+  Logical. If `TRUE`, return the summary as an interactive
+  [`datatable`](https://rdrr.io/pkg/DT/man/datatable.html) widget. If
+  `FALSE` (default), return a plain data.frame. The DT package must be
+  installed when `DT = TRUE`.
+
 ## Value
 
 A list containing:
@@ -70,8 +78,10 @@ A list containing:
 - diagnosis_comparison: Dataframe comparing original DSM-5 diagnosis
   with diagnoses based on the best combinations
 
-- summary: Interactive datatable (DT) showing diagnostic accuracy
-  metrics for each combination
+- summary: Diagnostic accuracy metrics for each combination. A
+  data.frame by default, or an interactive
+  [`datatable`](https://rdrr.io/pkg/DT/man/datatable.html) if
+  `DT = TRUE`.
 
 ## Details
 
@@ -113,10 +123,12 @@ names(ptsd_data) <- paste0("symptom_", 1:20)
 # Find best 6-symptom combinations requiring 4 present (classic defaults)
 results <- optimize_combinations(ptsd_data, n_symptoms = 6, n_required = 4,
              score_by = "false_cases")
+#> ℹ Evaluated 38760 combinations. Best: 1, 2, 4, 7, 15, 16
 
 # Find best 5-symptom combinations requiring 3 present, return top 5
 results2 <- optimize_combinations(ptsd_data, n_symptoms = 5, n_required = 3,
               n_top = 5, score_by = "false_cases")
+#> ℹ Evaluated 15504 combinations. Best: 1, 4, 7, 10, 15
 
 # Get symptom numbers
 results$best_symptoms
@@ -124,14 +136,28 @@ results$best_symptoms
 #> [1]  1  2  4  7 15 16
 #> 
 #> [[2]]
-#> [1]  1  2  4  7 16 19
+#> [1]  1  2  6  7  8 15
 #> 
 #> [[3]]
-#> [1]  1  2  6  7  8 15
+#> [1]  1  2  6  7 14 15
 #> 
 
 # View summary statistics
 results$summary
-
-{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4"],["PTSD_orig","symptom_1_2_4_7_15_16","symptom_1_2_4_7_16_19","symptom_1_2_6_7_8_15"],["5 (50%)","5 (50%)","5 (50%)","5 (50%)"],["5 (50%)","5 (50%)","5 (50%)","5 (50%)"],[5,5,5,5],[5,5,5,5],[0,0,0,0],[0,0,0,0],[10,10,10,10],[0,0,0,0],[1,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Scenario<\/th>\n      <th>Total Diagnosed<\/th>\n      <th>Total Non-Diagnosed<\/th>\n      <th>True Positive<\/th>\n      <th>True Negative<\/th>\n      <th>Newly Diagnosed<\/th>\n      <th>Newly Non-Diagnosed<\/th>\n      <th>True Cases<\/th>\n      <th>False Cases<\/th>\n      <th>Sensitivity<\/th>\n      <th>Specificity<\/th>\n      <th>PPV<\/th>\n      <th>NPV<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"scrollX":true,"columnDefs":[{"className":"dt-right","targets":[4,5,6,7,8,9,10,11,12,13]},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"Scenario","targets":1},{"name":"Total Diagnosed","targets":2},{"name":"Total Non-Diagnosed","targets":3},{"name":"True Positive","targets":4},{"name":"True Negative","targets":5},{"name":"Newly Diagnosed","targets":6},{"name":"Newly Non-Diagnosed","targets":7},{"name":"True Cases","targets":8},{"name":"False Cases","targets":9},{"name":"Sensitivity","targets":10},{"name":"Specificity","targets":11},{"name":"PPV","targets":12},{"name":"NPV","targets":13}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}# }
+#>                Scenario combination_id rank Total Diagnosed Total Non-Diagnosed
+#> 1             PTSD_orig           <NA>   NA         5 (50%)             5 (50%)
+#> 2 symptom_1_2_4_7_15_16  1_2_4_7_15_16    1         5 (50%)             5 (50%)
+#> 3  symptom_1_2_6_7_8_15   1_2_6_7_8_15    2         5 (50%)             5 (50%)
+#> 4 symptom_1_2_6_7_14_15  1_2_6_7_14_15    3         5 (50%)             5 (50%)
+#>   True Positive True Negative Newly Diagnosed Newly Non-Diagnosed True Cases
+#> 1             5             5               0                   0         10
+#> 2             5             5               0                   0         10
+#> 3             5             5               0                   0         10
+#> 4             5             5               0                   0         10
+#>   False Cases Sensitivity Specificity PPV NPV
+#> 1           0           1           1   1   1
+#> 2           0           1           1   1   1
+#> 3           0           1           1   1   1
+#> 4           0           1           1   1   1
+# }
 ```

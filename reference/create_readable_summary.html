@@ -9,7 +9,7 @@ with proper labels and formatting of percentages and metrics."><meta property="o
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -94,14 +94,14 @@ containing raw diagnostic metrics and counts</p></dd>
 <span class="r-in"><span><span class="va">readable_summary</span> <span class="op">&lt;-</span> <span class="fu">create_readable_summary</span><span class="op">(</span><span class="va">diagnostic_metrics</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">readable_summary</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Scenario Total Diagnosed Total Non-Diagnosed True Positive True Negative</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 PTSD_orig        57 (57%)            43 (43%)            57            43</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 PTSD_alt1        60 (60%)            40 (40%)            33            16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 PTSD_orig        52 (52%)            48 (48%)            52            48</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 PTSD_alt1        63 (63%)            37 (37%)            31            16</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Newly Diagnosed Newly Non-Diagnosed True Cases False Cases Sensitivity</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1               0                   0        100           0      1.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2              27                  24         49          51      0.5789</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Specificity  PPV NPV</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      1.0000 1.00 1.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      0.3721 0.55 0.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2              32                  21         47          53      0.5962</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Specificity    PPV    NPV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      1.0000 1.0000 1.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      0.3333 0.4921 0.4324</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

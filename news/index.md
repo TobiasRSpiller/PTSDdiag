@@ -1,5 +1,51 @@
 # Changelog
 
+## PTSDdiag 0.2.1
+
+### Improvements
+
+- [`optimize_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations.md),
+  [`optimize_combinations_clusters()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations_clusters.md),
+  [`holdout_validation()`](https://tobiasrspiller.github.io/PTSDdiag/reference/holdout_validation.md),
+  and
+  [`cross_validation()`](https://tobiasrspiller.github.io/PTSDdiag/reference/cross_validation.md)
+  now return plain data frames by default. Set `DT = TRUE` for
+  interactive DT widgets (previous default behaviour).
+- Combination identity (`combination_id` and `rank` columns) is now
+  tracked through the full pipeline: optimization summaries,
+  [`write_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/write_combinations.md)
+  /
+  [`read_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/read_combinations.md)
+  JSON files, and cross-validation combination summaries.
+- Progress reporting via the `cli` package: fold-level progress bars in
+  [`cross_validation()`](https://tobiasrspiller.github.io/PTSDdiag/reference/cross_validation.md)
+  and informational messages in
+  [`holdout_validation()`](https://tobiasrspiller.github.io/PTSDdiag/reference/holdout_validation.md)
+  and the optimization functions.
+- [`cross_validation()`](https://tobiasrspiller.github.io/PTSDdiag/reference/cross_validation.md)
+  supports parallel fold processing via `future.apply` when available.
+  Set up with `future::plan(future::multisession)` before calling.
+
+### Deprecations
+
+- [`analyze_best_six_symptoms_four_required()`](https://tobiasrspiller.github.io/PTSDdiag/reference/analyze_best_six_symptoms_four_required.md)
+  and
+  [`analyze_best_six_symptoms_four_required_clusters()`](https://tobiasrspiller.github.io/PTSDdiag/reference/analyze_best_six_symptoms_four_required_clusters.md)
+  are soft-deprecated in
+
+  favour of
+  [`optimize_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations.md)
+  and
+  [`optimize_combinations_clusters()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations_clusters.md).
+
+### Documentation
+
+- Updated vignettes to use the generalized API
+  ([`optimize_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations.md)
+  and
+  [`optimize_combinations_clusters()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations_clusters.md))
+  instead of legacy wrappers.
+
 ## PTSDdiag 0.2.0
 
 - New generalized optimization functions

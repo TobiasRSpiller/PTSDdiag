@@ -69,7 +69,7 @@ diagnosed_data1 <- create_ptsd_diagnosis_nonbinarized(sample_data1)
 
 # Check diagnosis results
 diagnosed_data1$PTSD_Diagnosis
-#>  [1]  TRUE  TRUE  TRUE  TRUE FALSE  TRUE FALSE  TRUE  TRUE  TRUE
+#>  [1] FALSE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE  TRUE
 
 # Example with output from calculate_ptsd_total
 sample_data2 <- calculate_ptsd_total(sample_data1)
@@ -77,5 +77,5 @@ diagnosed_data2 <- create_ptsd_diagnosis_nonbinarized(sample_data2)
 
 # Check diagnosis results
 diagnosed_data2$PTSD_Diagnosis
-#>  [1]  TRUE  TRUE  TRUE  TRUE FALSE  TRUE FALSE  TRUE  TRUE  TRUE
+#>  [1] FALSE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE  TRUE
 ```

@@ -66,12 +66,12 @@ diagnostic_metrics <- summarize_ptsd_changes(sample_data)
 readable_summary <- create_readable_summary(diagnostic_metrics)
 print(readable_summary)
 #>    Scenario Total Diagnosed Total Non-Diagnosed True Positive True Negative
-#> 1 PTSD_orig        57 (57%)            43 (43%)            57            43
-#> 2 PTSD_alt1        60 (60%)            40 (40%)            33            16
+#> 1 PTSD_orig        52 (52%)            48 (48%)            52            48
+#> 2 PTSD_alt1        63 (63%)            37 (37%)            31            16
 #>   Newly Diagnosed Newly Non-Diagnosed True Cases False Cases Sensitivity
 #> 1               0                   0        100           0      1.0000
-#> 2              27                  24         49          51      0.5789
-#>   Specificity  PPV NPV
-#> 1      1.0000 1.00 1.0
-#> 2      0.3721 0.55 0.4
+#> 2              32                  21         47          53      0.5962
+#>   Specificity    PPV    NPV
+#> 1      1.0000 1.0000 1.0000
+#> 2      0.3333 0.4921 0.4324
 ```

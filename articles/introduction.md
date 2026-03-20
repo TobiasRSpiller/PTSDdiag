@@ -217,9 +217,13 @@ cases (newly_nondiagnosed).
 
 ``` r
 # Find best combinations with hierarchical approach, minimizing false negatives
-best_combinations_hierarchical <- analyze_best_six_symptoms_four_required_clusters(
+best_combinations_hierarchical <- optimize_combinations_clusters(
   simulated_ptsd_renamed,
-  score_by = "newly_nondiagnosed"
+  n_symptoms = 6,
+  n_required = 4,
+  n_top = 3,
+  score_by = "newly_nondiagnosed",
+  clusters = list(B = 1:5, C = 6:7, D = 8:14, E = 15:20)
 )
 ```
 
@@ -276,8 +280,11 @@ cases (newly_nondiagnosed) in the non-hierarchical approach as well.
 
 ``` r
 # Find best combinations with non-hierarchical approach, minimizing false negatives
-best_combinations_nonhierarchical <- analyze_best_six_symptoms_four_required(
+best_combinations_nonhierarchical <- optimize_combinations(
   simulated_ptsd_renamed,
+  n_symptoms = 6,
+  n_required = 4,
+  n_top = 3,
   score_by = "newly_nondiagnosed"
 )
 ```
@@ -537,19 +544,19 @@ Cross-Validation:
 # Note: Results will vary based on random splits
 
 # Holdout Validation sensitivity (first combination, non-hierarchical)
-holdout_summary <- validation_results$without_clusters$summary$x$data
+holdout_summary <- validation_results$without_clusters$summary
 if (nrow(holdout_summary) > 1) {
   holdout_sensitivity <- holdout_summary[2, "Sensitivity"]
-  print(paste("Holdout sensitivity for first combination:", 
+  print(paste("Holdout sensitivity for first combination:",
               round(holdout_sensitivity, 3)))
 }
 
 # Cross-Validation average sensitivity (if stable combinations exist)
 if (!is.null(cv_results$without_clusters$combinations_summary)) {
-  cv_summary <- cv_results$without_clusters$combinations_summary$x$data
+  cv_summary <- cv_results$without_clusters$combinations_summary
   if (nrow(cv_summary) > 0) {
     cv_sensitivity <- cv_summary[1, "Sensitivity"]
-    print(paste("Cross-validation average sensitivity:", 
+    print(paste("Cross-validation average sensitivity:",
                 round(cv_sensitivity, 3)))
   }
 }

@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -244,7 +244,7 @@ relevant parameters:</p>
 <p>The resulting JSON files are human-readable and contain all
 information needed to apply the combinations:</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="dt">"ptsddiag_version"</span><span class="fu">:</span> <span class="st">"0.2.0"</span><span class="fu">,</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="dt">"ptsddiag_version"</span><span class="fu">:</span> <span class="st">"0.2.1"</span><span class="fu">,</span></span>
 <span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  <span class="dt">"created_at"</span><span class="fu">:</span> <span class="st">"2025-06-01T12:00:00+0000"</span><span class="fu">,</span></span>
 <span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="dt">"description"</span><span class="fu">:</span> <span class="st">"Top 10 non-hierarchical ..."</span><span class="fu">,</span></span>
 <span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="dt">"parameters"</span><span class="fu">:</span> <span class="fu">{</span></span>
@@ -256,8 +256,10 @@ information needed to apply the combinations:</p>
 <span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>  <span class="dt">"combinations"</span><span class="fu">:</span> <span class="ot">[</span></span>
 <span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>    <span class="ot">[</span><span class="dv">1</span><span class="ot">,</span> <span class="dv">6</span><span class="ot">,</span> <span class="dv">8</span><span class="ot">,</span> <span class="dv">10</span><span class="ot">,</span> <span class="dv">15</span><span class="ot">,</span> <span class="dv">19</span><span class="ot">],</span></span>
 <span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>    <span class="er">...</span></span>
-<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a>  <span class="ot">]</span></span>
-<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a>  <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>  <span class="dt">"combination_ids"</span><span class="fu">:</span> <span class="ot">[</span><span class="st">"1_6_8_10_15_19"</span><span class="ot">,</span> <span class="er">...</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a>  <span class="dt">"ranks"</span><span class="fu">:</span> <span class="ot">[</span><span class="dv">1</span><span class="ot">,</span> <span class="er">...</span><span class="ot">]</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="importing-and-applying-combinations">5.2. Importing and Applying Combinations<a class="anchor" aria-label="anchor" href="#importing-and-applying-combinations"></a>

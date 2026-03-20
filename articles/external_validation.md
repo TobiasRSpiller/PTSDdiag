@@ -188,7 +188,7 @@ needed to apply the combinations:
 
 ``` json
 {
-  "ptsddiag_version": "0.2.0",
+  "ptsddiag_version": "0.2.1",
   "created_at": "2025-06-01T12:00:00+0000",
   "description": "Top 10 non-hierarchical ...",
   "parameters": {
@@ -200,7 +200,9 @@ needed to apply the combinations:
   "combinations": [
     [1, 6, 8, 10, 15, 19],
     ...
-  ]
+  ],
+  "combination_ids": ["1_6_8_10_15_19", ...],
+  "ranks": [1, ...]
 }
 ```
 

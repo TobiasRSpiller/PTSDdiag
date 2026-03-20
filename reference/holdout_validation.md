@@ -14,7 +14,8 @@ holdout_validation(
   seed = 123,
   n_symptoms = 6,
   n_required = 4,
-  n_top = 3
+  n_top = 3,
+  DT = FALSE
 )
 ```
 
@@ -58,6 +59,13 @@ holdout_validation(
   Integer specifying how many top combinations to return (default: 3).
   Must be a positive integer.
 
+- DT:
+
+  Logical. If `TRUE`, return summaries as interactive
+  [`datatable`](https://rdrr.io/pkg/DT/man/datatable.html) widgets. If
+  `FALSE` (default), return plain data.frames. The DT package must be
+  installed when `DT = TRUE`.
+
 ## Value
 
 A list containing:
@@ -69,7 +77,7 @@ A list containing:
 
   - test_results: Diagnostic comparison on test data
 
-  - summary: Formatted summary statistics
+  - summary: Formatted summary statistics (data.frame or DT widget)
 
 - with_clusters: Results for model with cluster representation
 
@@ -78,7 +86,7 @@ A list containing:
 
   - test_results: Diagnostic comparison on test data
 
-  - summary: Formatted summary statistics
+  - summary: Formatted summary statistics (data.frame or DT widget)
 
 ## Details
 
@@ -115,11 +123,49 @@ colnames(sample_data) <- paste0("symptom_", 1:20)
 # \donttest{
 # Perform holdout validation
 validation_results <- holdout_validation(sample_data, train_ratio = 0.7)
+#> ℹ Training on 140 observations, testing on 60
+#> ℹ Evaluated 38760 combinations. Best: 2, 6, 7, 9, 15, 16
+#> ℹ Generated 13685 valid cluster-constrained combinations
+#> ℹ Evaluated 13685 combinations. Best: 1, 5, 7, 9, 16, 17
+#> ✔ Holdout validation complete
 
 # Access results
 validation_results$without_clusters$summary
-
-{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4"],["PTSD_orig","symptom_2_6_7_9_15_16","symptom_6_7_9_14_15_16","symptom_2_6_7_8_15_16"],["52 (86.67%)","32 (53.33%)","34 (56.67%)","36 (60%)"],["8 (13.33%)","28 (46.67%)","26 (43.33%)","24 (40%)"],[52,31,34,35],[8,7,8,7],[0,1,0,1],[0,21,18,17],[60,38,42,42],[0,22,18,18],[1,0.5962,0.6538,0.6731],[1,0.875,1,0.875],[1,0.9688,1,0.9722],[1,0.25,0.3077,0.2917]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Scenario<\/th>\n      <th>Total Diagnosed<\/th>\n      <th>Total Non-Diagnosed<\/th>\n      <th>True Positive<\/th>\n      <th>True Negative<\/th>\n      <th>Newly Diagnosed<\/th>\n      <th>Newly Non-Diagnosed<\/th>\n      <th>True Cases<\/th>\n      <th>False Cases<\/th>\n      <th>Sensitivity<\/th>\n      <th>Specificity<\/th>\n      <th>PPV<\/th>\n      <th>NPV<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"scrollX":true,"columnDefs":[{"className":"dt-right","targets":[4,5,6,7,8,9,10,11,12,13]},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"Scenario","targets":1},{"name":"Total Diagnosed","targets":2},{"name":"Total Non-Diagnosed","targets":3},{"name":"True Positive","targets":4},{"name":"True Negative","targets":5},{"name":"Newly Diagnosed","targets":6},{"name":"Newly Non-Diagnosed","targets":7},{"name":"True Cases","targets":8},{"name":"False Cases","targets":9},{"name":"Sensitivity","targets":10},{"name":"Specificity","targets":11},{"name":"PPV","targets":12},{"name":"NPV","targets":13}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}validation_results$with_clusters$summary
-
-{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4"],["PTSD_orig","symptom_1_5_7_9_16_17","symptom_1_5_7_9_17_20","symptom_4_5_7_8_15_16"],["52 (86.67%)","12 (20%)","12 (20%)","18 (30%)"],["8 (13.33%)","48 (80%)","48 (80%)","42 (70%)"],[52,12,12,18],[8,8,8,8],[0,0,0,0],[0,40,40,34],[60,20,20,26],[0,40,40,34],[1,0.2308,0.2308,0.3462],[1,1,1,1],[1,1,1,1],[1,0.1667,0.1667,0.1905]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Scenario<\/th>\n      <th>Total Diagnosed<\/th>\n      <th>Total Non-Diagnosed<\/th>\n      <th>True Positive<\/th>\n      <th>True Negative<\/th>\n      <th>Newly Diagnosed<\/th>\n      <th>Newly Non-Diagnosed<\/th>\n      <th>True Cases<\/th>\n      <th>False Cases<\/th>\n      <th>Sensitivity<\/th>\n      <th>Specificity<\/th>\n      <th>PPV<\/th>\n      <th>NPV<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"scrollX":true,"columnDefs":[{"className":"dt-right","targets":[4,5,6,7,8,9,10,11,12,13]},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"Scenario","targets":1},{"name":"Total Diagnosed","targets":2},{"name":"Total Non-Diagnosed","targets":3},{"name":"True Positive","targets":4},{"name":"True Negative","targets":5},{"name":"Newly Diagnosed","targets":6},{"name":"Newly Non-Diagnosed","targets":7},{"name":"True Cases","targets":8},{"name":"False Cases","targets":9},{"name":"Sensitivity","targets":10},{"name":"Specificity","targets":11},{"name":"PPV","targets":12},{"name":"NPV","targets":13}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}# }
+#>                 Scenario combination_id rank Total Diagnosed
+#> 1              PTSD_orig           <NA>   NA     52 (86.67%)
+#> 2  symptom_2_6_7_9_15_16  2_6_7_9_15_16    1     32 (53.33%)
+#> 3 symptom_6_7_9_14_15_16 6_7_9_14_15_16    2     34 (56.67%)
+#> 4  symptom_2_6_7_8_15_16  2_6_7_8_15_16    3        36 (60%)
+#>   Total Non-Diagnosed True Positive True Negative Newly Diagnosed
+#> 1          8 (13.33%)            52             8               0
+#> 2         28 (46.67%)            31             7               1
+#> 3         26 (43.33%)            34             8               0
+#> 4            24 (40%)            35             7               1
+#>   Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV
+#> 1                   0         60           0      1.0000       1.000 1.0000
+#> 2                  21         38          22      0.5962       0.875 0.9688
+#> 3                  18         42          18      0.6538       1.000 1.0000
+#> 4                  17         42          18      0.6731       0.875 0.9722
+#>      NPV
+#> 1 1.0000
+#> 2 0.2500
+#> 3 0.3077
+#> 4 0.2917
+validation_results$with_clusters$summary
+#>                Scenario combination_id rank Total Diagnosed Total Non-Diagnosed
+#> 1             PTSD_orig           <NA>   NA     52 (86.67%)          8 (13.33%)
+#> 2 symptom_1_5_7_9_16_17  1_5_7_9_16_17    1        12 (20%)            48 (80%)
+#> 3 symptom_1_5_7_9_17_20  1_5_7_9_17_20    2        12 (20%)            48 (80%)
+#> 4 symptom_4_5_7_8_15_16  4_5_7_8_15_16    3        18 (30%)            42 (70%)
+#>   True Positive True Negative Newly Diagnosed Newly Non-Diagnosed True Cases
+#> 1            52             8               0                   0         60
+#> 2            12             8               0                  40         20
+#> 3            12             8               0                  40         20
+#> 4            18             8               0                  34         26
+#>   False Cases Sensitivity Specificity PPV    NPV
+#> 1           0      1.0000           1   1 1.0000
+#> 2          40      0.2308           1   1 0.1667
+#> 3          40      0.2308           1   1 0.1667
+#> 4          34      0.3462           1   1 0.1905
+# }
 ```

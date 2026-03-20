@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -274,9 +274,13 @@ to the original DSM-5 criteria, so we want to minimize the false
 negative cases (newly_nondiagnosed).</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Find best combinations with hierarchical approach, minimizing false negatives</span></span>
-<span><span class="va">best_combinations_hierarchical</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/analyze_best_six_symptoms_four_required_clusters.html">analyze_best_six_symptoms_four_required_clusters</a></span><span class="op">(</span></span>
+<span><span class="va">best_combinations_hierarchical</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/optimize_combinations_clusters.html">optimize_combinations_clusters</a></span><span class="op">(</span></span>
 <span>  <span class="va">simulated_ptsd_renamed</span>,</span>
-<span>  score_by <span class="op">=</span> <span class="st">"newly_nondiagnosed"</span></span>
+<span>  n_symptoms <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>  n_required <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  n_top <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  score_by <span class="op">=</span> <span class="st">"newly_nondiagnosed"</span>,</span>
+<span>  clusters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>B <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, C <span class="op">=</span> <span class="fl">6</span><span class="op">:</span><span class="fl">7</span>, D <span class="op">=</span> <span class="fl">8</span><span class="op">:</span><span class="fl">14</span>, E <span class="op">=</span> <span class="fl">15</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><strong>Understanding the Output</strong></p>
 <p>The function returns three key elements. Let’s take a look at it.</p>
@@ -330,8 +334,11 @@ negative cases (newly_nondiagnosed) in the non-hierarchical approach as
 well.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Find best combinations with non-hierarchical approach, minimizing false negatives</span></span>
-<span><span class="va">best_combinations_nonhierarchical</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/analyze_best_six_symptoms_four_required.html">analyze_best_six_symptoms_four_required</a></span><span class="op">(</span></span>
+<span><span class="va">best_combinations_nonhierarchical</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/optimize_combinations.html">optimize_combinations</a></span><span class="op">(</span></span>
 <span>  <span class="va">simulated_ptsd_renamed</span>,</span>
+<span>  n_symptoms <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>  n_required <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  n_top <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  score_by <span class="op">=</span> <span class="st">"newly_nondiagnosed"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><strong>Understanding the Output</strong></p>
@@ -554,19 +561,19 @@ more stable)</li>
 <span><span class="co"># Note: Results will vary based on random splits</span></span>
 <span></span>
 <span><span class="co"># Holdout Validation sensitivity (first combination, non-hierarchical)</span></span>
-<span><span class="va">holdout_summary</span> <span class="op">&lt;-</span> <span class="va">validation_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">data</span></span>
+<span><span class="va">holdout_summary</span> <span class="op">&lt;-</span> <span class="va">validation_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">holdout_summary</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">holdout_sensitivity</span> <span class="op">&lt;-</span> <span class="va">holdout_summary</span><span class="op">[</span><span class="fl">2</span>, <span class="st">"Sensitivity"</span><span class="op">]</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Holdout sensitivity for first combination:"</span>, </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Holdout sensitivity for first combination:"</span>,</span>
 <span>              <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">holdout_sensitivity</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="co"># Cross-Validation average sensitivity (if stable combinations exist)</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">combinations_summary</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">cv_summary</span> <span class="op">&lt;-</span> <span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">combinations_summary</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">data</span></span>
+<span>  <span class="va">cv_summary</span> <span class="op">&lt;-</span> <span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">combinations_summary</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">cv_summary</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">cv_sensitivity</span> <span class="op">&lt;-</span> <span class="va">cv_summary</span><span class="op">[</span><span class="fl">1</span>, <span class="st">"Sensitivity"</span><span class="op">]</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Cross-validation average sensitivity:"</span>, </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Cross-validation average sensitivity:"</span>,</span>
 <span>                <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">cv_sensitivity</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
 <span><span class="op">}</span></span></code></pre></div>

@@ -27,6 +27,18 @@ A named list with the following elements:
   List of numeric vectors. Each vector contains symptom indices for one
   combination.
 
+- combination_ids:
+
+  Character vector of canonical combination IDs (sorted symptom indices
+  joined by underscores, e.g. `"4_6_7_17_19_20"`). Computed from the
+  combinations if not present in the file (backward compatibility with
+  files created before v0.2.1).
+
+- ranks:
+
+  Integer vector of ranks (1 = best). Computed from list position if not
+  present in the file.
+
 - n_required:
 
   Numeric. Number of symptoms required for a positive diagnosis.
@@ -91,7 +103,7 @@ my_combos <- list(
 tmp <- tempfile(fileext = ".json")
 write_combinations(my_combos, tmp, n_required = 4,
                    score_by = "false_cases")
-#> Combinations written to /tmp/Rtmp25OnL6/file19974b717bbf.json
+#> Combinations written to /tmp/RtmpGlFb3Z/file1ca22192d599.json
 
 # Read them back
 spec <- read_combinations(tmp)

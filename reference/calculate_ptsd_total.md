@@ -51,5 +51,5 @@ colnames(sample_data) <- paste0("symptom_", 1:20)
 # Calculate total scores
 scores_with_total <- calculate_ptsd_total(sample_data)
 print(scores_with_total$total)
-#>  [1] 43 38 34 31 37 42 25 36 36 27
+#>  [1] 38 28 43 38 34 31 37 42 25 36
 ```
