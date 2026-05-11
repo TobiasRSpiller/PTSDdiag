@@ -67,6 +67,10 @@
 #'   plain data.frame. The \pkg{DT} package must be installed when
 #'   \code{DT = TRUE}.
 #'
+#' @param show_progress Logical. If \code{TRUE} (default), display a progress
+#'   bar while evaluating combinations. Set to \code{FALSE} for batch or
+#'   non-interactive use.
+#'
 #' @returns A list containing:
 #'
 #' \itemize{
@@ -106,7 +110,7 @@
 #'
 optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
                                   n_top = 3, score_by = "false_cases",
-                                  DT = FALSE) {
+                                  DT = FALSE, show_progress = TRUE) {
   # Validate inputs
   .validate_pcl5_data(data)
   .validate_score_by(score_by)
@@ -129,7 +133,8 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
 
   # Find best combinations
   top_combinations <- .find_top_n(combinations, binarized_data, baseline_results,
-                                  score_by, n_top, diagnose_fn)
+                                  score_by, n_top, diagnose_fn,
+                                  show_progress = show_progress)
 
   # Build output
   comparison_df <- .build_comparison_df(baseline_results, top_combinations, nrow(data))
@@ -230,6 +235,10 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
 #'   plain data.frame. The \pkg{DT} package must be installed when
 #'   \code{DT = TRUE}.
 #'
+#' @param show_progress Logical. If \code{TRUE} (default), display a progress
+#'   bar while evaluating combinations. Set to \code{FALSE} for batch or
+#'   non-interactive use.
+#'
 #' @returns A list containing:
 #'
 #' \itemize{
@@ -266,7 +275,7 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
 #'
 optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
                                            n_top = 3, score_by = "false_cases",
-                                           clusters, DT = FALSE) {
+                                           clusters, DT = FALSE, show_progress = TRUE) {
   # Validate inputs
   .validate_pcl5_data(data)
   .validate_score_by(score_by)
@@ -336,7 +345,8 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
 
   # Find best combinations
   top_combinations <- .find_top_n(valid_combinations, binarized_data,
-                                  baseline_results, score_by, n_top, diagnose_fn)
+                                  baseline_results, score_by, n_top, diagnose_fn,
+                                  show_progress = show_progress)
 
   # Build output
   comparison_df <- .build_comparison_df(baseline_results, top_combinations, nrow(data))

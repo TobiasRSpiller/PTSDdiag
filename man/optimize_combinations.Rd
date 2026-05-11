@@ -10,7 +10,8 @@ optimize_combinations(
   n_required = 4,
   n_top = 3,
   score_by = "false_cases",
-  DT = FALSE
+  DT = FALSE,
+  show_progress = TRUE
 )
 }
 \arguments{
@@ -46,6 +47,10 @@ diagnosis (default: 4). Must be between 1 and \code{n_symptoms}.}
 \code{\link[DT]{datatable}} widget. If \code{FALSE} (default), return a
 plain data.frame. The \pkg{DT} package must be installed when
 \code{DT = TRUE}.}
+
+\item{show_progress}{Logical. If \code{TRUE} (default), display a progress
+bar while evaluating combinations. Set to \code{FALSE} for batch or
+non-interactive use.}
 }
 \value{
 A list containing:
