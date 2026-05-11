@@ -233,3 +233,21 @@ test_that("summarize_ptsd_changes works correctly", {
   expect_equal(nrow(multi_result), 4)  # One row for each criterion
   expect_true(all(c("PTSD_orig", "PTSD_alt1", "PTSD_alt2", "PTSD_alt3") %in% multi_result$column))
 })
+
+test_that("create_readable_summary returns data.frame by default and DT widget when requested", {
+  sample_data <- data.frame(
+    PTSD_orig = c(TRUE, TRUE, FALSE, FALSE),
+    PTSD_alt1 = c(TRUE, FALSE, FALSE, FALSE)
+  )
+  stats <- summarize_ptsd_changes(sample_data)
+
+  # Default: plain data.frame
+  result_df <- create_readable_summary(stats)
+  expect_true(is.data.frame(result_df))
+  expect_true("Scenario" %in% names(result_df))
+
+  # DT = TRUE: datatables htmlwidget
+  skip_if_not_installed("DT")
+  result_dt <- create_readable_summary(stats, DT = TRUE)
+  expect_s3_class(result_dt, "datatables")
+})

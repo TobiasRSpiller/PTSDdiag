@@ -227,11 +227,15 @@
 #' @return List of n_top elements, each with $combination, $score, $diagnoses.
 #' @noRd
 .find_top_n <- function(combinations, binarized_data, baseline_results,
-                        score_by, n_top, diagnose_fn) {
+                        score_by, n_top, diagnose_fn, show_progress = TRUE) {
   top <- replicate(n_top,
     list(combination = NULL, score = -Inf, diagnoses = NULL),
     simplify = FALSE
   )
+
+  if (show_progress) {
+    cli::cli_progress_bar("Evaluating combinations", total = length(combinations))
+  }
 
   for (combination in combinations) {
     current_diagnoses <- diagnose_fn(binarized_data, combination)
@@ -262,7 +266,11 @@
         break
       }
     }
+
+    if (show_progress) cli::cli_progress_update()
   }
+
+  if (show_progress) cli::cli_progress_done()
 
   return(top)
 }
@@ -350,7 +358,7 @@
   # Model without cluster representation
   train_results_without <- optimize_combinations(
     train_data, n_symptoms = n_symptoms, n_required = n_required,
-    n_top = n_top, score_by = score_by
+    n_top = n_top, score_by = score_by, show_progress = FALSE
   )
   top_combos_without <- train_results_without$best_symptoms
   result_without <- apply_symptom_combinations(
@@ -360,7 +368,8 @@
   # Model with cluster representation
   train_results_with <- optimize_combinations_clusters(
     train_data, n_symptoms = n_symptoms, n_required = n_required,
-    n_top = n_top, score_by = score_by, clusters = default_clusters
+    n_top = n_top, score_by = score_by, clusters = default_clusters,
+    show_progress = FALSE
   )
   top_combos_with <- train_results_with$best_symptoms
   result_with <- apply_symptom_combinations(

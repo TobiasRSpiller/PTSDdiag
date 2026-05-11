@@ -355,7 +355,13 @@ summarize_ptsd_changes <- function(data) {
 #' @param summary_stats A dataframe output from summarize_ptsd_changes()
 #'   containing raw diagnostic metrics and counts
 #'
-#' @returns A formatted dataframe with the following columns:
+#' @param DT Logical. If \code{TRUE}, return the summary as an interactive
+#'   \code{\link[DT]{datatable}} widget. If \code{FALSE} (default), return a
+#'   plain data.frame. The \pkg{DT} package must be installed when
+#'   \code{DT = TRUE}.
+#'
+#' @returns A formatted data.frame (or a \code{\link[DT]{datatable}} widget
+#'   when \code{DT = TRUE}) with the following columns:
 #'
 #' \itemize{
 #'   \item  Scenario: Name of the diagnostic criterion
@@ -385,7 +391,7 @@ summarize_ptsd_changes <- function(data) {
 #' readable_summary <- create_readable_summary(diagnostic_metrics)
 #' print(readable_summary)
 #'
-create_readable_summary <- function(summary_stats) {
+create_readable_summary <- function(summary_stats, DT = FALSE) {
   # Check if input is a dataframe
   if (!is.data.frame(summary_stats)) {
     stop("Input must be a dataframe")
@@ -437,7 +443,7 @@ create_readable_summary <- function(summary_stats) {
     stop("Diagnostic metrics (sensitivity, specificity, PPV, NPV) must be between 0 and 1")
   }
 
-  data.frame(
+  result <- data.frame(
     Scenario = summary_stats$column,
     `Total Diagnosed` = paste0(summary_stats$diagnosed,
                                " (", summary_stats$diagnosed_percent, "%)"),
@@ -455,4 +461,13 @@ create_readable_summary <- function(summary_stats) {
     `NPV` = round(summary_stats$npv, 4),
     check.names = FALSE
   )
+
+  if (isTRUE(DT)) {
+    if (!requireNamespace("DT", quietly = TRUE)) {
+      stop("Package 'DT' is required when DT = TRUE. Install it with install.packages('DT').")
+    }
+    result <- DT::datatable(result, options = list(scrollX = TRUE))
+  }
+
+  return(result)
 }

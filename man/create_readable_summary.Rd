@@ -4,14 +4,20 @@
 \alias{create_readable_summary}
 \title{Create readable summary of PTSD diagnostic changes}
 \usage{
-create_readable_summary(summary_stats)
+create_readable_summary(summary_stats, DT = FALSE)
 }
 \arguments{
 \item{summary_stats}{A dataframe output from summarize_ptsd_changes()
 containing raw diagnostic metrics and counts}
+
+\item{DT}{Logical. If \code{TRUE}, return the summary as an interactive
+\code{\link[DT]{datatable}} widget. If \code{FALSE} (default), return a
+plain data.frame. The \pkg{DT} package must be installed when
+\code{DT = TRUE}.}
 }
 \value{
-A formatted dataframe with the following columns:
+A formatted data.frame (or a \code{\link[DT]{datatable}} widget
+  when \code{DT = TRUE}) with the following columns:
 
 \itemize{
   \item  Scenario: Name of the diagnostic criterion
