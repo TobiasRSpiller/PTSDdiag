@@ -6,7 +6,7 @@ table with proper labels and formatting of percentages and metrics.
 ## Usage
 
 ``` r
-create_readable_summary(summary_stats)
+create_readable_summary(summary_stats, DT = FALSE)
 ```
 
 ## Arguments
@@ -16,9 +16,18 @@ create_readable_summary(summary_stats)
   A dataframe output from summarize_ptsd_changes() containing raw
   diagnostic metrics and counts
 
+- DT:
+
+  Logical. If `TRUE`, return the summary as an interactive
+  [`datatable`](https://rdrr.io/pkg/DT/man/datatable.html) widget. If
+  `FALSE` (default), return a plain data.frame. The DT package must be
+  installed when `DT = TRUE`.
+
 ## Value
 
-A formatted dataframe with the following columns:
+A formatted data.frame (or a
+[`datatable`](https://rdrr.io/pkg/DT/man/datatable.html) widget when
+`DT = TRUE`) with the following columns:
 
 - Scenario: Name of the diagnostic criterion
 

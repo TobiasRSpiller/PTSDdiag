@@ -28,12 +28,14 @@ You can install the released version of PTSDdiag from
 [CRAN](https://CRAN.R-project.org/package=PTSDdiag):
 
 ``` r
+
 install.packages("PTSDdiag")
 ```
 
 Or install the development version from GitHub:
 
 ``` r
+
 # install.packages("devtools")
 devtools::install_github("TobiasRSpiller/PTSDdiag")
 ```

@@ -31,6 +31,7 @@ apply them to the general population data using
 ## 2. Loading Required Packages
 
 ``` r
+
 library("PTSDdiag")
 ```
 
@@ -42,6 +43,7 @@ The derivation dataset represents a clinical veteran sample with high
 PTSD prevalence. We load it and standardize column names.
 
 ``` r
+
 # Load the veteran sample
 data("simulated_ptsd")
 
@@ -52,6 +54,7 @@ veterans <- rename_ptsd_columns(simulated_ptsd)
 Let’s check the PTSD prevalence in this sample:
 
 ``` r
+
 veterans_total <- calculate_ptsd_total(veterans)
 veterans_dx <- create_ptsd_diagnosis_nonbinarized(veterans_total)
 veterans_summary <- summarize_ptsd(veterans_dx)
@@ -66,6 +69,7 @@ The validation dataset represents a general population sample with a
 more realistic, lower PTSD prevalence.
 
 ``` r
+
 # Load the general population sample
 data("simulated_ptsd_genpop")
 
@@ -76,6 +80,7 @@ genpop <- rename_ptsd_columns(simulated_ptsd_genpop)
 Let’s check the PTSD prevalence in this sample:
 
 ``` r
+
 genpop_total <- calculate_ptsd_total(genpop)
 genpop_dx <- create_ptsd_diagnosis_nonbinarized(genpop_total)
 genpop_summary <- summarize_ptsd(genpop_dx)
@@ -101,6 +106,7 @@ The non-hierarchical approach selects the best symptoms regardless of
 which DSM-5 cluster they belong to.
 
 ``` r
+
 results_nonhier <- optimize_combinations(
   veterans,
   n_symptoms = 6,
@@ -123,6 +129,7 @@ least one symptom from each DSM-5 criterion cluster, maintaining the
 diagnostic structure.
 
 ``` r
+
 # Define the PCL-5 cluster structure
 pcl5_clusters <- list(
   B = 1:5,     # Intrusion
@@ -163,6 +170,7 @@ After deriving optimal combinations, export them along with the relevant
 parameters:
 
 ``` r
+
 # Export non-hierarchical combinations
 write_combinations(
   results_nonhier$best_symptoms,
@@ -212,6 +220,7 @@ A collaborator can load the file and apply the combinations to their own
 data:
 
 ``` r
+
 # Read combinations from file
 spec <- read_combinations("veteran_nonhier_top10.json")
 
@@ -251,6 +260,7 @@ diagnosis (`PTSD_orig`) and the simplified diagnosis for each
 combination.
 
 ``` r
+
 # Apply the 10 non-hierarchical combinations to general population data
 comparison_nonhier <- apply_symptom_combinations(
   genpop,
@@ -274,6 +284,7 @@ structure so that the diagnosis check verifies cluster representation
 among the present symptoms.
 
 ``` r
+
 # Apply the 10 hierarchical combinations to general population data
 comparison_hier <- apply_symptom_combinations(
   genpop,

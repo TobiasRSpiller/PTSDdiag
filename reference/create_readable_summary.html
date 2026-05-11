@@ -9,7 +9,7 @@ with proper labels and formatting of percentages and metrics."><meta property="o
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,7 +46,7 @@ with proper labels and formatting of percentages and metrics.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">create_readable_summary</span><span class="op">(</span><span class="va">summary_stats</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">create_readable_summary</span><span class="op">(</span><span class="va">summary_stats</span>, DT <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -57,10 +57,18 @@ with proper labels and formatting of percentages and metrics.</p>
 <dd><p>A dataframe output from summarize_ptsd_changes()
 containing raw diagnostic metrics and counts</p></dd>
 
+
+<dt id="arg-dt">DT<a class="anchor" aria-label="anchor" href="#arg-dt"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, return the summary as an interactive
+<code><a href="https://rdrr.io/pkg/DT/man/datatable.html" class="external-link">datatable</a></code> widget. If <code>FALSE</code> (default), return a
+plain data.frame. The <span class="pkg">DT</span> package must be installed when
+<code>DT = TRUE</code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A formatted dataframe with the following columns:</p>
+    <p>A formatted data.frame (or a <code><a href="https://rdrr.io/pkg/DT/man/datatable.html" class="external-link">datatable</a></code> widget
+  when <code>DT = TRUE</code>) with the following columns:</p>
 <ul><li><p>Scenario: Name of the diagnostic criterion</p></li>
 <li><p>Total Diagnosed: Count and percentage of diagnosed cases</p></li>
 <li><p>Total Non-Diagnosed: Count and percentage of non-diagnosed cases</p></li>

@@ -69,6 +69,7 @@ The `combinations`, `n_required`, and `clusters` elements can be passed
 directly to
 [`apply_symptom_combinations`](https://tobiasrspiller.github.io/PTSDdiag/reference/apply_symptom_combinations.md):
 
+
     spec <- read_combinations("my_combos.json")
     result <- apply_symptom_combinations(
       data, spec$combinations, spec$n_required, spec$clusters
@@ -103,7 +104,7 @@ my_combos <- list(
 tmp <- tempfile(fileext = ".json")
 write_combinations(my_combos, tmp, n_required = 4,
                    score_by = "false_cases")
-#> Combinations written to /tmp/RtmpGlFb3Z/file1ca22192d599.json
+#> Combinations written to /tmp/RtmpiNJ11r/file1a9e7ff664ad.json
 
 # Read them back
 spec <- read_combinations(tmp)

@@ -16,7 +16,8 @@ optimize_combinations_clusters(
   n_top = 3,
   score_by = "false_cases",
   clusters,
-  DT = FALSE
+  DT = FALSE,
+  show_progress = TRUE
 )
 ```
 
@@ -77,6 +78,11 @@ optimize_combinations_clusters(
   [`datatable`](https://rdrr.io/pkg/DT/man/datatable.html) widget. If
   `FALSE` (default), return a plain data.frame. The DT package must be
   installed when `DT = TRUE`.
+
+- show_progress:
+
+  Logical. If `TRUE` (default), display a progress bar while evaluating
+  combinations. Set to `FALSE` for batch or non-interactive use.
 
 ## Value
 

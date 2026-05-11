@@ -13,7 +13,7 @@ diagnostic criteria while allowing configurable parameters."><meta property="og:
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,7 +59,8 @@ diagnostic criteria while allowing configurable parameters.</p>
 <span>  n_top <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  score_by <span class="op">=</span> <span class="st">"false_cases"</span>,</span>
 <span>  <span class="va">clusters</span>,</span>
-<span>  DT <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  DT <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  show_progress <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -115,6 +116,12 @@ diagnosis (default: 4). Must be between 1 and <code>n_symptoms</code>.</p></dd>
 <code><a href="https://rdrr.io/pkg/DT/man/datatable.html" class="external-link">datatable</a></code> widget. If <code>FALSE</code> (default), return a
 plain data.frame. The <span class="pkg">DT</span> package must be installed when
 <code>DT = TRUE</code>.</p></dd>
+
+
+<dt id="arg-show-progress">show_progress<a class="anchor" aria-label="anchor" href="#arg-show-progress"></a></dt>
+<dd><p>Logical. If <code>TRUE</code> (default), display a progress
+bar while evaluating combinations. Set to <code>FALSE</code> for batch or
+non-interactive use.</p></dd>
 
 </dl></div>
     <div class="section level2">

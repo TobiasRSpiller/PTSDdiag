@@ -15,7 +15,8 @@ optimize_combinations(
   n_required = 4,
   n_top = 3,
   score_by = "false_cases",
-  DT = FALSE
+  DT = FALSE,
+  show_progress = TRUE
 )
 ```
 
@@ -67,6 +68,11 @@ optimize_combinations(
   [`datatable`](https://rdrr.io/pkg/DT/man/datatable.html) widget. If
   `FALSE` (default), return a plain data.frame. The DT package must be
   installed when `DT = TRUE`.
+
+- show_progress:
+
+  Logical. If `TRUE` (default), display a progress bar while evaluating
+  combinations. Set to `FALSE` for batch or non-interactive use.
 
 ## Value
 
@@ -123,6 +129,8 @@ names(ptsd_data) <- paste0("symptom_", 1:20)
 # Find best 6-symptom combinations requiring 4 present (classic defaults)
 results <- optimize_combinations(ptsd_data, n_symptoms = 6, n_required = 4,
              score_by = "false_cases")
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■                58% | ETA:  2s
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
 #> ℹ Evaluated 38760 combinations. Best: 1, 2, 4, 7, 15, 16
 
 # Find best 5-symptom combinations requiring 3 present, return top 5

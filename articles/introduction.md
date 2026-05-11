@@ -23,12 +23,14 @@ This vignette demonstrates how to use the package to:
 You can install the released version from CRAN:
 
 ``` r
+
 install.packages("PTSDdiag")
 ```
 
 Or install the development version from GitHub:
 
 ``` r
+
 # install.packages("devtools")
 devtools::install_github("TobiasRSpiller/PTSDdiag")
 ```
@@ -38,12 +40,14 @@ devtools::install_github("TobiasRSpiller/PTSDdiag")
 Once the `PTSDdiag` is installed, it can be loaded the usual way.
 
 ``` r
+
 library("PTSDdiag")
 ```
 
 Load additional packages:
 
 ``` r
+
 library(psych)     # For reliability analysis
 ```
 
@@ -88,6 +92,7 @@ Input data must be:
 Let’s load the included sample data:
 
 ``` r
+
 # Load the sample data
 data("simulated_ptsd")
 ```
@@ -95,6 +100,7 @@ data("simulated_ptsd")
 and take a look at the first few rows of the sample data:
 
 ``` r
+
 # Display first few rows
 head(simulated_ptsd)
 #>   S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20
@@ -112,6 +118,7 @@ The first step is to standardize column names for consistent analysis.
 Before standardization, columns might have various names:
 
 ``` r
+
 #  Example of potential input formats
 names(simulated_ptsd)
 #>  [1] "S1"  "S2"  "S3"  "S4"  "S5"  "S6"  "S7"  "S8"  "S9"  "S10" "S11" "S12"
@@ -121,6 +128,7 @@ names(simulated_ptsd)
 After standardization, columns will be named systematically:
 
 ``` r
+
 # Rename columns to standard format (symptom_1 through symptom_20)
 simulated_ptsd_renamed <- rename_ptsd_columns(simulated_ptsd)
 
@@ -138,6 +146,7 @@ We’ll now process the data through several steps to calculate scores and
 determine diagnoses:
 
 ``` r
+
 # Step 1: Calculate total scores (range 0-80)
 simulated_ptsd_total <- calculate_ptsd_total(simulated_ptsd_renamed)
 
@@ -163,9 +172,8 @@ Cronbach’s alpha is calculated to assess the internal consistency of the
 PCL-5:
 
 ``` r
+
 cronbach <- psych::alpha(subset(simulated_ptsd_total_diagnosed, select = (-total)))
-#> Warning in response.frequencies(x, max = max): response.frequency has been
-#> deprecated and replaced with responseFrequecy.  Please fix your call
 print(cronbach$total)
 #>  raw_alpha std.alpha   G6(smc) average_r      S/N         ase     mean
 #>   0.912677 0.9156217 0.9212097  0.340688 10.85138 0.001758793 2.795905
@@ -216,6 +224,7 @@ the original DSM-5 criteria, so we want to minimize the false negative
 cases (newly_nondiagnosed).
 
 ``` r
+
 # Find best combinations with hierarchical approach, minimizing false negatives
 best_combinations_hierarchical <- optimize_combinations_clusters(
   simulated_ptsd_renamed,
@@ -234,6 +243,7 @@ The function returns three key elements. Let’s take a look at it.
 1.  Selected Symptom Combinations:
 
 ``` r
+
 best_combinations_hierarchical$best_symptoms
 ```
 
@@ -241,6 +251,7 @@ best_combinations_hierarchical$best_symptoms
     three best combinations
 
 ``` r
+
 # Shows true/false values for original vs. new criteria
 head(best_combinations_hierarchical$diagnosis_comparison, 10)
 ```
@@ -249,6 +260,7 @@ head(best_combinations_hierarchical$diagnosis_comparison, 10)
     combination
 
 ``` r
+
 best_combinations_hierarchical$summary
 ```
 
@@ -279,6 +291,7 @@ the original DSM-5 criteria, so we want to minimize the false negative
 cases (newly_nondiagnosed) in the non-hierarchical approach as well.
 
 ``` r
+
 # Find best combinations with non-hierarchical approach, minimizing false negatives
 best_combinations_nonhierarchical <- optimize_combinations(
   simulated_ptsd_renamed,
@@ -296,6 +309,7 @@ Again, let’s take a look at the output
 1.  Selected Symptom Combinations:
 
 ``` r
+
 best_combinations_nonhierarchical$best_symptoms
 ```
 
@@ -303,6 +317,7 @@ best_combinations_nonhierarchical$best_symptoms
     three best combinations
 
 ``` r
+
 # Shows true/false values for original vs. new criteria
 head(best_combinations_nonhierarchical$diagnosis_comparison, 10)
 ```
@@ -311,6 +326,7 @@ head(best_combinations_nonhierarchical$diagnosis_comparison, 10)
     combination
 
 ``` r
+
 best_combinations_nonhierarchical$summary
 ```
 
@@ -329,6 +345,7 @@ JSON files.
 After running an optimization, you can export the results directly:
 
 ``` r
+
 # Export the hierarchical combinations
 write_combinations(
   best_combinations_hierarchical$best_symptoms,
@@ -353,6 +370,7 @@ You can also pass the full result object directly — the function
 automatically extracts `$best_symptoms`:
 
 ``` r
+
 # This also works (auto-detects the optimization result object)
 write_combinations(best_combinations_hierarchical, file = "hierarchical_combos.json",
                    n_required = 4,
@@ -366,6 +384,7 @@ A collaborator (or you in a future session) can load the combinations
 and apply them to new data:
 
 ``` r
+
 # Read the exported combinations
 spec <- read_combinations("hierarchical_combos.json")
 
@@ -406,6 +425,7 @@ us to evaluate how well the identified symptom combinations generalize
 to new data.
 
 ``` r
+
 # Perform holdout validation with 70/30 split
 validation_results <- holdout_validation(
   simulated_ptsd_renamed,
@@ -424,6 +444,7 @@ their diagnostic accuracy.
 Examining Results for Non-Hierarchical Model:
 
 ``` r
+
 # Best combinations identified on training data
 validation_results$without_clusters$best_combinations
 
@@ -434,6 +455,7 @@ validation_results$without_clusters$summary
 Examining Results for Hierarchical Model:
 
 ``` r
+
 # Best combinations identified on training data (with cluster representation)
 validation_results$with_clusters$best_combinations
 
@@ -447,6 +469,7 @@ For a more robust assessment, k-fold Cross-Validation tests the
 stability of symptom combinations across multiple data splits.
 
 ``` r
+
 # Perform 5-fold cross-validation
 cv_results <- cross_validation(
   simulated_ptsd_renamed,
@@ -463,6 +486,7 @@ The function provides detailed results for each fold.
 Examining Results for Non-Hierarchical Model:
 
 ``` r
+
 # Summary statistics for each fold (non-hierarchical model)
 cv_results$without_clusters$summary_by_fold
 ```
@@ -470,6 +494,7 @@ cv_results$without_clusters$summary_by_fold
 Examining Results for Hierarchical Model:
 
 ``` r
+
 # Summary statistics for each fold (hierarchical model)
 cv_results$with_clusters$summary_by_fold
 ```
@@ -482,6 +507,7 @@ calculates their average performance.
 Examining Results for Non-Hierarchical Model:
 
 ``` r
+
 # Check for combinations that appeared in multiple folds (non-hierarchical)
 if (!is.null(cv_results$without_clusters$combinations_summary)) {
   print("Stable combinations in non-hierarchical model:")
@@ -494,6 +520,7 @@ if (!is.null(cv_results$without_clusters$combinations_summary)) {
 Examining Results for Hierarchical Model:
 
 ``` r
+
 # Check for combinations that appeared in multiple folds (hierarchical)
 if (!is.null(cv_results$with_clusters$combinations_summary)) {
   print("Stable combinations in hierarchical model:")
@@ -540,6 +567,7 @@ Cross-Validation:
 - Identifies stable symptom patterns
 
 ``` r
+
 # Example: Compare sensitivity from both methods
 # Note: Results will vary based on random splits
 
