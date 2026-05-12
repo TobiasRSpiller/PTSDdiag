@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -79,11 +79,12 @@ across different clusters. This package aims to simplify this process
 while maintaining diagnostic accuracy.</p>
 <p>This vignette demonstrates how to use the package to:</p>
 <ul>
-<li>Import and prepare PCL-5 data</li>
+<li>Import and prepare PCL-5 and CAPS-5 data</li>
 <li>Calculate basic descriptive statistics and reliability metrics</li>
 <li>Find optimal symptom combinations for PTSD diagnosis</li>
 <li>Apply ICD-11 PTSD diagnostic criteria</li>
-<li>Compare diagnostic systems (DSM-5-TR, ICD-11, and optimized
+<li>Validate optimized criteria against CAPS-5 as the gold standard</li>
+<li>Compare diagnostic systems (DSM-5-TR, ICD-11, CAPS-5, and optimized
 combinations) in a unified table</li>
 <li>Export and import optimized combinations</li>
 <li>Validate models using holdout and cross-validation</li>
@@ -1025,16 +1026,358 @@ consistency.</li>
 </div>
 </div>
 <div class="section level2">
-<h2 id="exporting-and-importing-combinations">6. Exporting and Importing Combinations<a class="anchor" aria-label="anchor" href="#exporting-and-importing-combinations"></a>
+<h2 id="caps-5-gold-standard-validation">6. CAPS-5 Gold-Standard Validation<a class="anchor" aria-label="anchor" href="#caps-5-gold-standard-validation"></a>
+</h2>
+<p>The CAPS-5 (Clinician-Administered PTSD Scale for DSM-5) is the gold
+standard for diagnosing PTSD. When both PCL-5 and CAPS-5 data are
+available for the same participants, you can test how well optimized
+PCL-5-derived symptom combinations perform against the clinician-rated
+diagnosis.</p>
+<p>CAPS-5 uses the same structure as PCL-5: 20 items rated on a 0–4
+severity scale, where the clinician combines frequency and intensity
+into a single rating per item. This means all <code>PTSDdiag</code>
+functions work identically on CAPS-5 data once the columns are
+renamed.</p>
+<div class="section level3">
+<h3 id="preparing-caps-5-data">6.1. Preparing CAPS-5 Data<a class="anchor" aria-label="anchor" href="#preparing-caps-5-data"></a>
+</h3>
+<p>Use <code><a href="../reference/rename_caps5_columns.html">rename_caps5_columns()</a></code> to standardize your CAPS-5
+data. It works exactly like <code><a href="../reference/rename_ptsd_columns.html">rename_ptsd_columns()</a></code> but
+includes CAPS-5-specific documentation and error messages.</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Simulate CAPS-5 data by adding clinician variance to PCL-5 scores</span></span>
+<span><span class="co"># In practice, these would come from separate instruments administered to the same participants</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">caps5_raw</span> <span class="op">&lt;-</span> <span class="va">simulated_ptsd</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">caps5_raw</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">noise</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1L</span>, <span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">1L</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">caps5_raw</span><span class="op">)</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="va">caps5_raw</span><span class="op">[[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="fl">4L</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="va">caps5_raw</span><span class="op">[[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="va">noise</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">caps5</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rename_caps5_columns.html">rename_caps5_columns</a></span><span class="op">(</span><span class="va">caps5_raw</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">caps5</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   symptom_1 symptom_2 symptom_3 symptom_4 symptom_5</span></span>
+<span><span class="co">#&gt; 1         1         2         4         1         3</span></span>
+<span><span class="co">#&gt; 2         4         3         4         3         2</span></span>
+<span><span class="co">#&gt; 3         0         0         2         3         2</span></span>
+<span><span class="co">#&gt; 4         2         3         3         3         3</span></span>
+<span><span class="co">#&gt; 5         2         3         3         3         2</span></span>
+<span><span class="co">#&gt; 6         1         1         2         0         1</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="caps-5-diagnosis">6.2. CAPS-5 Diagnosis<a class="anchor" aria-label="anchor" href="#caps-5-diagnosis"></a>
+</h3>
+<p><code><a href="../reference/create_caps5_diagnosis.html">create_caps5_diagnosis()</a></code> applies the standard DSM-5-TR
+diagnostic algorithm (binarize at ≥ 2, require ≥ 1 symptom in each of
+Clusters B–E) to CAPS-5 data:</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">caps5_dx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_caps5_diagnosis.html">create_caps5_diagnosis</a></span><span class="op">(</span><span class="va">caps5</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"CAPS-5 PTSD prevalence:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">caps5_dx</span><span class="op">$</span><span class="va">PTSD_caps5</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; CAPS-5 PTSD prevalence: 0.9426</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"PCL-5 PTSD prevalence:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/create_ptsd_diagnosis_binarized.html">create_ptsd_diagnosis_binarized</a></span><span class="op">(</span><span class="va">simulated_ptsd_renamed</span><span class="op">)</span><span class="op">$</span><span class="va">PTSD_orig</span></span>
+<span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; PCL-5 PTSD prevalence: 0.942</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="comparing-against-caps-5">6.3. Comparing Against CAPS-5<a class="anchor" aria-label="anchor" href="#comparing-against-caps-5"></a>
+</h3>
+<p>Pass <code>caps5_data</code> to
+<code><a href="../reference/compare_diagnostic_systems.html">compare_diagnostic_systems()</a></code> and choose which instrument
+serves as the reference standard. The reference row always has perfect
+sensitivity and specificity (1.0000) because it defines the “truth”.</p>
+<p><strong>PCL-5 as reference:</strong></p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tbl_pcl5_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_diagnostic_systems.html">compare_diagnostic_systems</a></span><span class="op">(</span></span>
+<span>  <span class="va">simulated_ptsd_renamed</span>,</span>
+<span>  <span class="va">best_combinations_nonhierarchical</span><span class="op">$</span><span class="va">diagnosis_comparison</span>,</span>
+<span>  icd11     <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  caps5_data <span class="op">=</span> <span class="va">caps5</span>,</span>
+<span>  reference  <span class="op">=</span> <span class="st">"pcl5"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="va">tbl_pcl5_ref</span>,</span>
+<span>  digits  <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  caption <span class="op">=</span> <span class="st">"PCL-5 as reference: how do CAPS-5 and optimized criteria compare?"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>PCL-5 as reference: how do CAPS-5 and optimized criteria
+compare?</caption>
+<colgroup>
+<col width="10%">
+<col width="7%">
+<col width="8%">
+<col width="7%">
+<col width="7%">
+<col width="4%">
+<col width="4%">
+<col width="10%">
+<col width="11%">
+<col width="10%">
+<col width="11%">
+<col width="9%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">system</th>
+<th align="right">n_diagnosed</th>
+<th align="right">pct_diagnosed</th>
+<th align="right">sensitivity</th>
+<th align="right">specificity</th>
+<th align="right">ppv</th>
+<th align="right">npv</th>
+<th align="right">n_false_negative</th>
+<th align="right">pct_false_negative</th>
+<th align="right">n_false_positive</th>
+<th align="right">pct_false_positive</th>
+<th align="right">n_misclassified</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">DSM-5-TR (PCL-5)</td>
+<td align="right">4710</td>
+<td align="right">94.20</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">0</td>
+<td align="right">0.00</td>
+<td align="right">0</td>
+<td align="right">0.00</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">DSM-5-TR (CAPS-5)</td>
+<td align="right">4713</td>
+<td align="right">94.26</td>
+<td align="right">0.9824</td>
+<td align="right">0.7034</td>
+<td align="right">0.9818</td>
+<td align="right">0.7108</td>
+<td align="right">83</td>
+<td align="right">1.66</td>
+<td align="right">86</td>
+<td align="right">1.72</td>
+<td align="right">169</td>
+</tr>
+<tr class="odd">
+<td align="left">ICD-11 (PCL-5)</td>
+<td align="right">4641</td>
+<td align="right">92.82</td>
+<td align="right">0.9781</td>
+<td align="right">0.8828</td>
+<td align="right">0.9927</td>
+<td align="right">0.7131</td>
+<td align="right">103</td>
+<td align="right">2.06</td>
+<td align="right">34</td>
+<td align="right">0.68</td>
+<td align="right">137</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_1_6_7_13</td>
+<td align="right">4573</td>
+<td align="right">91.46</td>
+<td align="right">0.9628</td>
+<td align="right">0.8690</td>
+<td align="right">0.9917</td>
+<td align="right">0.5902</td>
+<td align="right">175</td>
+<td align="right">3.50</td>
+<td align="right">38</td>
+<td align="right">0.76</td>
+<td align="right">213</td>
+</tr>
+<tr class="odd">
+<td align="left">symptom_4_6_7_13</td>
+<td align="right">4574</td>
+<td align="right">91.48</td>
+<td align="right">0.9628</td>
+<td align="right">0.8655</td>
+<td align="right">0.9915</td>
+<td align="right">0.5892</td>
+<td align="right">175</td>
+<td align="right">3.50</td>
+<td align="right">39</td>
+<td align="right">0.78</td>
+<td align="right">214</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_4_6_7_17</td>
+<td align="right">4568</td>
+<td align="right">91.36</td>
+<td align="right">0.9614</td>
+<td align="right">0.8621</td>
+<td align="right">0.9912</td>
+<td align="right">0.5787</td>
+<td align="right">182</td>
+<td align="right">3.64</td>
+<td align="right">40</td>
+<td align="right">0.80</td>
+<td align="right">222</td>
+</tr>
+</tbody>
+</table>
+<p><strong>CAPS-5 as reference:</strong></p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tbl_caps5_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_diagnostic_systems.html">compare_diagnostic_systems</a></span><span class="op">(</span></span>
+<span>  <span class="va">simulated_ptsd_renamed</span>,</span>
+<span>  <span class="va">best_combinations_nonhierarchical</span><span class="op">$</span><span class="va">diagnosis_comparison</span>,</span>
+<span>  icd11     <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  caps5_data <span class="op">=</span> <span class="va">caps5</span>,</span>
+<span>  reference  <span class="op">=</span> <span class="st">"caps5"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="va">tbl_caps5_ref</span>,</span>
+<span>  digits  <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  caption <span class="op">=</span> <span class="st">"CAPS-5 as reference: how do PCL-5 and optimized criteria compare?"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>CAPS-5 as reference: how do PCL-5 and optimized criteria
+compare?</caption>
+<colgroup>
+<col width="10%">
+<col width="7%">
+<col width="8%">
+<col width="7%">
+<col width="7%">
+<col width="4%">
+<col width="4%">
+<col width="10%">
+<col width="11%">
+<col width="10%">
+<col width="11%">
+<col width="9%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">system</th>
+<th align="right">n_diagnosed</th>
+<th align="right">pct_diagnosed</th>
+<th align="right">sensitivity</th>
+<th align="right">specificity</th>
+<th align="right">ppv</th>
+<th align="right">npv</th>
+<th align="right">n_false_negative</th>
+<th align="right">pct_false_negative</th>
+<th align="right">n_false_positive</th>
+<th align="right">pct_false_positive</th>
+<th align="right">n_misclassified</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">DSM-5-TR (CAPS-5)</td>
+<td align="right">4713</td>
+<td align="right">94.26</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">0</td>
+<td align="right">0.00</td>
+<td align="right">0</td>
+<td align="right">0.00</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">DSM-5-TR (PCL-5)</td>
+<td align="right">4710</td>
+<td align="right">94.20</td>
+<td align="right">0.9818</td>
+<td align="right">0.7108</td>
+<td align="right">0.9824</td>
+<td align="right">0.7034</td>
+<td align="right">86</td>
+<td align="right">1.72</td>
+<td align="right">83</td>
+<td align="right">1.66</td>
+<td align="right">169</td>
+</tr>
+<tr class="odd">
+<td align="left">ICD-11 (PCL-5)</td>
+<td align="right">4641</td>
+<td align="right">92.82</td>
+<td align="right">0.9650</td>
+<td align="right">0.6760</td>
+<td align="right">0.9800</td>
+<td align="right">0.5404</td>
+<td align="right">165</td>
+<td align="right">3.30</td>
+<td align="right">93</td>
+<td align="right">1.86</td>
+<td align="right">258</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_1_6_7_13</td>
+<td align="right">4573</td>
+<td align="right">91.46</td>
+<td align="right">0.9531</td>
+<td align="right">0.7178</td>
+<td align="right">0.9823</td>
+<td align="right">0.4824</td>
+<td align="right">221</td>
+<td align="right">4.42</td>
+<td align="right">81</td>
+<td align="right">1.62</td>
+<td align="right">302</td>
+</tr>
+<tr class="odd">
+<td align="left">symptom_4_6_7_13</td>
+<td align="right">4574</td>
+<td align="right">91.48</td>
+<td align="right">0.9531</td>
+<td align="right">0.7143</td>
+<td align="right">0.9821</td>
+<td align="right">0.4812</td>
+<td align="right">221</td>
+<td align="right">4.42</td>
+<td align="right">82</td>
+<td align="right">1.64</td>
+<td align="right">303</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_4_6_7_17</td>
+<td align="right">4568</td>
+<td align="right">91.36</td>
+<td align="right">0.9508</td>
+<td align="right">0.6969</td>
+<td align="right">0.9810</td>
+<td align="right">0.4630</td>
+<td align="right">232</td>
+<td align="right">4.64</td>
+<td align="right">87</td>
+<td align="right">1.74</td>
+<td align="right">319</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key points:</strong></p>
+<ul>
+<li>When <code>caps5_data</code> is provided, labels are disambiguated
+automatically: <code>"DSM-5-TR (PCL-5)"</code> and
+<code>"DSM-5-TR (CAPS-5)"</code>.</li>
+<li>The <code>reference</code> parameter controls which instrument
+defines diagnostic “truth” — run the function twice (once with each
+reference) for a complete picture.</li>
+<li>ICD-11 criteria are always computed from PCL-5 data and labelled
+<code>"ICD-11 (PCL-5)"</code>.</li>
+<li>All existing workflows without <code>caps5_data</code> remain
+unchanged.</li>
+</ul>
+</div>
+</div>
+<div class="section level2">
+<h2 id="exporting-and-importing-combinations">7. Exporting and Importing Combinations<a class="anchor" aria-label="anchor" href="#exporting-and-importing-combinations"></a>
 </h2>
 <p>Once you have identified optimal symptom combinations, you can share
 them with collaborators or save them for later use.
 <code><a href="../reference/write_combinations.html">write_combinations()</a></code> and <code><a href="../reference/read_combinations.html">read_combinations()</a></code>
 export and import combinations as human-readable JSON files.</p>
 <div class="section level3">
-<h3 id="saving-derived-combinations">6.1. Saving Derived Combinations<a class="anchor" aria-label="anchor" href="#saving-derived-combinations"></a>
+<h3 id="saving-derived-combinations">7.1. Saving Derived Combinations<a class="anchor" aria-label="anchor" href="#saving-derived-combinations"></a>
 </h3>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Save to a temporary file for this demonstration</span></span>
 <span><span class="co"># In practice, specify a permanent path: file = "hierarchical_combos.json"</span></span>
 <span><span class="va">tmp_hier</span>    <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".json"</span><span class="op">)</span></span>
@@ -1061,11 +1404,11 @@ export and import combinations as human-readable JSON files.</p>
 <span><span class="co">#&gt; Files written successfully.</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="loading-saved-combinations">6.2. Loading Saved Combinations<a class="anchor" aria-label="anchor" href="#loading-saved-combinations"></a>
+<h3 id="loading-saved-combinations">7.2. Loading Saved Combinations<a class="anchor" aria-label="anchor" href="#loading-saved-combinations"></a>
 </h3>
 <p>A collaborator (or you in a future session) can load the combinations
 and apply them to new data:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Read the exported file</span></span>
 <span><span class="va">spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_combinations.html">read_combinations</a></span><span class="op">(</span><span class="va">tmp_hier</span><span class="op">)</span></span>
 <span></span>
@@ -1078,7 +1421,7 @@ and apply them to new data:</p>
 <span><span class="co">#&gt; Clusters:             B, C, D, E</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Description:         "</span>, <span class="va">spec</span><span class="op">$</span><span class="va">description</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Description:          Top 3 hierarchical combinations from simulated data</span></span></code></pre></div>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Apply to any dataset with the same column structure</span></span>
 <span><span class="va">comparison_loaded</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_symptom_combinations.html">apply_symptom_combinations</a></span><span class="op">(</span></span>
 <span>  <span class="va">simulated_ptsd_renamed</span>,</span>
@@ -1194,7 +1537,7 @@ full worked example.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="model-validation">7. Model Validation<a class="anchor" aria-label="anchor" href="#model-validation"></a>
+<h2 id="model-validation">8. Model Validation<a class="anchor" aria-label="anchor" href="#model-validation"></a>
 </h2>
 <p>After identifying optimal symptom combinations, it is crucial to
 validate their performance on independent data. The
@@ -1205,12 +1548,12 @@ validate their performance on independent data. The
 analyses typically use <code>n_symptoms = 6</code>.</p>
 </blockquote>
 <div class="section level3">
-<h3 id="holdout-validation">7.1. Holdout Validation<a class="anchor" aria-label="anchor" href="#holdout-validation"></a>
+<h3 id="holdout-validation">8.1. Holdout Validation<a class="anchor" aria-label="anchor" href="#holdout-validation"></a>
 </h3>
 <p>Holdout validation splits the data into training (70%) and test (30%)
 sets. Optimal combinations are derived on the training set and evaluated
 on the held-out test set.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">validation_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/holdout_validation.html">holdout_validation</a></span><span class="op">(</span></span>
 <span>  <span class="va">simulated_ptsd_renamed</span>,</span>
 <span>  train_ratio <span class="op">=</span> <span class="fl">0.7</span>,</span>
@@ -1221,7 +1564,7 @@ on the held-out test set.</p>
 <span>  n_top       <span class="op">=</span> <span class="fl">3</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><strong>Best combinations identified on training data:</strong></p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Non-hierarchical:\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Non-hierarchical:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">validation_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">best_combinations</span><span class="op">)</span></span>
@@ -1246,7 +1589,7 @@ on the held-out test set.</p>
 <span><span class="co">#&gt; [[3]]</span></span>
 <span><span class="co">#&gt; [1]  5  6 11 17</span></span></code></pre></div>
 <p><strong>Test-set performance:</strong></p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="va">validation_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary</span>,</span>
 <span>  digits  <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -1360,7 +1703,7 @@ set)</caption>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="va">validation_results</span><span class="op">$</span><span class="va">with_clusters</span><span class="op">$</span><span class="va">summary</span>,</span>
 <span>  digits  <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -1476,12 +1819,12 @@ set)</caption>
 </table>
 </div>
 <div class="section level3">
-<h3 id="cross-validation">7.2. Cross-Validation<a class="anchor" aria-label="anchor" href="#cross-validation"></a>
+<h3 id="cross-validation">8.2. Cross-Validation<a class="anchor" aria-label="anchor" href="#cross-validation"></a>
 </h3>
 <p>k-fold cross-validation provides a more robust estimate of
 generalization by repeating the train/test split <code>k</code>
 times.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cv_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cross_validation.html">cross_validation</a></span><span class="op">(</span></span>
 <span>  <span class="va">simulated_ptsd_renamed</span>,</span>
 <span>  k          <span class="op">=</span> <span class="fl">3</span>,</span>
@@ -1492,7 +1835,7 @@ times.</p>
 <span>  n_top      <span class="op">=</span> <span class="fl">3</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><strong>Results by fold — non-hierarchical:</strong></p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary_by_fold</span>,</span>
 <span>  digits  <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -1756,7 +2099,7 @@ times.</p>
 </tbody>
 </table>
 <p><strong>Results by fold — hierarchical:</strong></p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="va">cv_results</span><span class="op">$</span><span class="va">with_clusters</span><span class="op">$</span><span class="va">summary_by_fold</span>,</span>
 <span>  digits  <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -2021,7 +2364,7 @@ times.</p>
 </table>
 <p><strong>Stable combinations across folds</strong> — if a combination
 appeared in multiple folds, its average performance is reported:</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">combinations_summary</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>    <span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">combinations_summary</span>,</span>
@@ -2121,7 +2464,7 @@ appeared in multiple folds, its average performance is reported:</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">cv_results</span><span class="op">$</span><span class="va">with_clusters</span><span class="op">$</span><span class="va">combinations_summary</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>    <span class="va">cv_results</span><span class="op">$</span><span class="va">with_clusters</span><span class="op">$</span><span class="va">combinations_summary</span>,</span>
@@ -2254,7 +2597,7 @@ real-world estimates</li>
 combination), sensitivity, specificity, PPV, and NPV.</p>
 </div>
 <div class="section level3">
-<h3 id="comparing-validation-approaches">7.3. Comparing Validation Approaches<a class="anchor" aria-label="anchor" href="#comparing-validation-approaches"></a>
+<h3 id="comparing-validation-approaches">8.3. Comparing Validation Approaches<a class="anchor" aria-label="anchor" href="#comparing-validation-approaches"></a>
 </h3>
 <p>Both methods serve complementary purposes:</p>
 <table class="table">
@@ -2286,7 +2629,7 @@ combination), sensitivity, specificity, PPV, and NPV.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Extract sensitivity for the top combination from each approach</span></span>
 <span><span class="va">holdout_sens</span> <span class="op">&lt;-</span> <span class="va">validation_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary</span><span class="op">$</span><span class="va">Sensitivity</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span></span>
 <span><span class="va">cv_fold_sens</span> <span class="op">&lt;-</span> <span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary_by_fold</span><span class="op">$</span><span class="va">sensitivity</span></span>
@@ -2306,7 +2649,7 @@ combination), sensitivity, specificity, PPV, and NPV.</p>
 <span><span class="co">#&gt; CV sensitivity range:                             Inf – -Inf</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="validation-best-practices">7.4. Validation Best Practices<a class="anchor" aria-label="anchor" href="#validation-best-practices"></a>
+<h3 id="validation-best-practices">8.4. Validation Best Practices<a class="anchor" aria-label="anchor" href="#validation-best-practices"></a>
 </h3>
 <ol style="list-style-type: decimal">
 <li>Set a seed for reproducibility: <code>seed = 123</code>
@@ -2333,14 +2676,15 @@ for differential diagnosis, PPV/NPV for clinical decision-making</li>
 </div>
 </div>
 <div class="section level2">
-<h2 id="conclusion">8. Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>
+<h2 id="conclusion">9. Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>
 </h2>
-<p>With the <code>PTSDdiag</code> package, PCL-5 data can be processed
-and analyzed efficiently. It allows researchers to identify reduced
-optimal symptom combinations for PTSD diagnosis, apply ICD-11 criteria,
-and compare multiple diagnostic systems — DSM-5-TR, ICD-11, and
-optimized combinations — in a single unified table. Holdout and
-cross-validation functions provide robust estimates of how well the
+<p>With the <code>PTSDdiag</code> package, PCL-5 and CAPS-5 data can be
+processed and analyzed efficiently. It allows researchers to identify
+reduced optimal symptom combinations for PTSD diagnosis, apply ICD-11
+criteria, validate against the CAPS-5 gold standard, and compare
+multiple diagnostic systems — DSM-5-TR (PCL-5), DSM-5-TR (CAPS-5),
+ICD-11, and optimized combinations — in a single unified table. Holdout
+and cross-validation functions provide robust estimates of how well the
 derived criteria generalize to new samples.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

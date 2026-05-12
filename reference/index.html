@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,7 +38,7 @@
     <div class="section level2">
       <h2 id="data-preparation">Data Preparation<a class="anchor" aria-label="anchor" href="#data-preparation"></a></h2>
 
-      <div class="section-desc"><p>Functions for preparing and standardizing PCL-5 data</p></div>
+      <div class="section-desc"><p>Functions for preparing and standardizing PCL-5 and CAPS-5 data</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -51,6 +51,13 @@
 
         </dt>
         <dd>Rename PTSD symptom (= PCL-5 item) columns</dd>
+
+        <dt>
+
+          <code><a href="rename_caps5_columns.html">rename_caps5_columns()</a></code>
+
+        </dt>
+        <dd>Rename CAPS-5 symptom columns</dd>
 
         <dt>
 
@@ -195,10 +202,17 @@
 
         <dt>
 
+          <code><a href="create_caps5_diagnosis.html">create_caps5_diagnosis()</a></code>
+
+        </dt>
+        <dd>Compute CAPS-5 DSM-5-TR PTSD diagnosis</dd>
+
+        <dt>
+
           <code><a href="compare_diagnostic_systems.html">compare_diagnostic_systems()</a></code>
 
         </dt>
-        <dd>Compare multiple diagnostic systems against DSM-5-TR</dd>
+        <dd>Compare multiple diagnostic systems against a reference standard</dd>
       </dl></div><div class="section level2">
       <h2 id="validation">Validation<a class="anchor" aria-label="anchor" href="#validation"></a></h2>
 

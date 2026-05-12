@@ -63,10 +63,12 @@ validation methods for evaluating model performance.
 
 ## Data Preparation
 
-Functions for preparing and standardizing PCL-5 data
+Functions for preparing and standardizing PCL-5 and CAPS-5 data
 
 - [`rename_ptsd_columns()`](https://tobiasrspiller.github.io/PTSDdiag/reference/rename_ptsd_columns.md)
   : Rename PTSD symptom (= PCL-5 item) columns
+- [`rename_caps5_columns()`](https://tobiasrspiller.github.io/PTSDdiag/reference/rename_caps5_columns.md)
+  : Rename CAPS-5 symptom columns
 - [`binarize_data()`](https://tobiasrspiller.github.io/PTSDdiag/reference/binarize_data.md)
   : Binarize PCL-5 symptom scores
 
@@ -122,8 +124,10 @@ Functions for creating summaries and comparing diagnostic approaches
   : Create readable summary of PTSD diagnostic changes
 - [`create_icd11_diagnosis()`](https://tobiasrspiller.github.io/PTSDdiag/reference/create_icd11_diagnosis.md)
   : Apply ICD-11 PTSD diagnostic criteria to PCL-5 data
+- [`create_caps5_diagnosis()`](https://tobiasrspiller.github.io/PTSDdiag/reference/create_caps5_diagnosis.md)
+  : Compute CAPS-5 DSM-5-TR PTSD diagnosis
 - [`compare_diagnostic_systems()`](https://tobiasrspiller.github.io/PTSDdiag/reference/compare_diagnostic_systems.md)
-  : Compare multiple diagnostic systems against DSM-5-TR
+  : Compare multiple diagnostic systems against a reference standard
 
 ## Validation
 
