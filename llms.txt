@@ -120,6 +120,10 @@ Functions for creating summaries and comparing diagnostic approaches
   : Summarize changes in PTSD diagnostic metrics
 - [`create_readable_summary()`](https://tobiasrspiller.github.io/PTSDdiag/reference/create_readable_summary.md)
   : Create readable summary of PTSD diagnostic changes
+- [`create_icd11_diagnosis()`](https://tobiasrspiller.github.io/PTSDdiag/reference/create_icd11_diagnosis.md)
+  : Apply ICD-11 PTSD diagnostic criteria to PCL-5 data
+- [`compare_diagnostic_systems()`](https://tobiasrspiller.github.io/PTSDdiag/reference/compare_diagnostic_systems.md)
+  : Compare multiple diagnostic systems against DSM-5-TR
 
 ## Validation
 

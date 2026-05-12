@@ -114,8 +114,8 @@ names(ptsd_data) <- paste0("symptom_", 1:20)
 results <- analyze_best_six_symptoms_four_required(ptsd_data, score_by = "false_cases")
 #> Warning: `analyze_best_six_symptoms_four_required()` was deprecated in PTSDdiag 0.2.1.
 #> ℹ Please use `optimize_combinations()` instead.
-#> Evaluating combinations ■■■■■■■■                          23% | ETA:  3s
-#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■               61% | ETA:  2s
+#> Evaluating combinations ■■■■■■■                           21% | ETA:  4s
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■          78% | ETA:  1s
 #> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
 #> ℹ Evaluated 38760 combinations. Best: 1, 2, 3, 6, 11, 16
 

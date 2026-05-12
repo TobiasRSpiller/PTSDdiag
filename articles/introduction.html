@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -81,8 +81,12 @@ while maintaining diagnostic accuracy.</p>
 <ul>
 <li>Import and prepare PCL-5 data</li>
 <li>Calculate basic descriptive statistics and reliability metrics</li>
-<li>Find optimal six-symptom combinations for PTSD diagnosis</li>
-<li>Compare different diagnostic approaches</li>
+<li>Find optimal symptom combinations for PTSD diagnosis</li>
+<li>Apply ICD-11 PTSD diagnostic criteria</li>
+<li>Compare diagnostic systems (DSM-5-TR, ICD-11, and optimized
+combinations) in a unified table</li>
+<li>Export and import optimized combinations</li>
+<li>Validate models using holdout and cross-validation</li>
 </ul>
 </div>
 <div class="section level2">
@@ -150,11 +154,7 @@ reactivity)</li>
 </ul>
 <p>Let’s load the included sample data:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Load the sample data</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"simulated_ptsd"</span><span class="op">)</span></span></code></pre></div>
-<p>and take a look at the first few rows of the sample data:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Display first few rows</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"simulated_ptsd"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">simulated_ptsd</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 S16 S17 S18 S19 S20</span></span>
 <span><span class="co">#&gt; 1  2  1  4  1  4  3  3  3  4   4   4   4   4   4   4   4   3   3   4   3</span></span>
@@ -168,18 +168,12 @@ reactivity)</li>
 <h3 id="data-preparation">3.2. Data Preparation<a class="anchor" aria-label="anchor" href="#data-preparation"></a>
 </h3>
 <p>The first step is to standardize column names for consistent
-analysis. Before standardization, columns might have various names:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#  Example of potential input formats</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">simulated_ptsd</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "S1"  "S2"  "S3"  "S4"  "S5"  "S6"  "S7"  "S8"  "S9"  "S10" "S11" "S12"</span></span>
-<span><span class="co">#&gt; [13] "S13" "S14" "S15" "S16" "S17" "S18" "S19" "S20"</span></span></code></pre></div>
-<p>After standardization, columns will be named systematically:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Rename columns to standard format (symptom_1 through symptom_20)</span></span>
-<span><span class="va">simulated_ptsd_renamed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rename_ptsd_columns.html">rename_ptsd_columns</a></span><span class="op">(</span><span class="va">simulated_ptsd</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Show new names</span></span>
+analysis. Before standardization, columns might have various names (here
+<code>S1</code>–<code>S20</code>). After standardization they follow the
+<code>symptom_1</code>–<code>symptom_20</code> pattern expected by all
+package functions:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">simulated_ptsd_renamed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rename_ptsd_columns.html">rename_ptsd_columns</a></span><span class="op">(</span><span class="va">simulated_ptsd</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">simulated_ptsd_renamed</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "symptom_1"  "symptom_2"  "symptom_3"  "symptom_4"  "symptom_5" </span></span>
 <span><span class="co">#&gt;  [6] "symptom_6"  "symptom_7"  "symptom_8"  "symptom_9"  "symptom_10"</span></span>
@@ -189,403 +183,2137 @@ analysis. Before standardization, columns might have various names:</p>
 <div class="section level3">
 <h3 id="basic-descriptive-statistics">3.3. Basic Descriptive Statistics<a class="anchor" aria-label="anchor" href="#basic-descriptive-statistics"></a>
 </h3>
-<p>We’ll now process the data through several steps to calculate scores
-and determine diagnoses:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<p>We process the data through three steps: calculate total scores,
+apply DSM-5 diagnostic criteria, and summarize.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Step 1: Calculate total scores (range 0-80)</span></span>
 <span><span class="va">simulated_ptsd_total</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_ptsd_total.html">calculate_ptsd_total</a></span><span class="op">(</span><span class="va">simulated_ptsd_renamed</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Step 2: Apply DSM-5 diagnostic criteria and determine PTSD diagnoses</span></span>
+<span><span class="co"># Step 2: Apply DSM-5 diagnostic criteria</span></span>
 <span><span class="va">simulated_ptsd_total_diagnosed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_ptsd_diagnosis_nonbinarized.html">create_ptsd_diagnosis_nonbinarized</a></span><span class="op">(</span><span class="va">simulated_ptsd_total</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Step 3: Generate summary statistics</span></span>
-<span><span class="va">summary_stats</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarize_ptsd.html">summarize_ptsd</a></span><span class="op">(</span><span class="va">simulated_ptsd_total_diagnosed</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">summary_stats</span><span class="op">)</span></span>
+<span><span class="co"># Step 3: Summary statistics</span></span>
+<span><span class="fu"><a href="../reference/summarize_ptsd.html">summarize_ptsd</a></span><span class="op">(</span><span class="va">simulated_ptsd_total_diagnosed</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   mean_total sd_total n_diagnosed</span></span>
 <span><span class="co">#&gt; 1     57.772 12.36218        4710</span></span></code></pre></div>
-<p>The summary statistics provide:</p>
-<ul>
-<li>Mean total score: Indicates average symptom severity in the
-sample</li>
-<li>Standard deviation: Shows the spread of severity scores</li>
-<li>Number of diagnosed cases: Based on full DSM-5 criteria</li>
-</ul>
+<p>The summary provides mean total score, standard deviation, and number
+of DSM-5-diagnosed cases.</p>
 </div>
 <div class="section level3">
 <h3 id="reliability-analysis">3.4. Reliability Analysis<a class="anchor" aria-label="anchor" href="#reliability-analysis"></a>
 </h3>
-<p>Cronbach’s alpha is calculated to assess the internal consistency of
-the PCL-5:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cronbach</span> <span class="op">&lt;-</span> <span class="fu">psych</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/psych/man/alpha.html" class="external-link">alpha</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">simulated_ptsd_total_diagnosed</span>, select <span class="op">=</span> <span class="op">(</span><span class="op">-</span><span class="va">total</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cronbach</span><span class="op">$</span><span class="va">total</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  raw_alpha std.alpha   G6(smc) average_r      S/N         ase     mean</span></span>
-<span><span class="co">#&gt;   0.912677 0.9156217 0.9212097  0.340688 10.85138 0.001758793 2.795905</span></span>
-<span><span class="co">#&gt;         sd  median_r</span></span>
-<span><span class="co">#&gt;  0.5937591 0.3318068</span></span></code></pre></div>
+<p>Cronbach’s alpha assesses the internal consistency of the PCL-5
+items:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cronbach</span> <span class="op">&lt;-</span> <span class="fu">psych</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/psych/man/alpha.html" class="external-link">alpha</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">simulated_ptsd_total_diagnosed</span>, select <span class="op">=</span> <span class="op">-</span><span class="va">total</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">cronbach</span><span class="op">$</span><span class="va">total</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  raw_alpha std.alpha G6(smc) average_r    S/N   ase  mean    sd median_r</span></span>
+<span><span class="co">#&gt;      0.913     0.916   0.921     0.341 10.851 0.002 2.796 0.594    0.332</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="finding-optimal-symptom-combinations">4. Finding Optimal Symptom Combinations<a class="anchor" aria-label="anchor" href="#finding-optimal-symptom-combinations"></a>
 </h2>
-<p>Now we come to the actual analysis. Current PTSD diagnosis requires
-evaluating 20 symptoms across four clusters with complex rules. Our goal
-is to identify simplified diagnostic criteria that:</p>
+<p>Current PTSD diagnosis requires evaluating 20 symptoms across four
+clusters with complex rules. Our goal is to identify simplified
+diagnostic criteria that:</p>
 <ul>
-<li>Reduce the number of symptoms to evaluate (from 20 to 6)</li>
-<li>Preserve the polythetic nature of the diagnosis and allow
-representation from each cluster, so that at least four of the evaluated
-six symptoms must be present for diagnosis.</li>
-<li>Maintain diagnostic accuracy</li>
+<li>Reduce the number of symptoms to evaluate</li>
+<li>Preserve the polythetic nature of the diagnosis (a minimum number of
+the selected symptoms must be present)</li>
+<li>Maintain diagnostic accuracy compared to the original DSM-5
+criteria</li>
 </ul>
-<p>We would like to identify the three six-symptom combinations that
-best represent the group of PTSD patients compared to the original DSM-5
-criteria. We determine these optimal six-symptom combinations under two
-different structural approaches (a hierarchical approach, requiring at
-least one symptom from each cluster, and a non-hierarchical approach,
-ignoring cluster membership).</p>
+<p>We identify optimal symptom combinations under two structural
+approaches: a <strong>hierarchical</strong> approach (requiring at least
+one symptom from each DSM-5 cluster) and a
+<strong>non-hierarchical</strong> approach (ignoring cluster
+membership).</p>
+<blockquote>
+<p><strong>Note on computation time.</strong> The examples below use
+4-symptom combinations (C(20, 4) = 4,845 to evaluate), which run in
+seconds. A typical real-world analysis uses 6-symptom combinations
+(C(20, 6) = 38,760), which takes 1–2 minutes per call with 5,000
+observations. The workflow and output structure are identical regardless
+of <code>n_symptoms</code>.</p>
+</blockquote>
 <div class="section level3">
 <h3 id="hierarchical-analysis">4.1. Hierarchical Analysis<a class="anchor" aria-label="anchor" href="#hierarchical-analysis"></a>
 </h3>
-<p>First, let’s find out the three optimal six-symptom combinations, of
-which at least four symptoms must be present for the diagnosis, where
-one symptom from each DSM-5 criterion cluster must be included. This
-approach maintains the hierarchical structure of PTSD diagnosis. As a
-reminder, these are the symptom clusters in the PCL-5:</p>
+<p>In the hierarchical approach at least one symptom from each DSM-5
+cluster must be included in the combination. This maintains the
+structural logic of the diagnostic criteria.</p>
+<p>The <code>score_by</code> argument controls what “optimal” means:</p>
 <ul>
-<li>Items 1-5: Intrusion symptoms (Criterion B)</li>
-<li>Items 6-7: Avoidance symptoms (Criterion C)</li>
-<li>Items 8-14: Negative alterations in cognitions and mood (Criterion
-D)</li>
-<li>Items 15-20: Alterations in arousal and reactivity (Criterion
-E)</li>
+<li>
+<code>"newly_nondiagnosed"</code> — minimize false negatives (missed
+diagnoses)</li>
+<li>
+<code>"false_cases"</code> — minimize total misclassifications</li>
 </ul>
-<p>The definition of the “optimal combination” can be determined with
-the score_by argument. Optimization can be based on either:</p>
-<ul>
-<li>Minimizing false cases (both false positives and false
-negatives)</li>
-<li>Minimizing only false negatives (newly non-diagnosed cases)</li>
-</ul>
-<p>In our example, we want to miss as few diagnoses as possible compared
-to the original DSM-5 criteria, so we want to minimize the false
-negative cases (newly_nondiagnosed).</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Find best combinations with hierarchical approach, minimizing false negatives</span></span>
-<span><span class="va">best_combinations_hierarchical</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/optimize_combinations_clusters.html">optimize_combinations_clusters</a></span><span class="op">(</span></span>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">best_combinations_hierarchical</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/optimize_combinations_clusters.html">optimize_combinations_clusters</a></span><span class="op">(</span></span>
 <span>  <span class="va">simulated_ptsd_renamed</span>,</span>
-<span>  n_symptoms <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>  n_required <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>  n_top <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>  score_by <span class="op">=</span> <span class="st">"newly_nondiagnosed"</span>,</span>
-<span>  clusters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>B <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, C <span class="op">=</span> <span class="fl">6</span><span class="op">:</span><span class="fl">7</span>, D <span class="op">=</span> <span class="fl">8</span><span class="op">:</span><span class="fl">14</span>, E <span class="op">=</span> <span class="fl">15</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span></span>
+<span>  n_symptoms <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  n_required <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  n_top      <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  score_by   <span class="op">=</span> <span class="st">"newly_nondiagnosed"</span>,</span>
+<span>  clusters   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>B <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, C <span class="op">=</span> <span class="fl">6</span><span class="op">:</span><span class="fl">7</span>, D <span class="op">=</span> <span class="fl">8</span><span class="op">:</span><span class="fl">14</span>, E <span class="op">=</span> <span class="fl">15</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span>,</span>
+<span>  show_progress <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><strong>Understanding the Output</strong></p>
-<p>The function returns three key elements. Let’s take a look at it.</p>
-<ol style="list-style-type: decimal">
-<li>Selected Symptom Combinations:</li>
-</ol>
+<p>The function returns three elements. <strong>1. The best symptom
+combinations identified:</strong></p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">best_combinations_hierarchical</span><span class="op">$</span><span class="va">best_symptoms</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt; [1]  1  7 11 17</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]</span></span>
+<span><span class="co">#&gt; [1]  4  6 11 17</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[3]]</span></span>
+<span><span class="co">#&gt; [1]  1  6 11 17</span></span></code></pre></div>
+<p><strong>2. A row-level comparison of DSM-5-TR vs. each new
+combination</strong> (first 5 rows shown):</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">best_combinations_hierarchical</span><span class="op">$</span><span class="va">diagnosis_comparison</span>, <span class="fl">5</span><span class="op">)</span>,</span>
+<span>  caption <span class="op">=</span> <span class="st">"Diagnosis comparison: DSM-5-TR vs. top hierarchical combinations (first 5 rows)"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>Diagnosis comparison: DSM-5-TR vs. top hierarchical
+combinations (first 5 rows)</caption>
+<thead><tr class="header">
+<th align="left">PTSD_orig</th>
+<th align="left">symptom_1_7_11_17</th>
+<th align="left">symptom_4_6_11_17</th>
+<th align="left">symptom_1_6_11_17</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+<td align="left">FALSE</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="even">
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="odd">
+<td align="left">TRUE</td>
+<td align="left">FALSE</td>
+<td align="left">TRUE</td>
+<td align="left">FALSE</td>
+</tr>
+<tr class="even">
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="odd">
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+</tr>
+</tbody>
+</table>
+<p><strong>3. Diagnostic accuracy metrics for each
+combination:</strong></p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">best_combinations_hierarchical</span><span class="op">$</span><span class="va">best_symptoms</span></span></code></pre></div>
-<ol start="2" style="list-style-type: decimal">
-<li>Data comparing original DSM-5 diagnosis with diagnoses based on the
-three best combinations</li>
-</ol>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Shows true/false values for original vs. new criteria</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">best_combinations_hierarchical</span><span class="op">$</span><span class="va">diagnosis_comparison</span>, <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
-<ol start="3" style="list-style-type: decimal">
-<li>Summary table showing diagnostic accuracy metrics for each
-combination</li>
-</ol>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">best_combinations_hierarchical</span><span class="op">$</span><span class="va">summary</span></span></code></pre></div>
-<p>The summary table includes:</p>
-<ul>
-<li>Total Diagnosed: Number and percentage of cases diagnosed</li>
-<li>Total Non-Diagnosed: Number and percentage of non-diagnosed
-cases</li>
-<li>True Positive/Negative: Agreement with original criteria</li>
-<li>False Positive/Negative: Disagreement with original criteria</li>
-<li>Sensitivity/Specificity: Diagnostic accuracy measures</li>
-<li>PPV/NPV: Predictive values</li>
-</ul>
+<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="va">best_combinations_hierarchical</span><span class="op">$</span><span class="va">summary</span>,</span>
+<span>  digits  <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  caption <span class="op">=</span> <span class="st">"Hierarchical combinations: diagnostic accuracy metrics"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>Hierarchical combinations: diagnostic accuracy
+metrics</caption>
+<colgroup>
+<col width="9%">
+<col width="7%">
+<col width="2%">
+<col width="8%">
+<col width="10%">
+<col width="7%">
+<col width="7%">
+<col width="8%">
+<col width="10%">
+<col width="5%">
+<col width="6%">
+<col width="6%">
+<col width="6%">
+<col width="3%">
+<col width="3%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Scenario</th>
+<th align="left">combination_id</th>
+<th align="right">rank</th>
+<th align="left">Total Diagnosed</th>
+<th align="left">Total Non-Diagnosed</th>
+<th align="right">True Positive</th>
+<th align="right">True Negative</th>
+<th align="right">Newly Diagnosed</th>
+<th align="right">Newly Non-Diagnosed</th>
+<th align="right">True Cases</th>
+<th align="right">False Cases</th>
+<th align="right">Sensitivity</th>
+<th align="right">Specificity</th>
+<th align="right">PPV</th>
+<th align="right">NPV</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">PTSD_orig</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="left">4710 (94.2%)</td>
+<td align="left">290 (5.8%)</td>
+<td align="right">4710</td>
+<td align="right">290</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">5000</td>
+<td align="right">0</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_1_7_11_17</td>
+<td align="left">1_7_11_17</td>
+<td align="right">1</td>
+<td align="left">3755 (75.1%)</td>
+<td align="left">1245 (24.9%)</td>
+<td align="right">3753</td>
+<td align="right">288</td>
+<td align="right">2</td>
+<td align="right">957</td>
+<td align="right">4041</td>
+<td align="right">959</td>
+<td align="right">0.7968</td>
+<td align="right">0.9931</td>
+<td align="right">0.9995</td>
+<td align="right">0.2313</td>
+</tr>
+<tr class="odd">
+<td align="left">symptom_4_6_11_17</td>
+<td align="left">4_6_11_17</td>
+<td align="right">2</td>
+<td align="left">3754 (75.08%)</td>
+<td align="left">1246 (24.92%)</td>
+<td align="right">3750</td>
+<td align="right">286</td>
+<td align="right">4</td>
+<td align="right">960</td>
+<td align="right">4036</td>
+<td align="right">964</td>
+<td align="right">0.7962</td>
+<td align="right">0.9862</td>
+<td align="right">0.9989</td>
+<td align="right">0.2295</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_1_6_11_17</td>
+<td align="left">1_6_11_17</td>
+<td align="right">3</td>
+<td align="left">3752 (75.04%)</td>
+<td align="left">1248 (24.96%)</td>
+<td align="right">3749</td>
+<td align="right">287</td>
+<td align="right">3</td>
+<td align="right">961</td>
+<td align="right">4036</td>
+<td align="right">964</td>
+<td align="right">0.7960</td>
+<td align="right">0.9897</td>
+<td align="right">0.9992</td>
+<td align="right">0.2300</td>
+</tr>
+</tbody>
+</table>
+<p>The summary includes total diagnosed/non-diagnosed counts, true/false
+positives and negatives, and sensitivity, specificity, PPV, and NPV.</p>
 </div>
 <div class="section level3">
 <h3 id="non-hierarchical-analysis">4.2. Non-Hierarchical Analysis<a class="anchor" aria-label="anchor" href="#non-hierarchical-analysis"></a>
 </h3>
-<p>Now we do the same for the non-hierarchical approach. We want to find
-the three optimal six-symptom combinations, of which at least four
-symptoms must be present for the diagnosis, regardless of cluster
-membership.</p>
-<p>Here too, the definition of the “optimal combination” can be
-determined using the score_by argument. Optimization again can be based
-on either:</p>
-<ul>
-<li>Minimizing false cases (both false positives and false
-negatives)</li>
-<li>Minimizing only false negatives (newly non-diagnosed cases)</li>
-</ul>
-<p>In our example, we want to miss as few diagnoses as possible compared
-to the original DSM-5 criteria, so we want to minimize the false
-negative cases (newly_nondiagnosed) in the non-hierarchical approach as
-well.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Find best combinations with non-hierarchical approach, minimizing false negatives</span></span>
-<span><span class="va">best_combinations_nonhierarchical</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/optimize_combinations.html">optimize_combinations</a></span><span class="op">(</span></span>
+<p>The non-hierarchical approach selects symptoms purely by accuracy,
+without requiring cluster representation.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">best_combinations_nonhierarchical</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/optimize_combinations.html">optimize_combinations</a></span><span class="op">(</span></span>
 <span>  <span class="va">simulated_ptsd_renamed</span>,</span>
-<span>  n_symptoms <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>  n_required <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>  n_top <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>  score_by <span class="op">=</span> <span class="st">"newly_nondiagnosed"</span></span>
+<span>  n_symptoms <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  n_required <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  n_top      <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  score_by   <span class="op">=</span> <span class="st">"newly_nondiagnosed"</span>,</span>
+<span>  show_progress <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><strong>Understanding the Output</strong></p>
-<p>Again, let’s take a look at the output</p>
-<ol style="list-style-type: decimal">
-<li>Selected Symptom Combinations:</li>
-</ol>
+<p><strong>Best symptom combinations:</strong></p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">best_combinations_nonhierarchical</span><span class="op">$</span><span class="va">best_symptoms</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt; [1]  1  6  7 13</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]</span></span>
+<span><span class="co">#&gt; [1]  4  6  7 13</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[3]]</span></span>
+<span><span class="co">#&gt; [1]  4  6  7 17</span></span></code></pre></div>
+<p><strong>Diagnosis comparison</strong> (first 5 rows):</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">best_combinations_nonhierarchical</span><span class="op">$</span><span class="va">diagnosis_comparison</span>, <span class="fl">5</span><span class="op">)</span>,</span>
+<span>  caption <span class="op">=</span> <span class="st">"Diagnosis comparison: DSM-5-TR vs. top non-hierarchical combinations (first 5 rows)"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>Diagnosis comparison: DSM-5-TR vs. top non-hierarchical
+combinations (first 5 rows)</caption>
+<thead><tr class="header">
+<th align="left">PTSD_orig</th>
+<th align="left">symptom_1_6_7_13</th>
+<th align="left">symptom_4_6_7_13</th>
+<th align="left">symptom_4_6_7_17</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="even">
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="odd">
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="even">
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="odd">
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Diagnostic accuracy metrics:</strong></p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">best_combinations_nonhierarchical</span><span class="op">$</span><span class="va">best_symptoms</span></span></code></pre></div>
-<ol start="2" style="list-style-type: decimal">
-<li>Data comparing original DSM-5 diagnosis with diagnoses based on the
-three best combinations</li>
-</ol>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Shows true/false values for original vs. new criteria</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">best_combinations_nonhierarchical</span><span class="op">$</span><span class="va">diagnosis_comparison</span>, <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
-<ol start="3" style="list-style-type: decimal">
-<li>Summary table showing diagnostic accuracy metrics for each
-combination</li>
-</ol>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">best_combinations_nonhierarchical</span><span class="op">$</span><span class="va">summary</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="va">best_combinations_nonhierarchical</span><span class="op">$</span><span class="va">summary</span>,</span>
+<span>  digits  <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  caption <span class="op">=</span> <span class="st">"Non-hierarchical combinations: diagnostic accuracy metrics"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table style="width:100%;" class="table">
+<caption>Non-hierarchical combinations: diagnostic accuracy
+metrics</caption>
+<colgroup>
+<col width="8%">
+<col width="7%">
+<col width="2%">
+<col width="8%">
+<col width="10%">
+<col width="7%">
+<col width="7%">
+<col width="8%">
+<col width="10%">
+<col width="5%">
+<col width="6%">
+<col width="6%">
+<col width="6%">
+<col width="3%">
+<col width="3%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Scenario</th>
+<th align="left">combination_id</th>
+<th align="right">rank</th>
+<th align="left">Total Diagnosed</th>
+<th align="left">Total Non-Diagnosed</th>
+<th align="right">True Positive</th>
+<th align="right">True Negative</th>
+<th align="right">Newly Diagnosed</th>
+<th align="right">Newly Non-Diagnosed</th>
+<th align="right">True Cases</th>
+<th align="right">False Cases</th>
+<th align="right">Sensitivity</th>
+<th align="right">Specificity</th>
+<th align="right">PPV</th>
+<th align="right">NPV</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">PTSD_orig</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="left">4710 (94.2%)</td>
+<td align="left">290 (5.8%)</td>
+<td align="right">4710</td>
+<td align="right">290</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">5000</td>
+<td align="right">0</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_1_6_7_13</td>
+<td align="left">1_6_7_13</td>
+<td align="right">1</td>
+<td align="left">4573 (91.46%)</td>
+<td align="left">427 (8.54%)</td>
+<td align="right">4535</td>
+<td align="right">252</td>
+<td align="right">38</td>
+<td align="right">175</td>
+<td align="right">4787</td>
+<td align="right">213</td>
+<td align="right">0.9628</td>
+<td align="right">0.8690</td>
+<td align="right">0.9917</td>
+<td align="right">0.5902</td>
+</tr>
+<tr class="odd">
+<td align="left">symptom_4_6_7_13</td>
+<td align="left">4_6_7_13</td>
+<td align="right">2</td>
+<td align="left">4574 (91.48%)</td>
+<td align="left">426 (8.52%)</td>
+<td align="right">4535</td>
+<td align="right">251</td>
+<td align="right">39</td>
+<td align="right">175</td>
+<td align="right">4786</td>
+<td align="right">214</td>
+<td align="right">0.9628</td>
+<td align="right">0.8655</td>
+<td align="right">0.9915</td>
+<td align="right">0.5892</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_4_6_7_17</td>
+<td align="left">4_6_7_17</td>
+<td align="right">3</td>
+<td align="left">4568 (91.36%)</td>
+<td align="left">432 (8.64%)</td>
+<td align="right">4528</td>
+<td align="right">250</td>
+<td align="right">40</td>
+<td align="right">182</td>
+<td align="right">4778</td>
+<td align="right">222</td>
+<td align="right">0.9614</td>
+<td align="right">0.8621</td>
+<td align="right">0.9912</td>
+<td align="right">0.5787</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="section level2">
-<h2 id="exporting-and-importing-combinations">5. Exporting and Importing Combinations<a class="anchor" aria-label="anchor" href="#exporting-and-importing-combinations"></a>
+<h2 id="comparing-diagnostic-systems">5. Comparing Diagnostic Systems<a class="anchor" aria-label="anchor" href="#comparing-diagnostic-systems"></a>
 </h2>
-<p>Once you have identified optimal symptom combinations, you may want
-to share them with collaborators or save them for later use. The
-<code><a href="../reference/write_combinations.html">write_combinations()</a></code> and <code><a href="../reference/read_combinations.html">read_combinations()</a></code>
-functions allow you to export and import combinations as human-readable
-JSON files.</p>
+<p>After identifying optimal symptom combinations, a natural next step
+is to benchmark them against established reference standards: the full
+DSM-5-TR criteria and the ICD-11 PTSD definition. The
+<code>PTSDdiag</code> package provides two functions for this
+purpose.</p>
 <div class="section level3">
-<h3 id="saving-derived-combinations">5.1. Saving Derived Combinations<a class="anchor" aria-label="anchor" href="#saving-derived-combinations"></a>
+<h3 id="icd-11-ptsd-criteria">5.1. ICD-11 PTSD Criteria<a class="anchor" aria-label="anchor" href="#icd-11-ptsd-criteria"></a>
 </h3>
-<p>After running an optimization, you can export the results
-directly:</p>
+<p>The ICD-11 defines PTSD using a narrower and more parsimonious
+symptom set than DSM-5-TR. Using PCL-5 items, the ICD-11 requires
+<strong>all three</strong> of the following clusters to be met (symptom
+present = score ≥ 2):</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>ICD-11 Cluster</th>
+<th>Requirement</th>
+<th>PCL-5 Items</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Re-experiencing (in the present)</td>
+<td>≥ 1 of items 1, 2, 3</td>
+<td>Intrusive memories, nightmares, flashbacks</td>
+</tr>
+<tr class="even">
+<td>Avoidance</td>
+<td>≥ 1 of items 6, 7</td>
+<td>Avoidance of thoughts, avoidance of reminders</td>
+</tr>
+<tr class="odd">
+<td>Sense of current threat</td>
+<td>≥ 1 of items 16, 17</td>
+<td>Hypervigilance, exaggerated startle</td>
+</tr>
+</tbody>
+</table>
+<p><code><a href="../reference/create_icd11_diagnosis.html">create_icd11_diagnosis()</a></code> applies these criteria and
+returns a two-column data frame (<code>PTSD_orig</code>,
+<code>PTSD_icd11</code>) that is directly compatible with the existing
+metrics pipeline.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">icd11_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_icd11_diagnosis.html">create_icd11_diagnosis</a></span><span class="op">(</span><span class="va">simulated_ptsd_renamed</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">icd11_result</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   PTSD_orig PTSD_icd11</span></span>
+<span><span class="co">#&gt; 1      TRUE       TRUE</span></span>
+<span><span class="co">#&gt; 2      TRUE       TRUE</span></span>
+<span><span class="co">#&gt; 3      TRUE      FALSE</span></span>
+<span><span class="co">#&gt; 4      TRUE       TRUE</span></span>
+<span><span class="co">#&gt; 5      TRUE       TRUE</span></span>
+<span><span class="co">#&gt; 6      TRUE       TRUE</span></span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"DSM-5-TR prevalence: %.1f%%\n"</span>, <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">icd11_result</span><span class="op">$</span><span class="va">PTSD_orig</span><span class="op">)</span>  <span class="op">*</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; DSM-5-TR prevalence: 94.2%</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"ICD-11 prevalence:   %.1f%%\n"</span>, <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">icd11_result</span><span class="op">$</span><span class="va">PTSD_icd11</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; ICD-11 prevalence:   92.8%</span></span></code></pre></div>
+<p>The output feeds directly into the standard metrics pipeline:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Export the hierarchical combinations</span></span>
-<span><span class="fu"><a href="../reference/write_combinations.html">write_combinations</a></span><span class="op">(</span></span>
-<span>  <span class="va">best_combinations_hierarchical</span><span class="op">$</span><span class="va">best_symptoms</span>,</span>
-<span>  file <span class="op">=</span> <span class="st">"hierarchical_combos.json"</span>,</span>
-<span>  n_required <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>  clusters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>B <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, C <span class="op">=</span> <span class="fl">6</span><span class="op">:</span><span class="fl">7</span>, D <span class="op">=</span> <span class="fl">8</span><span class="op">:</span><span class="fl">14</span>, E <span class="op">=</span> <span class="fl">15</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span>,</span>
-<span>  score_by <span class="op">=</span> <span class="st">"newly_nondiagnosed"</span>,</span>
-<span>  description <span class="op">=</span> <span class="st">"Top 3 hierarchical combinations from simulated veteran sample"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Export the non-hierarchical combinations</span></span>
-<span><span class="fu"><a href="../reference/write_combinations.html">write_combinations</a></span><span class="op">(</span></span>
-<span>  <span class="va">best_combinations_nonhierarchical</span><span class="op">$</span><span class="va">best_symptoms</span>,</span>
-<span>  file <span class="op">=</span> <span class="st">"nonhierarchical_combos.json"</span>,</span>
-<span>  n_required <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>  score_by <span class="op">=</span> <span class="st">"newly_nondiagnosed"</span>,</span>
-<span>  description <span class="op">=</span> <span class="st">"Top 3 non-hierarchical combinations from simulated veteran sample"</span></span>
+<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/create_readable_summary.html">create_readable_summary</a></span><span class="op">(</span><span class="fu"><a href="../reference/summarize_ptsd_changes.html">summarize_ptsd_changes</a></span><span class="op">(</span><span class="va">icd11_result</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  digits  <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  caption <span class="op">=</span> <span class="st">"ICD-11 vs. DSM-5-TR: diagnostic accuracy metrics"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>You can also pass the full result object directly — the function
-automatically extracts <code>$best_symptoms</code>:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># This also works (auto-detects the optimization result object)</span></span>
-<span><span class="fu"><a href="../reference/write_combinations.html">write_combinations</a></span><span class="op">(</span><span class="va">best_combinations_hierarchical</span>, file <span class="op">=</span> <span class="st">"hierarchical_combos.json"</span>,</span>
-<span>                   n_required <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>                   clusters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>B <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, C <span class="op">=</span> <span class="fl">6</span><span class="op">:</span><span class="fl">7</span>, D <span class="op">=</span> <span class="fl">8</span><span class="op">:</span><span class="fl">14</span>, E <span class="op">=</span> <span class="fl">15</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span>,</span>
-<span>                   score_by <span class="op">=</span> <span class="st">"newly_nondiagnosed"</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>ICD-11 vs. DSM-5-TR: diagnostic accuracy metrics</caption>
+<colgroup>
+<col width="6%">
+<col width="9%">
+<col width="11%">
+<col width="8%">
+<col width="8%">
+<col width="9%">
+<col width="11%">
+<col width="6%">
+<col width="6%">
+<col width="6%">
+<col width="6%">
+<col width="4%">
+<col width="4%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Scenario</th>
+<th align="left">Total Diagnosed</th>
+<th align="left">Total Non-Diagnosed</th>
+<th align="right">True Positive</th>
+<th align="right">True Negative</th>
+<th align="right">Newly Diagnosed</th>
+<th align="right">Newly Non-Diagnosed</th>
+<th align="right">True Cases</th>
+<th align="right">False Cases</th>
+<th align="right">Sensitivity</th>
+<th align="right">Specificity</th>
+<th align="right">PPV</th>
+<th align="right">NPV</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">PTSD_orig</td>
+<td align="left">4710 (94.2%)</td>
+<td align="left">290 (5.8%)</td>
+<td align="right">4710</td>
+<td align="right">290</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">5000</td>
+<td align="right">0</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+</tr>
+<tr class="even">
+<td align="left">PTSD_icd11</td>
+<td align="left">4641 (92.82%)</td>
+<td align="left">359 (7.18%)</td>
+<td align="right">4607</td>
+<td align="right">256</td>
+<td align="right">34</td>
+<td align="right">103</td>
+<td align="right">4863</td>
+<td align="right">137</td>
+<td align="right">0.9781</td>
+<td align="right">0.8828</td>
+<td align="right">0.9927</td>
+<td align="right">0.7131</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level3">
-<h3 id="loading-saved-combinations">5.2. Loading Saved Combinations<a class="anchor" aria-label="anchor" href="#loading-saved-combinations"></a>
+<h3 id="unified-comparison-table">5.2. Unified Comparison Table<a class="anchor" aria-label="anchor" href="#unified-comparison-table"></a>
+</h3>
+<p><code><a href="../reference/compare_diagnostic_systems.html">compare_diagnostic_systems()</a></code> combines any number of
+diagnostic criteria — DSM-5-TR (always the reference), ICD-11 (computed
+internally when <code>icd11 = TRUE</code>), and any pre-specified or
+optimized combinations — into a single presentation-ready table.</p>
+<p><strong>ICD-11 vs. DSM-5-TR only:</strong></p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/compare_diagnostic_systems.html">compare_diagnostic_systems</a></span><span class="op">(</span><span class="va">simulated_ptsd_renamed</span>, icd11 <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  digits  <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  caption <span class="op">=</span> <span class="st">"Comparison table: DSM-5-TR and ICD-11"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table style="width:100%;" class="table">
+<caption>Comparison table: DSM-5-TR and ICD-11</caption>
+<colgroup>
+<col width="5%">
+<col width="7%">
+<col width="8%">
+<col width="7%">
+<col width="7%">
+<col width="4%">
+<col width="4%">
+<col width="10%">
+<col width="11%">
+<col width="10%">
+<col width="11%">
+<col width="9%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">system</th>
+<th align="right">n_diagnosed</th>
+<th align="right">pct_diagnosed</th>
+<th align="right">sensitivity</th>
+<th align="right">specificity</th>
+<th align="right">ppv</th>
+<th align="right">npv</th>
+<th align="right">n_false_negative</th>
+<th align="right">pct_false_negative</th>
+<th align="right">n_false_positive</th>
+<th align="right">pct_false_positive</th>
+<th align="right">n_misclassified</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">DSM-5-TR</td>
+<td align="right">4710</td>
+<td align="right">94.20</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">0</td>
+<td align="right">0.00</td>
+<td align="right">0</td>
+<td align="right">0.00</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">ICD-11</td>
+<td align="right">4641</td>
+<td align="right">92.82</td>
+<td align="right">0.9781</td>
+<td align="right">0.8828</td>
+<td align="right">0.9927</td>
+<td align="right">0.7131</td>
+<td align="right">103</td>
+<td align="right">2.06</td>
+<td align="right">34</td>
+<td align="right">0.68</td>
+<td align="right">137</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Adding optimized combinations:</strong></p>
+<p>Pass comparison data frames from
+<code><a href="../reference/apply_symptom_combinations.html">apply_symptom_combinations()</a></code> alongside the raw data. You
+can equally pass the <code>$diagnosis_comparison</code> slot produced by
+<code><a href="../reference/optimize_combinations.html">optimize_combinations()</a></code> or
+<code><a href="../reference/optimize_combinations_clusters.html">optimize_combinations_clusters()</a></code> — it shares the same
+structure. Here we reuse the derivation results from Section 4:</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tbl_full</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_diagnostic_systems.html">compare_diagnostic_systems</a></span><span class="op">(</span></span>
+<span>  <span class="va">simulated_ptsd_renamed</span>,</span>
+<span>  <span class="va">best_combinations_nonhierarchical</span><span class="op">$</span><span class="va">diagnosis_comparison</span>,</span>
+<span>  <span class="va">best_combinations_hierarchical</span><span class="op">$</span><span class="va">diagnosis_comparison</span>,</span>
+<span>  icd11 <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="va">tbl_full</span>,</span>
+<span>  digits  <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  caption <span class="op">=</span> <span class="st">"Comparison table: DSM-5-TR, ICD-11, non-hierarchical and hierarchical combinations"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>Comparison table: DSM-5-TR, ICD-11, non-hierarchical and
+hierarchical combinations</caption>
+<colgroup>
+<col width="10%">
+<col width="7%">
+<col width="8%">
+<col width="7%">
+<col width="7%">
+<col width="4%">
+<col width="4%">
+<col width="10%">
+<col width="11%">
+<col width="10%">
+<col width="11%">
+<col width="9%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">system</th>
+<th align="right">n_diagnosed</th>
+<th align="right">pct_diagnosed</th>
+<th align="right">sensitivity</th>
+<th align="right">specificity</th>
+<th align="right">ppv</th>
+<th align="right">npv</th>
+<th align="right">n_false_negative</th>
+<th align="right">pct_false_negative</th>
+<th align="right">n_false_positive</th>
+<th align="right">pct_false_positive</th>
+<th align="right">n_misclassified</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">DSM-5-TR</td>
+<td align="right">4710</td>
+<td align="right">94.20</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">0</td>
+<td align="right">0.00</td>
+<td align="right">0</td>
+<td align="right">0.00</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">ICD-11</td>
+<td align="right">4641</td>
+<td align="right">92.82</td>
+<td align="right">0.9781</td>
+<td align="right">0.8828</td>
+<td align="right">0.9927</td>
+<td align="right">0.7131</td>
+<td align="right">103</td>
+<td align="right">2.06</td>
+<td align="right">34</td>
+<td align="right">0.68</td>
+<td align="right">137</td>
+</tr>
+<tr class="odd">
+<td align="left">symptom_1_6_7_13</td>
+<td align="right">4573</td>
+<td align="right">91.46</td>
+<td align="right">0.9628</td>
+<td align="right">0.8690</td>
+<td align="right">0.9917</td>
+<td align="right">0.5902</td>
+<td align="right">175</td>
+<td align="right">3.50</td>
+<td align="right">38</td>
+<td align="right">0.76</td>
+<td align="right">213</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_4_6_7_13</td>
+<td align="right">4574</td>
+<td align="right">91.48</td>
+<td align="right">0.9628</td>
+<td align="right">0.8655</td>
+<td align="right">0.9915</td>
+<td align="right">0.5892</td>
+<td align="right">175</td>
+<td align="right">3.50</td>
+<td align="right">39</td>
+<td align="right">0.78</td>
+<td align="right">214</td>
+</tr>
+<tr class="odd">
+<td align="left">symptom_4_6_7_17</td>
+<td align="right">4568</td>
+<td align="right">91.36</td>
+<td align="right">0.9614</td>
+<td align="right">0.8621</td>
+<td align="right">0.9912</td>
+<td align="right">0.5787</td>
+<td align="right">182</td>
+<td align="right">3.64</td>
+<td align="right">40</td>
+<td align="right">0.80</td>
+<td align="right">222</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_1_7_11_17</td>
+<td align="right">3755</td>
+<td align="right">75.10</td>
+<td align="right">0.7968</td>
+<td align="right">0.9931</td>
+<td align="right">0.9995</td>
+<td align="right">0.2313</td>
+<td align="right">957</td>
+<td align="right">19.14</td>
+<td align="right">2</td>
+<td align="right">0.04</td>
+<td align="right">959</td>
+</tr>
+<tr class="odd">
+<td align="left">symptom_4_6_11_17</td>
+<td align="right">3754</td>
+<td align="right">75.08</td>
+<td align="right">0.7962</td>
+<td align="right">0.9862</td>
+<td align="right">0.9989</td>
+<td align="right">0.2295</td>
+<td align="right">960</td>
+<td align="right">19.20</td>
+<td align="right">4</td>
+<td align="right">0.08</td>
+<td align="right">964</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_1_6_11_17</td>
+<td align="right">3752</td>
+<td align="right">75.04</td>
+<td align="right">0.7960</td>
+<td align="right">0.9897</td>
+<td align="right">0.9992</td>
+<td align="right">0.2300</td>
+<td align="right">961</td>
+<td align="right">19.22</td>
+<td align="right">3</td>
+<td align="right">0.06</td>
+<td align="right">964</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key points:</strong></p>
+<ul>
+<li>
+<code>"DSM-5-TR"</code> and <code>"ICD-11"</code> labels are applied
+automatically — no need to specify them in <code>labels</code>.</li>
+<li>Use the <code>labels</code> argument to rename the optimized
+combination rows (by default, column names such as
+<code>symptom_1_6_8_15</code> are used).</li>
+<li>Set <code>icd11 = FALSE</code> to omit the ICD-11 row if not
+needed.</li>
+<li>The function validates that all <code>PTSD_orig</code> columns match
+the reference computed from <code>data</code>, ensuring
+consistency.</li>
+</ul>
+</div>
+</div>
+<div class="section level2">
+<h2 id="exporting-and-importing-combinations">6. Exporting and Importing Combinations<a class="anchor" aria-label="anchor" href="#exporting-and-importing-combinations"></a>
+</h2>
+<p>Once you have identified optimal symptom combinations, you can share
+them with collaborators or save them for later use.
+<code><a href="../reference/write_combinations.html">write_combinations()</a></code> and <code><a href="../reference/read_combinations.html">read_combinations()</a></code>
+export and import combinations as human-readable JSON files.</p>
+<div class="section level3">
+<h3 id="saving-derived-combinations">6.1. Saving Derived Combinations<a class="anchor" aria-label="anchor" href="#saving-derived-combinations"></a>
+</h3>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Save to a temporary file for this demonstration</span></span>
+<span><span class="co"># In practice, specify a permanent path: file = "hierarchical_combos.json"</span></span>
+<span><span class="va">tmp_hier</span>    <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".json"</span><span class="op">)</span></span>
+<span><span class="va">tmp_nonhier</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".json"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/write_combinations.html">write_combinations</a></span><span class="op">(</span></span>
+<span>  <span class="va">best_combinations_hierarchical</span><span class="op">$</span><span class="va">best_symptoms</span>,</span>
+<span>  file        <span class="op">=</span> <span class="va">tmp_hier</span>,</span>
+<span>  n_required  <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  clusters    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>B <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, C <span class="op">=</span> <span class="fl">6</span><span class="op">:</span><span class="fl">7</span>, D <span class="op">=</span> <span class="fl">8</span><span class="op">:</span><span class="fl">14</span>, E <span class="op">=</span> <span class="fl">15</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span>,</span>
+<span>  score_by    <span class="op">=</span> <span class="st">"newly_nondiagnosed"</span>,</span>
+<span>  description <span class="op">=</span> <span class="st">"Top 3 hierarchical combinations from simulated data"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/write_combinations.html">write_combinations</a></span><span class="op">(</span></span>
+<span>  <span class="va">best_combinations_nonhierarchical</span><span class="op">$</span><span class="va">best_symptoms</span>,</span>
+<span>  file       <span class="op">=</span> <span class="va">tmp_nonhier</span>,</span>
+<span>  n_required <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  score_by   <span class="op">=</span> <span class="st">"newly_nondiagnosed"</span>,</span>
+<span>  description <span class="op">=</span> <span class="st">"Top 3 non-hierarchical combinations from simulated data"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Files written successfully.\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Files written successfully.</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="loading-saved-combinations">6.2. Loading Saved Combinations<a class="anchor" aria-label="anchor" href="#loading-saved-combinations"></a>
 </h3>
 <p>A collaborator (or you in a future session) can load the combinations
 and apply them to new data:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Read the exported combinations</span></span>
-<span><span class="va">spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_combinations.html">read_combinations</a></span><span class="op">(</span><span class="st">"hierarchical_combos.json"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Read the exported file</span></span>
+<span><span class="va">spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_combinations.html">read_combinations</a></span><span class="op">(</span><span class="va">tmp_hier</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Inspect what was loaded</span></span>
-<span><span class="va">spec</span><span class="op">$</span><span class="va">combinations</span>    <span class="co"># The symptom combinations</span></span>
-<span><span class="va">spec</span><span class="op">$</span><span class="va">n_required</span>      <span class="co"># Required symptom threshold</span></span>
-<span><span class="va">spec</span><span class="op">$</span><span class="va">clusters</span>        <span class="co"># Cluster structure (NULL if non-hierarchical)</span></span>
-<span><span class="va">spec</span><span class="op">$</span><span class="va">description</span>     <span class="co"># Description provided during export</span></span>
-<span></span>
-<span><span class="co"># Apply to any dataset</span></span>
-<span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_symptom_combinations.html">apply_symptom_combinations</a></span><span class="op">(</span></span>
+<span><span class="co"># Inspect the stored metadata</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Combinations loaded: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">spec</span><span class="op">$</span><span class="va">combinations</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Combinations loaded:  3</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"n_required:          "</span>, <span class="va">spec</span><span class="op">$</span><span class="va">n_required</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; n_required:           3</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Clusters:            "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">spec</span><span class="op">$</span><span class="va">clusters</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Clusters:             B, C, D, E</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Description:         "</span>, <span class="va">spec</span><span class="op">$</span><span class="va">description</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Description:          Top 3 hierarchical combinations from simulated data</span></span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Apply to any dataset with the same column structure</span></span>
+<span><span class="va">comparison_loaded</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_symptom_combinations.html">apply_symptom_combinations</a></span><span class="op">(</span></span>
 <span>  <span class="va">simulated_ptsd_renamed</span>,</span>
 <span>  combinations <span class="op">=</span> <span class="va">spec</span><span class="op">$</span><span class="va">combinations</span>,</span>
-<span>  n_required <span class="op">=</span> <span class="va">spec</span><span class="op">$</span><span class="va">n_required</span>,</span>
-<span>  clusters <span class="op">=</span> <span class="va">spec</span><span class="op">$</span><span class="va">clusters</span></span>
+<span>  n_required   <span class="op">=</span> <span class="va">spec</span><span class="op">$</span><span class="va">n_required</span>,</span>
+<span>  clusters     <span class="op">=</span> <span class="va">spec</span><span class="op">$</span><span class="va">clusters</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Compute diagnostic metrics</span></span>
-<span><span class="va">metrics</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarize_ptsd_changes.html">summarize_ptsd_changes</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/create_readable_summary.html">create_readable_summary</a></span><span class="op">(</span><span class="va">metrics</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/create_readable_summary.html">create_readable_summary</a></span><span class="op">(</span><span class="fu"><a href="../reference/summarize_ptsd_changes.html">summarize_ptsd_changes</a></span><span class="op">(</span><span class="va">comparison_loaded</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  digits  <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  caption <span class="op">=</span> <span class="st">"Performance of re-loaded hierarchical combinations"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table style="width:100%;" class="table">
+<caption>Performance of re-loaded hierarchical combinations</caption>
+<colgroup>
+<col width="10%">
+<col width="8%">
+<col width="11%">
+<col width="7%">
+<col width="7%">
+<col width="8%">
+<col width="11%">
+<col width="6%">
+<col width="6%">
+<col width="6%">
+<col width="6%">
+<col width="3%">
+<col width="3%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Scenario</th>
+<th align="left">Total Diagnosed</th>
+<th align="left">Total Non-Diagnosed</th>
+<th align="right">True Positive</th>
+<th align="right">True Negative</th>
+<th align="right">Newly Diagnosed</th>
+<th align="right">Newly Non-Diagnosed</th>
+<th align="right">True Cases</th>
+<th align="right">False Cases</th>
+<th align="right">Sensitivity</th>
+<th align="right">Specificity</th>
+<th align="right">PPV</th>
+<th align="right">NPV</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">PTSD_orig</td>
+<td align="left">4710 (94.2%)</td>
+<td align="left">290 (5.8%)</td>
+<td align="right">4710</td>
+<td align="right">290</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">5000</td>
+<td align="right">0</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_1_7_11_17</td>
+<td align="left">3755 (75.1%)</td>
+<td align="left">1245 (24.9%)</td>
+<td align="right">3753</td>
+<td align="right">288</td>
+<td align="right">2</td>
+<td align="right">957</td>
+<td align="right">4041</td>
+<td align="right">959</td>
+<td align="right">0.7968</td>
+<td align="right">0.9931</td>
+<td align="right">0.9995</td>
+<td align="right">0.2313</td>
+</tr>
+<tr class="odd">
+<td align="left">symptom_4_6_11_17</td>
+<td align="left">3754 (75.08%)</td>
+<td align="left">1246 (24.92%)</td>
+<td align="right">3750</td>
+<td align="right">286</td>
+<td align="right">4</td>
+<td align="right">960</td>
+<td align="right">4036</td>
+<td align="right">964</td>
+<td align="right">0.7962</td>
+<td align="right">0.9862</td>
+<td align="right">0.9989</td>
+<td align="right">0.2295</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_1_6_11_17</td>
+<td align="left">3752 (75.04%)</td>
+<td align="left">1248 (24.96%)</td>
+<td align="right">3749</td>
+<td align="right">287</td>
+<td align="right">3</td>
+<td align="right">961</td>
+<td align="right">4036</td>
+<td align="right">964</td>
+<td align="right">0.7960</td>
+<td align="right">0.9897</td>
+<td align="right">0.9992</td>
+<td align="right">0.2300</td>
+</tr>
+</tbody>
+</table>
 <p>This is particularly useful for external validation workflows where
-one research group derives the criteria and another group validates them
-on an independent dataset. See the <em>External Validation</em> vignette
-for a full worked example.</p>
+one research group derives the criteria and another validates them on an
+independent dataset. See the <em>External Validation</em> vignette for a
+full worked example.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="model-validation">6. Model Validation<a class="anchor" aria-label="anchor" href="#model-validation"></a>
+<h2 id="model-validation">7. Model Validation<a class="anchor" aria-label="anchor" href="#model-validation"></a>
 </h2>
-<p>After identifying optimal symptom combinations, it’s crucial to
+<p>After identifying optimal symptom combinations, it is crucial to
 validate their performance on independent data. The
-<code>PTSDdiag</code> package provides two validation approaches:
-Holdout Validation and Cross-Validation.</p>
+<code>PTSDdiag</code> package provides two validation approaches.</p>
+<blockquote>
+<p><strong>Note on computation time.</strong> The examples below use
+<code>n_symptoms = 4</code> to keep build time short. Real-world
+analyses typically use <code>n_symptoms = 6</code>.</p>
+</blockquote>
 <div class="section level3">
-<h3 id="holdout-validation">6.1. Holdout Validation<a class="anchor" aria-label="anchor" href="#holdout-validation"></a>
+<h3 id="holdout-validation">7.1. Holdout Validation<a class="anchor" aria-label="anchor" href="#holdout-validation"></a>
 </h3>
-<p>Holdout Validation splits the data into training and test sets,
-allowing us to evaluate how well the identified symptom combinations
-generalize to new data.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Perform holdout validation with 70/30 split</span></span>
-<span><span class="va">validation_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/holdout_validation.html">holdout_validation</a></span><span class="op">(</span></span>
+<p>Holdout validation splits the data into training (70%) and test (30%)
+sets. Optimal combinations are derived on the training set and evaluated
+on the held-out test set.</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">validation_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/holdout_validation.html">holdout_validation</a></span><span class="op">(</span></span>
 <span>  <span class="va">simulated_ptsd_renamed</span>,</span>
 <span>  train_ratio <span class="op">=</span> <span class="fl">0.7</span>,</span>
-<span>  score_by <span class="op">=</span> <span class="st">"newly_nondiagnosed"</span>,</span>
-<span>  seed <span class="op">=</span> <span class="fl">123</span></span>
+<span>  score_by    <span class="op">=</span> <span class="st">"newly_nondiagnosed"</span>,</span>
+<span>  seed        <span class="op">=</span> <span class="fl">123</span>,</span>
+<span>  n_symptoms  <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  n_required  <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  n_top       <span class="op">=</span> <span class="fl">3</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><strong>Results</strong></p>
-<p>The Holdout Validation results show how the symptom combinations
-perform on data they weren’t trained on, providing a more realistic
-estimate of their diagnostic accuracy.</p>
-<p>Examining Results for Non-Hierarchical Model:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Best combinations identified on training data</span></span>
-<span><span class="va">validation_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">best_combinations</span></span>
-<span></span>
-<span><span class="co"># Performance summary on test data</span></span>
-<span><span class="va">validation_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary</span></span></code></pre></div>
-<p>Examining Results for Hierarchical Model:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Best combinations identified on training data (with cluster representation)</span></span>
-<span><span class="va">validation_results</span><span class="op">$</span><span class="va">with_clusters</span><span class="op">$</span><span class="va">best_combinations</span></span>
-<span></span>
-<span><span class="co"># Performance summary on test data</span></span>
-<span><span class="va">validation_results</span><span class="op">$</span><span class="va">with_clusters</span><span class="op">$</span><span class="va">summary</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="cross-validation">6.2. Cross-Validation<a class="anchor" aria-label="anchor" href="#cross-validation"></a>
-</h3>
-<p>For a more robust assessment, k-fold Cross-Validation tests the
-stability of symptom combinations across multiple data splits.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Perform 5-fold cross-validation</span></span>
-<span><span class="va">cv_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cross_validation.html">cross_validation</a></span><span class="op">(</span></span>
-<span>  <span class="va">simulated_ptsd_renamed</span>,</span>
-<span>  k <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>  score_by <span class="op">=</span> <span class="st">"newly_nondiagnosed"</span>,</span>
-<span>  seed <span class="op">=</span> <span class="fl">123</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p><strong>Results by Fold</strong></p>
-<p>The function provides detailed results for each fold.</p>
-<p>Examining Results for Non-Hierarchical Model:</p>
+<p><strong>Best combinations identified on training data:</strong></p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Summary statistics for each fold (non-hierarchical model)</span></span>
-<span><span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary_by_fold</span></span></code></pre></div>
-<p>Examining Results for Hierarchical Model:</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Non-hierarchical:\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Non-hierarchical:</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">validation_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">best_combinations</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt; [1]  4  6  7 13</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]</span></span>
+<span><span class="co">#&gt; [1]  1  6  7 13</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[3]]</span></span>
+<span><span class="co">#&gt; [1]  4  6  7 17</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\nHierarchical:\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Hierarchical:</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">validation_results</span><span class="op">$</span><span class="va">with_clusters</span><span class="op">$</span><span class="va">best_combinations</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt; [1]  4  6 11 17</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]</span></span>
+<span><span class="co">#&gt; [1]  1  6 11 17</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[3]]</span></span>
+<span><span class="co">#&gt; [1]  5  6 11 17</span></span></code></pre></div>
+<p><strong>Test-set performance:</strong></p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Summary statistics for each fold (hierarchical model)</span></span>
-<span><span class="va">cv_results</span><span class="op">$</span><span class="va">with_clusters</span><span class="op">$</span><span class="va">summary_by_fold</span></span></code></pre></div>
-<p><strong>Stable Combinations Across Folds</strong></p>
-<p>If certain symptom combinations appear in multiple folds, the
-function calculates their average performance.</p>
-<p>Examining Results for Non-Hierarchical Model:</p>
+<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="va">validation_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary</span>,</span>
+<span>  digits  <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  caption <span class="op">=</span> <span class="st">"Holdout validation: non-hierarchical combinations (test set)"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table style="width:100%;" class="table">
+<caption>Holdout validation: non-hierarchical combinations (test
+set)</caption>
+<colgroup>
+<col width="8%">
+<col width="7%">
+<col width="2%">
+<col width="8%">
+<col width="10%">
+<col width="7%">
+<col width="7%">
+<col width="8%">
+<col width="10%">
+<col width="5%">
+<col width="6%">
+<col width="6%">
+<col width="6%">
+<col width="3%">
+<col width="3%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Scenario</th>
+<th align="left">combination_id</th>
+<th align="right">rank</th>
+<th align="left">Total Diagnosed</th>
+<th align="left">Total Non-Diagnosed</th>
+<th align="right">True Positive</th>
+<th align="right">True Negative</th>
+<th align="right">Newly Diagnosed</th>
+<th align="right">Newly Non-Diagnosed</th>
+<th align="right">True Cases</th>
+<th align="right">False Cases</th>
+<th align="right">Sensitivity</th>
+<th align="right">Specificity</th>
+<th align="right">PPV</th>
+<th align="right">NPV</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">PTSD_orig</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="left">1419 (94.6%)</td>
+<td align="left">81 (5.4%)</td>
+<td align="right">1419</td>
+<td align="right">81</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1500</td>
+<td align="right">0</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_4_6_7_13</td>
+<td align="left">4_6_7_13</td>
+<td align="right">1</td>
+<td align="left">1378 (91.87%)</td>
+<td align="left">122 (8.13%)</td>
+<td align="right">1366</td>
+<td align="right">69</td>
+<td align="right">12</td>
+<td align="right">53</td>
+<td align="right">1435</td>
+<td align="right">65</td>
+<td align="right">0.9626</td>
+<td align="right">0.8519</td>
+<td align="right">0.9913</td>
+<td align="right">0.5656</td>
+</tr>
+<tr class="odd">
+<td align="left">symptom_1_6_7_13</td>
+<td align="left">1_6_7_13</td>
+<td align="right">2</td>
+<td align="left">1385 (92.33%)</td>
+<td align="left">115 (7.67%)</td>
+<td align="right">1374</td>
+<td align="right">70</td>
+<td align="right">11</td>
+<td align="right">45</td>
+<td align="right">1444</td>
+<td align="right">56</td>
+<td align="right">0.9683</td>
+<td align="right">0.8642</td>
+<td align="right">0.9921</td>
+<td align="right">0.6087</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_4_6_7_17</td>
+<td align="left">4_6_7_17</td>
+<td align="right">3</td>
+<td align="left">1379 (91.93%)</td>
+<td align="left">121 (8.07%)</td>
+<td align="right">1368</td>
+<td align="right">70</td>
+<td align="right">11</td>
+<td align="right">51</td>
+<td align="right">1438</td>
+<td align="right">62</td>
+<td align="right">0.9641</td>
+<td align="right">0.8642</td>
+<td align="right">0.9920</td>
+<td align="right">0.5785</td>
+</tr>
+</tbody>
+</table>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Check for combinations that appeared in multiple folds (non-hierarchical)</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">combinations_summary</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="st">"Stable combinations in non-hierarchical model:"</span><span class="op">)</span></span>
-<span>  <span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">combinations_summary</span></span>
-<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="st">"No combinations appeared in multiple folds for the non-hierarchical model"</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-<p>Examining Results for Hierarchical Model:</p>
+<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="va">validation_results</span><span class="op">$</span><span class="va">with_clusters</span><span class="op">$</span><span class="va">summary</span>,</span>
+<span>  digits  <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  caption <span class="op">=</span> <span class="st">"Holdout validation: hierarchical combinations (test set)"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>Holdout validation: hierarchical combinations (test
+set)</caption>
+<colgroup>
+<col width="9%">
+<col width="7%">
+<col width="2%">
+<col width="8%">
+<col width="10%">
+<col width="7%">
+<col width="7%">
+<col width="8%">
+<col width="10%">
+<col width="5%">
+<col width="6%">
+<col width="6%">
+<col width="6%">
+<col width="3%">
+<col width="3%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Scenario</th>
+<th align="left">combination_id</th>
+<th align="right">rank</th>
+<th align="left">Total Diagnosed</th>
+<th align="left">Total Non-Diagnosed</th>
+<th align="right">True Positive</th>
+<th align="right">True Negative</th>
+<th align="right">Newly Diagnosed</th>
+<th align="right">Newly Non-Diagnosed</th>
+<th align="right">True Cases</th>
+<th align="right">False Cases</th>
+<th align="right">Sensitivity</th>
+<th align="right">Specificity</th>
+<th align="right">PPV</th>
+<th align="right">NPV</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">PTSD_orig</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="left">1419 (94.6%)</td>
+<td align="left">81 (5.4%)</td>
+<td align="right">1419</td>
+<td align="right">81</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1500</td>
+<td align="right">0</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_4_6_11_17</td>
+<td align="left">4_6_11_17</td>
+<td align="right">1</td>
+<td align="left">1145 (76.33%)</td>
+<td align="left">355 (23.67%)</td>
+<td align="right">1144</td>
+<td align="right">80</td>
+<td align="right">1</td>
+<td align="right">275</td>
+<td align="right">1224</td>
+<td align="right">276</td>
+<td align="right">0.8062</td>
+<td align="right">0.9877</td>
+<td align="right">0.9991</td>
+<td align="right">0.2254</td>
+</tr>
+<tr class="odd">
+<td align="left">symptom_1_6_11_17</td>
+<td align="left">1_6_11_17</td>
+<td align="right">2</td>
+<td align="left">1150 (76.67%)</td>
+<td align="left">350 (23.33%)</td>
+<td align="right">1149</td>
+<td align="right">80</td>
+<td align="right">1</td>
+<td align="right">270</td>
+<td align="right">1229</td>
+<td align="right">271</td>
+<td align="right">0.8097</td>
+<td align="right">0.9877</td>
+<td align="right">0.9991</td>
+<td align="right">0.2286</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_5_6_11_17</td>
+<td align="left">5_6_11_17</td>
+<td align="right">3</td>
+<td align="left">1138 (75.87%)</td>
+<td align="left">362 (24.13%)</td>
+<td align="right">1137</td>
+<td align="right">80</td>
+<td align="right">1</td>
+<td align="right">282</td>
+<td align="right">1217</td>
+<td align="right">283</td>
+<td align="right">0.8013</td>
+<td align="right">0.9877</td>
+<td align="right">0.9991</td>
+<td align="right">0.2210</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
+<h3 id="cross-validation">7.2. Cross-Validation<a class="anchor" aria-label="anchor" href="#cross-validation"></a>
+</h3>
+<p>k-fold cross-validation provides a more robust estimate of
+generalization by repeating the train/test split <code>k</code>
+times.</p>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Check for combinations that appeared in multiple folds (hierarchical)</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">cv_results</span><span class="op">$</span><span class="va">with_clusters</span><span class="op">$</span><span class="va">combinations_summary</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="st">"Stable combinations in hierarchical model:"</span><span class="op">)</span></span>
-<span>  <span class="va">cv_results</span><span class="op">$</span><span class="va">with_clusters</span><span class="op">$</span><span class="va">combinations_summary</span></span>
-<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="st">"No combinations appeared in multiple folds for the hierarchical model"</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-<p><strong>Interpreting Cross-Validation Results</strong></p>
-<p>Cross-Validation helps identify:</p>
-<ol style="list-style-type: decimal">
-<li>Consistency: Whether the same symptom combinations are selected
-across different data subsets</li>
-<li>Stability: How diagnostic accuracy varies across folds</li>
-<li>Generalization: Average performance metrics provide robust estimates
-of real-world performance</li>
-</ol>
-<p>Key metrics to examine:</p>
-<ul>
-<li>Splits_Appeared: How many folds selected this combination (higher =
-more stable)</li>
-<li>Sensitivity: Proportion of true PTSD cases correctly identified</li>
-<li>Specificity: Proportion of non-PTSD cases correctly identified</li>
-<li>PPV/NPV: Predictive values indicating diagnostic confidence</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="comparing-validation-approaches">6.3. Comparing Validation Approaches<a class="anchor" aria-label="anchor" href="#comparing-validation-approaches"></a>
-</h3>
-<p>Both validation methods serve complementary purposes.</p>
-<p>Holdout Validation:</p>
-<ul>
-<li>Simpler and faster</li>
-<li>Single train-test split</li>
-<li>Good for initial assessment</li>
-<li>May be less stable with small datasets</li>
-</ul>
-<p>Cross-Validation:</p>
-<ul>
-<li>More computationally intensive</li>
-<li>Multiple train-test splits</li>
-<li>Better estimate of generalization</li>
-<li>Identifies stable symptom patterns</li>
-</ul>
+<code class="sourceCode R"><span><span class="va">cv_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cross_validation.html">cross_validation</a></span><span class="op">(</span></span>
+<span>  <span class="va">simulated_ptsd_renamed</span>,</span>
+<span>  k          <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  score_by   <span class="op">=</span> <span class="st">"newly_nondiagnosed"</span>,</span>
+<span>  seed       <span class="op">=</span> <span class="fl">123</span>,</span>
+<span>  n_symptoms <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  n_required <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  n_top      <span class="op">=</span> <span class="fl">3</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><strong>Results by fold — non-hierarchical:</strong></p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Example: Compare sensitivity from both methods</span></span>
-<span><span class="co"># Note: Results will vary based on random splits</span></span>
-<span></span>
-<span><span class="co"># Holdout Validation sensitivity (first combination, non-hierarchical)</span></span>
-<span><span class="va">holdout_summary</span> <span class="op">&lt;-</span> <span class="va">validation_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">holdout_summary</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">holdout_sensitivity</span> <span class="op">&lt;-</span> <span class="va">holdout_summary</span><span class="op">[</span><span class="fl">2</span>, <span class="st">"Sensitivity"</span><span class="op">]</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Holdout sensitivity for first combination:"</span>,</span>
-<span>              <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">holdout_sensitivity</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span><span class="co"># Cross-Validation average sensitivity (if stable combinations exist)</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">combinations_summary</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">cv_summary</span> <span class="op">&lt;-</span> <span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">combinations_summary</span></span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">cv_summary</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="va">cv_sensitivity</span> <span class="op">&lt;-</span> <span class="va">cv_summary</span><span class="op">[</span><span class="fl">1</span>, <span class="st">"Sensitivity"</span><span class="op">]</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Cross-validation average sensitivity:"</span>,</span>
-<span>                <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">cv_sensitivity</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="op">}</span></span>
+<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary_by_fold</span>,</span>
+<span>  digits  <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  caption <span class="op">=</span> <span class="st">"Cross-validation: non-hierarchical results by fold"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>Cross-validation: non-hierarchical results by fold</caption>
+<colgroup>
+<col width="3%">
+<col width="8%">
+<col width="7%">
+<col width="9%">
+<col width="6%">
+<col width="6%">
+<col width="7%">
+<col width="9%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
+<col width="3%">
+<col width="3%">
+<col width="7%">
+<col width="2%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Split</th>
+<th align="left">Scenario</th>
+<th align="left">Total Diagnosed</th>
+<th align="left">Total Non-Diagnosed</th>
+<th align="right">True Positive</th>
+<th align="right">True Negative</th>
+<th align="right">Newly Diagnosed</th>
+<th align="right">Newly Non-Diagnosed</th>
+<th align="right">True Cases</th>
+<th align="right">False Cases</th>
+<th align="right">Sensitivity</th>
+<th align="right">Specificity</th>
+<th align="right">PPV</th>
+<th align="right">NPV</th>
+<th align="left">combination_id</th>
+<th align="right">rank</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Split 1</td>
+<td align="left">PTSD_orig</td>
+<td align="left">1577 (94.6%)</td>
+<td align="left">90 (5.4%)</td>
+<td align="right">1577</td>
+<td align="right">90</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1667</td>
+<td align="right">0</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Split 1</td>
+<td align="left">symptom_1_6_7_13</td>
+<td align="left">1522 (91.3%)</td>
+<td align="left">145 (8.7%)</td>
+<td align="right">1509</td>
+<td align="right">77</td>
+<td align="right">13</td>
+<td align="right">68</td>
+<td align="right">1586</td>
+<td align="right">81</td>
+<td align="right">0.9569</td>
+<td align="right">0.8556</td>
+<td align="right">0.9915</td>
+<td align="right">0.5310</td>
+<td align="left">1_6_7_13</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Split 1</td>
+<td align="left">symptom_4_6_7_13</td>
+<td align="left">1522 (91.3%)</td>
+<td align="left">145 (8.7%)</td>
+<td align="right">1509</td>
+<td align="right">77</td>
+<td align="right">13</td>
+<td align="right">68</td>
+<td align="right">1586</td>
+<td align="right">81</td>
+<td align="right">0.9569</td>
+<td align="right">0.8556</td>
+<td align="right">0.9915</td>
+<td align="right">0.5310</td>
+<td align="left">4_6_7_13</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Split 1</td>
+<td align="left">symptom_1_6_7_19</td>
+<td align="left">1515 (90.88%)</td>
+<td align="left">152 (9.12%)</td>
+<td align="right">1504</td>
+<td align="right">79</td>
+<td align="right">11</td>
+<td align="right">73</td>
+<td align="right">1583</td>
+<td align="right">84</td>
+<td align="right">0.9537</td>
+<td align="right">0.8778</td>
+<td align="right">0.9927</td>
+<td align="right">0.5197</td>
+<td align="left">1_6_7_19</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Split 2</td>
+<td align="left">PTSD_orig</td>
+<td align="left">1559 (93.52%)</td>
+<td align="left">108 (6.48%)</td>
+<td align="right">1559</td>
+<td align="right">108</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1667</td>
+<td align="right">0</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Split 2</td>
+<td align="left">symptom_4_6_7_13</td>
+<td align="left">1516 (90.94%)</td>
+<td align="left">151 (9.06%)</td>
+<td align="right">1502</td>
+<td align="right">94</td>
+<td align="right">14</td>
+<td align="right">57</td>
+<td align="right">1596</td>
+<td align="right">71</td>
+<td align="right">0.9634</td>
+<td align="right">0.8704</td>
+<td align="right">0.9908</td>
+<td align="right">0.6225</td>
+<td align="left">4_6_7_13</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Split 2</td>
+<td align="left">symptom_6_7_17_20</td>
+<td align="left">1514 (90.82%)</td>
+<td align="left">153 (9.18%)</td>
+<td align="right">1498</td>
+<td align="right">92</td>
+<td align="right">16</td>
+<td align="right">61</td>
+<td align="right">1590</td>
+<td align="right">77</td>
+<td align="right">0.9609</td>
+<td align="right">0.8519</td>
+<td align="right">0.9894</td>
+<td align="right">0.6013</td>
+<td align="left">6_7_17_20</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Split 2</td>
+<td align="left">symptom_1_6_7_13</td>
+<td align="left">1524 (91.42%)</td>
+<td align="left">143 (8.58%)</td>
+<td align="right">1509</td>
+<td align="right">93</td>
+<td align="right">15</td>
+<td align="right">50</td>
+<td align="right">1602</td>
+<td align="right">65</td>
+<td align="right">0.9679</td>
+<td align="right">0.8611</td>
+<td align="right">0.9902</td>
+<td align="right">0.6503</td>
+<td align="left">1_6_7_13</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Split 3</td>
+<td align="left">PTSD_orig</td>
+<td align="left">1574 (94.48%)</td>
+<td align="left">92 (5.52%)</td>
+<td align="right">1574</td>
+<td align="right">92</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1666</td>
+<td align="right">0</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Split 3</td>
+<td align="left">symptom_4_6_7_17</td>
+<td align="left">1519 (91.18%)</td>
+<td align="left">147 (8.82%)</td>
+<td align="right">1507</td>
+<td align="right">80</td>
+<td align="right">12</td>
+<td align="right">67</td>
+<td align="right">1587</td>
+<td align="right">79</td>
+<td align="right">0.9574</td>
+<td align="right">0.8696</td>
+<td align="right">0.9921</td>
+<td align="right">0.5442</td>
+<td align="left">4_6_7_17</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Split 3</td>
+<td align="left">symptom_6_7_11_17</td>
+<td align="left">1509 (90.58%)</td>
+<td align="left">157 (9.42%)</td>
+<td align="right">1497</td>
+<td align="right">80</td>
+<td align="right">12</td>
+<td align="right">77</td>
+<td align="right">1577</td>
+<td align="right">89</td>
+<td align="right">0.9511</td>
+<td align="right">0.8696</td>
+<td align="right">0.9920</td>
+<td align="right">0.5096</td>
+<td align="left">6_7_11_17</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Split 3</td>
+<td align="left">symptom_1_6_7_13</td>
+<td align="left">1527 (91.66%)</td>
+<td align="left">139 (8.34%)</td>
+<td align="right">1517</td>
+<td align="right">82</td>
+<td align="right">10</td>
+<td align="right">57</td>
+<td align="right">1599</td>
+<td align="right">67</td>
+<td align="right">0.9638</td>
+<td align="right">0.8913</td>
+<td align="right">0.9935</td>
+<td align="right">0.5899</td>
+<td align="left">1_6_7_13</td>
+<td align="right">3</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Results by fold — hierarchical:</strong></p>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>  <span class="va">cv_results</span><span class="op">$</span><span class="va">with_clusters</span><span class="op">$</span><span class="va">summary_by_fold</span>,</span>
+<span>  digits  <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  caption <span class="op">=</span> <span class="st">"Cross-validation: hierarchical results by fold"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>Cross-validation: hierarchical results by fold</caption>
+<colgroup>
+<col width="3%">
+<col width="8%">
+<col width="7%">
+<col width="9%">
+<col width="6%">
+<col width="6%">
+<col width="7%">
+<col width="9%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
+<col width="3%">
+<col width="3%">
+<col width="7%">
+<col width="2%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Split</th>
+<th align="left">Scenario</th>
+<th align="left">Total Diagnosed</th>
+<th align="left">Total Non-Diagnosed</th>
+<th align="right">True Positive</th>
+<th align="right">True Negative</th>
+<th align="right">Newly Diagnosed</th>
+<th align="right">Newly Non-Diagnosed</th>
+<th align="right">True Cases</th>
+<th align="right">False Cases</th>
+<th align="right">Sensitivity</th>
+<th align="right">Specificity</th>
+<th align="right">PPV</th>
+<th align="right">NPV</th>
+<th align="left">combination_id</th>
+<th align="right">rank</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Split 1</td>
+<td align="left">PTSD_orig</td>
+<td align="left">1577 (94.6%)</td>
+<td align="left">90 (5.4%)</td>
+<td align="right">1577</td>
+<td align="right">90</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1667</td>
+<td align="right">0</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Split 1</td>
+<td align="left">symptom_4_6_11_17</td>
+<td align="left">1241 (74.45%)</td>
+<td align="left">426 (25.55%)</td>
+<td align="right">1240</td>
+<td align="right">89</td>
+<td align="right">1</td>
+<td align="right">337</td>
+<td align="right">1329</td>
+<td align="right">338</td>
+<td align="right">0.7863</td>
+<td align="right">0.9889</td>
+<td align="right">0.9992</td>
+<td align="right">0.2089</td>
+<td align="left">4_6_11_17</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Split 1</td>
+<td align="left">symptom_1_7_11_17</td>
+<td align="left">1243 (74.57%)</td>
+<td align="left">424 (25.43%)</td>
+<td align="right">1243</td>
+<td align="right">90</td>
+<td align="right">0</td>
+<td align="right">334</td>
+<td align="right">1333</td>
+<td align="right">334</td>
+<td align="right">0.7882</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">0.2123</td>
+<td align="left">1_7_11_17</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Split 1</td>
+<td align="left">symptom_1_6_11_17</td>
+<td align="left">1242 (74.51%)</td>
+<td align="left">425 (25.49%)</td>
+<td align="right">1242</td>
+<td align="right">90</td>
+<td align="right">0</td>
+<td align="right">335</td>
+<td align="right">1332</td>
+<td align="right">335</td>
+<td align="right">0.7876</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">0.2118</td>
+<td align="left">1_6_11_17</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Split 2</td>
+<td align="left">PTSD_orig</td>
+<td align="left">1559 (93.52%)</td>
+<td align="left">108 (6.48%)</td>
+<td align="right">1559</td>
+<td align="right">108</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1667</td>
+<td align="right">0</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Split 2</td>
+<td align="left">symptom_5_7_11_17</td>
+<td align="left">1225 (73.49%)</td>
+<td align="left">442 (26.51%)</td>
+<td align="right">1223</td>
+<td align="right">106</td>
+<td align="right">2</td>
+<td align="right">336</td>
+<td align="right">1329</td>
+<td align="right">338</td>
+<td align="right">0.7845</td>
+<td align="right">0.9815</td>
+<td align="right">0.9984</td>
+<td align="right">0.2398</td>
+<td align="left">5_7_11_17</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Split 2</td>
+<td align="left">symptom_1_7_11_17</td>
+<td align="left">1242 (74.51%)</td>
+<td align="left">425 (25.49%)</td>
+<td align="right">1240</td>
+<td align="right">106</td>
+<td align="right">2</td>
+<td align="right">319</td>
+<td align="right">1346</td>
+<td align="right">321</td>
+<td align="right">0.7954</td>
+<td align="right">0.9815</td>
+<td align="right">0.9984</td>
+<td align="right">0.2494</td>
+<td align="left">1_7_11_17</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Split 2</td>
+<td align="left">symptom_4_7_11_17</td>
+<td align="left">1235 (74.09%)</td>
+<td align="left">432 (25.91%)</td>
+<td align="right">1233</td>
+<td align="right">106</td>
+<td align="right">2</td>
+<td align="right">326</td>
+<td align="right">1339</td>
+<td align="right">328</td>
+<td align="right">0.7909</td>
+<td align="right">0.9815</td>
+<td align="right">0.9984</td>
+<td align="right">0.2454</td>
+<td align="left">4_7_11_17</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Split 3</td>
+<td align="left">PTSD_orig</td>
+<td align="left">1574 (94.48%)</td>
+<td align="left">92 (5.52%)</td>
+<td align="right">1574</td>
+<td align="right">92</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1666</td>
+<td align="right">0</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Split 3</td>
+<td align="left">symptom_4_6_11_17</td>
+<td align="left">1258 (75.51%)</td>
+<td align="left">408 (24.49%)</td>
+<td align="right">1257</td>
+<td align="right">91</td>
+<td align="right">1</td>
+<td align="right">317</td>
+<td align="right">1348</td>
+<td align="right">318</td>
+<td align="right">0.7986</td>
+<td align="right">0.9891</td>
+<td align="right">0.9992</td>
+<td align="right">0.2230</td>
+<td align="left">4_6_11_17</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Split 3</td>
+<td align="left">symptom_1_6_11_17</td>
+<td align="left">1258 (75.51%)</td>
+<td align="left">408 (24.49%)</td>
+<td align="right">1257</td>
+<td align="right">91</td>
+<td align="right">1</td>
+<td align="right">317</td>
+<td align="right">1348</td>
+<td align="right">318</td>
+<td align="right">0.7986</td>
+<td align="right">0.9891</td>
+<td align="right">0.9992</td>
+<td align="right">0.2230</td>
+<td align="left">1_6_11_17</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Split 3</td>
+<td align="left">symptom_1_7_11_17</td>
+<td align="left">1270 (76.23%)</td>
+<td align="left">396 (23.77%)</td>
+<td align="right">1270</td>
+<td align="right">92</td>
+<td align="right">0</td>
+<td align="right">304</td>
+<td align="right">1362</td>
+<td align="right">304</td>
+<td align="right">0.8069</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">0.2323</td>
+<td align="left">1_7_11_17</td>
+<td align="right">3</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Stable combinations across folds</strong> — if a combination
+appeared in multiple folds, its average performance is reported:</p>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">combinations_summary</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>    <span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">combinations_summary</span>,</span>
+<span>    digits  <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>    caption <span class="op">=</span> <span class="st">"Stable non-hierarchical combinations across folds"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"No combination appeared in more than one fold (non-hierarchical).\n"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
+<table style="width:100%;" class="table">
+<caption>Stable non-hierarchical combinations across folds</caption>
+<colgroup>
+<col width="8%">
+<col width="7%">
+<col width="7%">
+<col width="8%">
+<col width="9%">
+<col width="6%">
+<col width="6%">
+<col width="7%">
+<col width="9%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
+<col width="3%">
+<col width="3%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Scenario</th>
+<th align="left">combination_id</th>
+<th align="right">Splits_Appeared</th>
+<th align="left">Total_Diagnosed</th>
+<th align="left">Total_Non_Diagnosed</th>
+<th align="right">True_Positive</th>
+<th align="right">True_Negative</th>
+<th align="right">Newly_Diagnosed</th>
+<th align="right">Newly_Non_Diagnosed</th>
+<th align="right">True_Cases</th>
+<th align="right">False_Cases</th>
+<th align="right">Sensitivity</th>
+<th align="right">Specificity</th>
+<th align="right">PPV</th>
+<th align="right">NPV</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">PTSD_orig</td>
+<td align="left">NA</td>
+<td align="right">3</td>
+<td align="left">1570 (94.2%)</td>
+<td align="left">96.67 (5.8%)</td>
+<td align="right">1570.00</td>
+<td align="right">96.67</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">1666.67</td>
+<td align="right">0</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_1_6_7_13</td>
+<td align="left">1_6_7_13</td>
+<td align="right">3</td>
+<td align="left">1524.33 (91.46%)</td>
+<td align="left">142.33 (8.54%)</td>
+<td align="right">1511.67</td>
+<td align="right">84.00</td>
+<td align="right">12.67</td>
+<td align="right">58.33</td>
+<td align="right">1595.67</td>
+<td align="right">71</td>
+<td align="right">0.9628</td>
+<td align="right">0.8689</td>
+<td align="right">0.9917</td>
+<td align="right">0.5902</td>
+</tr>
+<tr class="odd">
+<td align="left">symptom_4_6_7_13</td>
+<td align="left">4_6_7_13</td>
+<td align="right">2</td>
+<td align="left">1519 (91.12%)</td>
+<td align="left">148 (8.88%)</td>
+<td align="right">1505.50</td>
+<td align="right">85.50</td>
+<td align="right">13.50</td>
+<td align="right">62.50</td>
+<td align="right">1591.00</td>
+<td align="right">76</td>
+<td align="right">0.9601</td>
+<td align="right">0.8636</td>
+<td align="right">0.9911</td>
+<td align="right">0.5777</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">cv_results</span><span class="op">$</span><span class="va">with_clusters</span><span class="op">$</span><span class="va">combinations_summary</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
+<span>    <span class="va">cv_results</span><span class="op">$</span><span class="va">with_clusters</span><span class="op">$</span><span class="va">combinations_summary</span>,</span>
+<span>    digits  <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>    caption <span class="op">=</span> <span class="st">"Stable hierarchical combinations across folds"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"No combination appeared in more than one fold (hierarchical).\n"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<table style="width:100%;" class="table">
+<caption>Stable hierarchical combinations across folds</caption>
+<colgroup>
+<col width="8%">
+<col width="7%">
+<col width="7%">
+<col width="7%">
+<col width="9%">
+<col width="6%">
+<col width="6%">
+<col width="7%">
+<col width="9%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
+<col width="3%">
+<col width="3%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Scenario</th>
+<th align="left">combination_id</th>
+<th align="right">Splits_Appeared</th>
+<th align="left">Total_Diagnosed</th>
+<th align="left">Total_Non_Diagnosed</th>
+<th align="right">True_Positive</th>
+<th align="right">True_Negative</th>
+<th align="right">Newly_Diagnosed</th>
+<th align="right">Newly_Non_Diagnosed</th>
+<th align="right">True_Cases</th>
+<th align="right">False_Cases</th>
+<th align="right">Sensitivity</th>
+<th align="right">Specificity</th>
+<th align="right">PPV</th>
+<th align="right">NPV</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">PTSD_orig</td>
+<td align="left">NA</td>
+<td align="right">3</td>
+<td align="left">1570 (94.2%)</td>
+<td align="left">96.67 (5.8%)</td>
+<td align="right">1570.0</td>
+<td align="right">96.67</td>
+<td align="right">0.00</td>
+<td align="right">0</td>
+<td align="right">1666.67</td>
+<td align="right">0.00</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+<td align="right">1.0000</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_1_6_11_17</td>
+<td align="left">1_6_11_17</td>
+<td align="right">2</td>
+<td align="left">1250 (75.01%)</td>
+<td align="left">416.5 (24.99%)</td>
+<td align="right">1249.5</td>
+<td align="right">90.50</td>
+<td align="right">0.50</td>
+<td align="right">326</td>
+<td align="right">1340.00</td>
+<td align="right">326.50</td>
+<td align="right">0.7931</td>
+<td align="right">0.9945</td>
+<td align="right">0.9996</td>
+<td align="right">0.2173</td>
+</tr>
+<tr class="odd">
+<td align="left">symptom_1_7_11_17</td>
+<td align="left">1_7_11_17</td>
+<td align="right">3</td>
+<td align="left">1251.67 (75.1%)</td>
+<td align="left">415 (24.9%)</td>
+<td align="right">1251.0</td>
+<td align="right">96.00</td>
+<td align="right">0.67</td>
+<td align="right">319</td>
+<td align="right">1347.00</td>
+<td align="right">319.67</td>
+<td align="right">0.7968</td>
+<td align="right">0.9931</td>
+<td align="right">0.9995</td>
+<td align="right">0.2313</td>
+</tr>
+<tr class="even">
+<td align="left">symptom_4_6_11_17</td>
+<td align="left">4_6_11_17</td>
+<td align="right">2</td>
+<td align="left">1249.5 (74.98%)</td>
+<td align="left">417 (25.02%)</td>
+<td align="right">1248.5</td>
+<td align="right">90.00</td>
+<td align="right">1.00</td>
+<td align="right">327</td>
+<td align="right">1338.50</td>
+<td align="right">328.00</td>
+<td align="right">0.7924</td>
+<td align="right">0.9890</td>
+<td align="right">0.9992</td>
+<td align="right">0.2158</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Interpreting cross-validation results:</strong></p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Consistency</strong> — whether the same combinations are
+selected across folds</li>
+<li>
+<strong>Stability</strong> — how diagnostic accuracy varies across
+folds</li>
+<li>
+<strong>Generalization</strong> — average metrics provide robust
+real-world estimates</li>
+</ol>
+<p>Key metrics: <code>Splits_Appeared</code> (how many folds selected a
+combination), sensitivity, specificity, PPV, and NPV.</p>
 </div>
 <div class="section level3">
-<h3 id="validation-best-practices">6.4. Validation Best Practices<a class="anchor" aria-label="anchor" href="#validation-best-practices"></a>
+<h3 id="comparing-validation-approaches">7.3. Comparing Validation Approaches<a class="anchor" aria-label="anchor" href="#comparing-validation-approaches"></a>
 </h3>
-<p>When validating PTSD diagnostic models:</p>
+<p>Both methods serve complementary purposes:</p>
+<table class="table">
+<thead><tr class="header">
+<th></th>
+<th>Holdout</th>
+<th>Cross-Validation</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Train/test splits</td>
+<td>1</td>
+<td>k</td>
+</tr>
+<tr class="even">
+<td>Speed</td>
+<td>Fast</td>
+<td>Slower</td>
+</tr>
+<tr class="odd">
+<td>Best for</td>
+<td>Quick assessment</td>
+<td>Publication-quality results</td>
+</tr>
+<tr class="even">
+<td>Stability estimate</td>
+<td>Single estimate</td>
+<td>Average over k folds</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Extract sensitivity for the top combination from each approach</span></span>
+<span><span class="va">holdout_sens</span> <span class="op">&lt;-</span> <span class="va">validation_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary</span><span class="op">$</span><span class="va">Sensitivity</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span></span>
+<span><span class="va">cv_fold_sens</span> <span class="op">&lt;-</span> <span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary_by_fold</span><span class="op">$</span><span class="va">sensitivity</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Holdout sensitivity (top non-hierarchical combo): %.4f\n"</span>, <span class="va">holdout_sens</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Holdout sensitivity (top non-hierarchical combo): 0.9626</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"CV mean sensitivity across folds:                 %.4f\n"</span>, <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">cv_fold_sens</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in mean.default(cv_fold_sens, na.rm = TRUE): argument is not numeric or</span></span>
+<span><span class="co">#&gt; logical: returning NA</span></span>
+<span><span class="co">#&gt; CV mean sensitivity across folds:                 NA</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"CV sensitivity range:                             %.4f – %.4f\n"</span>,</span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">cv_fold_sens</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">cv_fold_sens</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in min(cv_fold_sens, na.rm = TRUE): no non-missing arguments to min;</span></span>
+<span><span class="co">#&gt; returning Inf</span></span>
+<span><span class="co">#&gt; Warning in max(cv_fold_sens, na.rm = TRUE): no non-missing arguments to max;</span></span>
+<span><span class="co">#&gt; returning -Inf</span></span>
+<span><span class="co">#&gt; CV sensitivity range:                             Inf – -Inf</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="validation-best-practices">7.4. Validation Best Practices<a class="anchor" aria-label="anchor" href="#validation-best-practices"></a>
+</h3>
 <ol style="list-style-type: decimal">
 <li>Set a seed for reproducibility: <code>seed = 123</code>
 </li>
-<li>Choose appropriate validation:
+<li>Choose the appropriate method:
 <ul>
-<li>Use holdout for quick assessment</li>
+<li>Use holdout for a quick initial assessment</li>
 <li>Use cross-validation for publication-quality results</li>
 </ul>
 </li>
@@ -599,23 +2327,21 @@ diagnoses</li>
 misclassifications</li>
 </ul>
 </li>
-<li>Examine multiple metrics:
-<ul>
-<li>Sensitivity is crucial for screening</li>
-<li>Specificity matters for differential diagnosis</li>
-<li>PPV/NPV inform clinical decision-making</li>
-</ul>
-</li>
+<li>Examine multiple metrics — sensitivity for screening, specificity
+for differential diagnosis, PPV/NPV for clinical decision-making</li>
 </ol>
 </div>
 </div>
 <div class="section level2">
-<h2 id="conclusion">7. Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>
+<h2 id="conclusion">8. Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>
 </h2>
 <p>With the <code>PTSDdiag</code> package, PCL-5 data can be processed
-and analyzed efficiently. It allows to identify reduced optimal symptom
-combinations for PTSD diagnosis and to compare different diagnostic
-approaches by generating detailed diagnostic accuracy metrics.</p>
+and analyzed efficiently. It allows researchers to identify reduced
+optimal symptom combinations for PTSD diagnosis, apply ICD-11 criteria,
+and compare multiple diagnostic systems — DSM-5-TR, ICD-11, and
+optimized combinations — in a single unified table. Holdout and
+cross-validation functions provide robust estimates of how well the
+derived criteria generalize to new samples.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
