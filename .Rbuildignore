@@ -10,3 +10,5 @@
 ^\.github$
 ^data-raw$
 ^\.git$
+^doc$
+^Meta$
