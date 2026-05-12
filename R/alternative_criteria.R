@@ -78,58 +78,150 @@ create_icd11_diagnosis <- function(data) {
 }
 
 
-#' Compare multiple diagnostic systems against DSM-5-TR
+#' Compute CAPS-5 DSM-5-TR PTSD diagnosis
+#'
+#' @description
+#' Applies the DSM-5-TR PTSD diagnostic algorithm to CAPS-5
+#' (Clinician-Administered PTSD Scale for DSM-5) item scores and returns a
+#' single-column dataframe indicating diagnostic status. Because CAPS-5 uses the
+#' same 20-item structure, 0--4 severity scale, and \eqn{\ge} 2 symptom-presence
+#' threshold as the PCL-5, the diagnostic algorithm is identical.
+#'
+#' @details
+#' The DSM-5-TR diagnostic criteria applied are:
+#'
+#' \itemize{
+#'   \item Criterion B (Intrusion): \eqn{\ge} 1 of items 1--5 with severity
+#'     \eqn{\ge} 2
+#'   \item Criterion C (Avoidance): \eqn{\ge} 1 of items 6--7 with severity
+#'     \eqn{\ge} 2
+#'   \item Criterion D (Negative cognitions/mood): \eqn{\ge} 2 of items 8--14
+#'     with severity \eqn{\ge} 2
+#'   \item Criterion E (Arousal/reactivity): \eqn{\ge} 2 of items 15--20 with
+#'     severity \eqn{\ge} 2
+#' }
+#'
+#' All four criteria must be met for a positive diagnosis.
+#'
+#' Unlike \code{\link{create_icd11_diagnosis}}, this function returns only the
+#' CAPS-5 diagnosis column (\code{PTSD_caps5}), not a PCL-5 reference column.
+#' This is because the CAPS-5 diagnosis is typically used as the gold-standard
+#' reference itself, not compared against a PCL-5 baseline.
+#'
+#' The returned dataframe can be passed to
+#' \code{\link{compare_diagnostic_systems}} via its \code{caps5_data} parameter,
+#' or used directly for descriptive analyses.
+#'
+#' @param data A dataframe containing exactly 20 columns of CAPS-5 item severity
+#'   scores (output of \code{\link{rename_caps5_columns}}). Columns must be named
+#'   \code{symptom_1} through \code{symptom_20}, scored on a 0--4 scale, with no
+#'   missing values.
+#'
+#' @returns A \code{data.frame} with one logical column and one row per
+#'   participant:
+#'
+#' \itemize{
+#'   \item \code{PTSD_caps5}: CAPS-5 DSM-5-TR diagnosis
+#' }
+#'
+#' @seealso
+#' \code{\link{rename_caps5_columns}} for standardizing CAPS-5 column names.
+#'
+#' \code{\link{compare_diagnostic_systems}} for comparing CAPS-5 against PCL-5
+#' and optimized symptom combinations in a unified table.
+#'
+#' \code{\link{create_icd11_diagnosis}} for the ICD-11 alternative criteria.
+#'
+#' @export
+#'
+#' @examples
+#' # Simulate CAPS-5 data (using same structure as PCL-5)
+#' set.seed(42)
+#' caps5_raw <- data.frame(matrix(sample(0:4, 400, replace = TRUE), ncol = 20))
+#' caps5_data <- rename_caps5_columns(caps5_raw)
+#' caps5_dx <- create_caps5_diagnosis(caps5_data)
+#' head(caps5_dx)
+#' table(caps5_dx$PTSD_caps5)
+#'
+create_caps5_diagnosis <- function(data) {
+  .validate_pcl5_data(data)
+  caps5_dx <- create_ptsd_diagnosis_binarized(data)$PTSD_orig
+  data.frame(PTSD_caps5 = caps5_dx)
+}
+
+
+#' Compare multiple diagnostic systems against a reference standard
 #'
 #' @description
 #' Produces a single unified summary table comparing the diagnostic performance
-#' of multiple criteria against DSM-5-TR as the reference standard. Suitable
-#' for use as a manuscript table (e.g., Table 2) comparing optimized symptom
-#' combinations, ICD-11, and DSM-5-TR in one \code{\link[knitr]{kable}}-ready
-#' output.
+#' of multiple criteria against a chosen reference standard. Suitable for use as
+#' a manuscript table comparing optimized symptom combinations, ICD-11, CAPS-5,
+#' and DSM-5-TR in one \code{\link[knitr]{kable}}-ready output.
 #'
 #' @details
 #' The function:
 #'
 #' \enumerate{
-#'   \item Computes the DSM-5-TR reference diagnosis (\code{PTSD_orig}) from
-#'     \code{data} — this always appears as the first row in the output
+#'   \item Computes the PCL-5 DSM-5-TR diagnosis from \code{data}
+#'   \item If \code{caps5_data} is provided, computes the CAPS-5 DSM-5-TR
+#'     diagnosis
+#'   \item Sets the reference standard based on \code{reference}: either the
+#'     PCL-5 or CAPS-5 DSM-5-TR diagnosis. The reference row always appears
+#'     first with sensitivity = specificity = 1.
 #'   \item Optionally computes ICD-11 diagnosis from \code{data} when
 #'     \code{icd11 = TRUE}
 #'   \item Collects all non-\code{PTSD_orig} columns from the \code{...}
 #'     comparison dataframes (e.g. output of
 #'     \code{\link{apply_symptom_combinations}})
-#'   \item Validates that every \code{PTSD_orig} column in \code{...} is
-#'     identical to the reference computed from \code{data}
 #'   \item Calls \code{\link{summarize_ptsd_changes}} internally and reshapes
 #'     the result into a presentation-ready table
 #' }
 #'
-#' Built-in display labels: \code{PTSD_orig} → \code{"DSM-5-TR"},
-#' \code{PTSD_icd11} → \code{"ICD-11"}. These are applied automatically.
-#' Use the \code{labels} argument to rename the remaining systems.
+#' When \code{caps5_data} is \code{NULL} (default), labels follow the original
+#' convention: \code{"DSM-5-TR"} and \code{"ICD-11"}. When \code{caps5_data}
+#' is provided, labels are disambiguated with the instrument name:
+#' \code{"DSM-5-TR (PCL-5)"}, \code{"DSM-5-TR (CAPS-5)"},
+#' \code{"ICD-11 (PCL-5)"}.
+#'
+#' When \code{caps5_data} is provided, the strict \code{PTSD_orig} validation
+#' on \code{...} inputs is relaxed to a row-count check only, because
+#' comparison dataframes may have been derived from either the PCL-5 or CAPS-5
+#' data (which produce different \code{PTSD_orig} vectors).
 #'
 #' @param data A dataframe containing exactly 20 columns of PCL-5 item scores
-#'   (output of \code{\link{rename_ptsd_columns}}). Used to compute both the
-#'   DSM-5-TR reference diagnosis and, when \code{icd11 = TRUE}, the ICD-11
-#'   diagnosis.
+#'   (output of \code{\link{rename_ptsd_columns}}). Always required. Used to
+#'   compute the PCL-5 DSM-5-TR diagnosis and, when \code{icd11 = TRUE}, the
+#'   ICD-11 diagnosis.
 #'
 #' @param ... Zero or more comparison dataframes, each containing a
 #'   \code{PTSD_orig} column and at least one additional logical column
 #'   representing a diagnostic system (e.g. output of
-#'   \code{\link{apply_symptom_combinations}}). All \code{PTSD_orig} columns
-#'   must be identical to the one computed from \code{data}.
+#'   \code{\link{apply_symptom_combinations}}). When \code{caps5_data} is
+#'   \code{NULL}, all \code{PTSD_orig} columns must be identical to the one
+#'   computed from \code{data}. When \code{caps5_data} is provided, only
+#'   row counts are validated.
 #'
 #' @param icd11 Logical. If \code{TRUE} (default), compute the ICD-11 PTSD
-#'   diagnosis from \code{data} and include it as a row in the output, labelled
-#'   \code{"ICD-11"}. Set to \code{FALSE} to omit ICD-11.
+#'   diagnosis from \code{data} and include it as a row in the output.
+#'
+#' @param caps5_data Optional dataframe containing exactly 20 columns of CAPS-5
+#'   item severity scores (output of \code{\link{rename_caps5_columns}}). Must
+#'   have the same number of rows as \code{data} (paired participants). When
+#'   provided, the CAPS-5 DSM-5-TR diagnosis is computed internally and
+#'   included in the comparison.
+#'
+#' @param reference Character. Which DSM-5-TR diagnosis serves as the reference
+#'   standard: \code{"pcl5"} (default) or \code{"caps5"}. The reference row
+#'   always has sensitivity = specificity = 1 and zero misclassifications.
+#'   Setting \code{reference = "caps5"} requires \code{caps5_data} to be
+#'   provided.
 #'
 #' @param labels Optional character vector of display names for the systems
 #'   coming from \code{...}, in the order the columns appear across all
 #'   \code{...} inputs (excluding \code{PTSD_orig} columns). Does not apply to
-#'   the \code{"DSM-5-TR"} or \code{"ICD-11"} rows, which are always labelled
+#'   built-in rows (DSM-5-TR, ICD-11, CAPS-5), which are always labelled
 #'   automatically. If \code{NULL} (default), column names are used. A warning
-#'   is issued if the length of \code{labels} does not match the number of
-#'   systems and column names are used as a fallback.
+#'   is issued if the length does not match.
 #'
 #' @returns A \code{data.frame} with one row per diagnostic system and the
 #'   following columns:
@@ -142,18 +234,17 @@ create_icd11_diagnosis <- function(data) {
 #'   \item \code{specificity}: 4 dp
 #'   \item \code{ppv}: Positive predictive value, 4 dp
 #'   \item \code{npv}: Negative predictive value, 4 dp
-#'   \item \code{n_false_negative}: Cases missed vs. DSM-5-TR
+#'   \item \code{n_false_negative}: Cases missed vs. reference
 #'   \item \code{pct_false_negative}: Percentage of total sample, 2 dp
-#'   \item \code{n_false_positive}: Cases over-diagnosed vs. DSM-5-TR
+#'   \item \code{n_false_positive}: Cases over-diagnosed vs. reference
 #'   \item \code{pct_false_positive}: Percentage of total sample, 2 dp
 #'   \item \code{n_misclassified}: Total misclassified cases
 #' }
 #'
-#' The DSM-5-TR reference row has sensitivity = specificity = 1.0000 and all
-#' misclassification counts = 0 by definition.
-#'
 #' @seealso
 #' \code{\link{create_icd11_diagnosis}} for the ICD-11 comparison dataframe.
+#'
+#' \code{\link{create_caps5_diagnosis}} for standalone CAPS-5 diagnosis.
 #'
 #' \code{\link{apply_symptom_combinations}} for generating comparison dataframes
 #' from optimized symptom combinations.
@@ -183,12 +274,59 @@ create_icd11_diagnosis <- function(data) {
 #'   labels = c("Combo A", "Combo B")
 #' )
 #' knitr::kable(tbl2)
+#'
+#' # With CAPS-5 as gold standard reference
+#' caps5_raw <- data.frame(matrix(sample(0:4, ncol(simulated_ptsd) * nrow(simulated_ptsd),
+#'                                       replace = TRUE), ncol = 20))
+#' caps5_data <- rename_caps5_columns(caps5_raw)
+#' tbl3 <- compare_diagnostic_systems(
+#'   ptsd_data, combos,
+#'   icd11      = TRUE,
+#'   caps5_data = caps5_data,
+#'   reference  = "caps5"
+#' )
+#' knitr::kable(tbl3)
 #' }
 #'
-compare_diagnostic_systems <- function(data, ..., icd11 = TRUE, labels = NULL) {
-  .validate_pcl5_data(data)
-  ref_orig <- create_ptsd_diagnosis_binarized(data)$PTSD_orig
+compare_diagnostic_systems <- function(data, ..., icd11 = TRUE,
+                                        caps5_data = NULL,
+                                        reference = c("pcl5", "caps5"),
+                                        labels = NULL) {
+  reference <- match.arg(reference)
 
+  # --- Validate primary PCL-5 data ---
+  .validate_pcl5_data(data)
+  pcl5_orig <- create_ptsd_diagnosis_binarized(data)$PTSD_orig
+
+  # --- Validate CAPS-5 data if provided ---
+  caps5_orig <- NULL
+  has_caps5  <- !is.null(caps5_data)
+
+  if (has_caps5) {
+    .validate_pcl5_data(caps5_data)
+    if (nrow(caps5_data) != nrow(data)) {
+      cli::cli_abort(
+        "{.arg caps5_data} has {nrow(caps5_data)} rows but {.arg data} has \\
+        {nrow(data)} rows. Both must have the same number of participants."
+      )
+    }
+    caps5_orig <- create_ptsd_diagnosis_binarized(caps5_data)$PTSD_orig
+  }
+
+  if (reference == "caps5" && !has_caps5) {
+    cli::cli_abort(
+      "{.arg caps5_data} is required when {.arg reference} is {.val caps5}."
+    )
+  }
+
+  # --- Determine the reference vector ---
+  if (reference == "pcl5") {
+    ref_orig <- pcl5_orig
+  } else {
+    ref_orig <- caps5_orig
+  }
+
+  # --- Validate ... inputs ---
   dfs <- list(...)
 
   for (i in seq_along(dfs)) {
@@ -198,24 +336,49 @@ compare_diagnostic_systems <- function(data, ..., icd11 = TRUE, labels = NULL) {
     if (!"PTSD_orig" %in% names(dfs[[i]])) {
       cli::cli_abort("Argument {i + 1} does not contain a 'PTSD_orig' column.")
     }
-    if (!identical(ref_orig, dfs[[i]]$PTSD_orig)) {
-      cli::cli_abort(
-        "PTSD_orig in argument {i + 1} does not match the PTSD_orig \\
-        computed from {.arg data}. Ensure all comparison dataframes were \\
-        derived from the same dataset."
-      )
+    if (has_caps5) {
+      # Relaxed validation: only check row count matches
+      if (nrow(dfs[[i]]) != length(ref_orig)) {
+        cli::cli_abort(
+          "Argument {i + 1} has {nrow(dfs[[i]])} rows but {.arg data} has \\
+          {length(ref_orig)} rows."
+        )
+      }
+    } else {
+      # Strict validation: PTSD_orig must be identical
+      if (!identical(ref_orig, dfs[[i]]$PTSD_orig)) {
+        cli::cli_abort(
+          "PTSD_orig in argument {i + 1} does not match the PTSD_orig \\
+          computed from {.arg data}. Ensure all comparison dataframes were \\
+          derived from the same dataset."
+        )
+      }
     }
   }
 
+  # --- Collect extra columns from ... and check for duplicates ---
   extra_cols <- unlist(lapply(dfs, function(df) setdiff(names(df), "PTSD_orig")))
 
-  if (!isTRUE(icd11) && length(extra_cols) == 0) {
+  if (anyDuplicated(extra_cols)) {
+    dup_names <- unique(extra_cols[duplicated(extra_cols)])
     cli::cli_abort(
-      "No diagnostic systems to compare. \\
-      Pass at least one comparison dataframe via {.arg ...} or set {.arg icd11 = TRUE}."
+      "Duplicate column names found across {.arg ...} inputs: \\
+      {.val {dup_names}}. Rename columns before passing to \\
+      {.fn compare_diagnostic_systems}."
     )
   }
 
+  # --- Check that there is something to compare ---
+  n_builtin <- as.integer(isTRUE(icd11)) + as.integer(has_caps5)
+  if (n_builtin == 0 && length(extra_cols) == 0) {
+    cli::cli_abort(
+      "No diagnostic systems to compare. \\
+      Pass at least one comparison dataframe via {.arg ...}, set \\
+      {.arg icd11 = TRUE}, or provide {.arg caps5_data}."
+    )
+  }
+
+  # --- Validate labels ---
   if (!is.null(labels) && length(labels) != length(extra_cols)) {
     cli::cli_warn(
       "{.arg labels} length ({length(labels)}) does not match the number of \\
@@ -224,26 +387,53 @@ compare_diagnostic_systems <- function(data, ..., icd11 = TRUE, labels = NULL) {
     labels <- NULL
   }
 
+  # --- Build combined data.frame ---
   combined <- data.frame(PTSD_orig = ref_orig)
+
+  # Add the "other" instrument's DSM-5 diagnosis as a comparison column
+  if (has_caps5) {
+    if (reference == "pcl5") {
+      combined$PTSD_caps5 <- caps5_orig
+    } else {
+      combined$PTSD_pcl5 <- pcl5_orig
+    }
+  }
+
+  # Add ICD-11 (always from PCL-5 data)
   if (isTRUE(icd11)) {
     combined$PTSD_icd11 <- create_icd11_diagnosis(data)$PTSD_icd11
   }
+
+  # Add columns from ... inputs
   for (df in dfs) {
     for (col in setdiff(names(df), "PTSD_orig")) {
       combined[[col]] <- df[[col]]
     }
   }
 
+  # --- Compute metrics ---
   raw     <- summarize_ptsd_changes(combined)
   n_total <- nrow(combined)
 
-  builtin    <- c("PTSD_orig" = "DSM-5-TR", "PTSD_icd11" = "ICD-11")
+  # --- Build labels ---
+  if (has_caps5) {
+    builtin <- c(
+      "PTSD_orig"  = if (reference == "pcl5") "DSM-5-TR (PCL-5)" else "DSM-5-TR (CAPS-5)",
+      "PTSD_caps5" = "DSM-5-TR (CAPS-5)",
+      "PTSD_pcl5"  = "DSM-5-TR (PCL-5)",
+      "PTSD_icd11" = "ICD-11 (PCL-5)"
+    )
+  } else {
+    builtin <- c("PTSD_orig" = "DSM-5-TR", "PTSD_icd11" = "ICD-11")
+  }
+
   sys_labels <- raw$column
   for (nm in names(builtin)) {
     sys_labels[sys_labels == nm] <- builtin[[nm]]
   }
   if (!is.null(labels)) {
-    sys_labels[!raw$column %in% c("PTSD_orig", "PTSD_icd11")] <- labels
+    non_builtin <- !raw$column %in% names(builtin)
+    sys_labels[non_builtin] <- labels
   }
 
   data.frame(

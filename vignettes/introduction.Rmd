@@ -19,11 +19,12 @@ The `PTSDdiag` package provides tools for analyzing and optimizing PTSD diagnost
 
 This vignette demonstrates how to use the package to:
 
- * Import and prepare PCL-5 data
+ * Import and prepare PCL-5 and CAPS-5 data
  * Calculate basic descriptive statistics and reliability metrics
  * Find optimal symptom combinations for PTSD diagnosis
  * Apply ICD-11 PTSD diagnostic criteria
- * Compare diagnostic systems (DSM-5-TR, ICD-11, and optimized combinations) in a unified table
+ * Validate optimized criteria against CAPS-5 as the gold standard
+ * Compare diagnostic systems (DSM-5-TR, ICD-11, CAPS-5, and optimized combinations) in a unified table
  * Export and import optimized combinations
  * Validate models using holdout and cross-validation
 
@@ -299,11 +300,94 @@ knitr::kable(
  * Set `icd11 = FALSE` to omit the ICD-11 row if not needed.
  * The function validates that all `PTSD_orig` columns match the reference computed from `data`, ensuring consistency.
 
-# 6. Exporting and Importing Combinations
+# 6. CAPS-5 Gold-Standard Validation
+
+The CAPS-5 (Clinician-Administered PTSD Scale for DSM-5) is the gold standard for diagnosing PTSD. When both PCL-5 and CAPS-5 data are available for the same participants, you can test how well optimized PCL-5-derived symptom combinations perform against the clinician-rated diagnosis.
+
+CAPS-5 uses the same structure as PCL-5: 20 items rated on a 0–4 severity scale, where the clinician combines frequency and intensity into a single rating per item. This means all `PTSDdiag` functions work identically on CAPS-5 data once the columns are renamed.
+
+## 6.1. Preparing CAPS-5 Data
+
+Use `rename_caps5_columns()` to standardize your CAPS-5 data. It works exactly like `rename_ptsd_columns()` but includes CAPS-5-specific documentation and error messages.
+
+```{r Prepare CAPS-5 data, echo=TRUE, message=FALSE}
+# Simulate CAPS-5 data by adding clinician variance to PCL-5 scores
+# In practice, these would come from separate instruments administered to the same participants
+set.seed(42)
+caps5_raw <- simulated_ptsd
+for (j in seq_len(ncol(caps5_raw))) {
+  noise <- sample(c(-1L, 0L, 0L, 0L, 1L), nrow(caps5_raw), replace = TRUE)
+  caps5_raw[[j]] <- pmin(4L, pmax(0L, caps5_raw[[j]] + noise))
+}
+
+caps5 <- rename_caps5_columns(caps5_raw)
+head(caps5[, 1:5])
+```
+
+## 6.2. CAPS-5 Diagnosis
+
+`create_caps5_diagnosis()` applies the standard DSM-5-TR diagnostic algorithm (binarize at ≥ 2, require ≥ 1 symptom in each of Clusters B–E) to CAPS-5 data:
+
+```{r CAPS-5 diagnosis, echo=TRUE, message=FALSE}
+caps5_dx <- create_caps5_diagnosis(caps5)
+cat("CAPS-5 PTSD prevalence:", mean(caps5_dx$PTSD_caps5), "\n")
+cat("PCL-5 PTSD prevalence:", mean(
+  create_ptsd_diagnosis_binarized(simulated_ptsd_renamed)$PTSD_orig
+), "\n")
+```
+
+## 6.3. Comparing Against CAPS-5
+
+Pass `caps5_data` to `compare_diagnostic_systems()` and choose which instrument serves as the reference standard. The reference row always has perfect sensitivity and specificity (1.0000) because it defines the "truth".
+
+**PCL-5 as reference:**
+
+```{r Compare PCL-5 reference, echo=TRUE, message=FALSE}
+tbl_pcl5_ref <- compare_diagnostic_systems(
+  simulated_ptsd_renamed,
+  best_combinations_nonhierarchical$diagnosis_comparison,
+  icd11     = TRUE,
+  caps5_data = caps5,
+  reference  = "pcl5"
+)
+
+knitr::kable(
+  tbl_pcl5_ref,
+  digits  = 4,
+  caption = "PCL-5 as reference: how do CAPS-5 and optimized criteria compare?"
+)
+```
+
+**CAPS-5 as reference:**
+
+```{r Compare CAPS-5 reference, echo=TRUE, message=FALSE}
+tbl_caps5_ref <- compare_diagnostic_systems(
+  simulated_ptsd_renamed,
+  best_combinations_nonhierarchical$diagnosis_comparison,
+  icd11     = TRUE,
+  caps5_data = caps5,
+  reference  = "caps5"
+)
+
+knitr::kable(
+  tbl_caps5_ref,
+  digits  = 4,
+  caption = "CAPS-5 as reference: how do PCL-5 and optimized criteria compare?"
+)
+```
+
+**Key points:**
+
+ * When `caps5_data` is provided, labels are disambiguated automatically: `"DSM-5-TR (PCL-5)"` and `"DSM-5-TR (CAPS-5)"`.
+ * The `reference` parameter controls which instrument defines diagnostic "truth" — run the function twice (once with each reference) for a complete picture.
+ * ICD-11 criteria are always computed from PCL-5 data and labelled `"ICD-11 (PCL-5)"`.
+ * All existing workflows without `caps5_data` remain unchanged.
+
+# 7. Exporting and Importing Combinations
 
 Once you have identified optimal symptom combinations, you can share them with collaborators or save them for later use. `write_combinations()` and `read_combinations()` export and import combinations as human-readable JSON files.
 
-## 6.1. Saving Derived Combinations
+## 7.1. Saving Derived Combinations
 
 ```{r Export combinations intro, echo=TRUE, message=FALSE}
 # Save to a temporary file for this demonstration
@@ -331,7 +415,7 @@ write_combinations(
 cat("Files written successfully.\n")
 ```
 
-## 6.2. Loading Saved Combinations
+## 7.2. Loading Saved Combinations
 
 A collaborator (or you in a future session) can load the combinations and apply them to new data:
 
@@ -364,12 +448,12 @@ knitr::kable(
 
 This is particularly useful for external validation workflows where one research group derives the criteria and another validates them on an independent dataset. See the *External Validation* vignette for a full worked example.
 
-# 7. Model Validation
+# 8. Model Validation
 After identifying optimal symptom combinations, it is crucial to validate their performance on independent data. The `PTSDdiag` package provides two validation approaches.
 
 > **Note on computation time.** The examples below use `n_symptoms = 4` to keep build time short. Real-world analyses typically use `n_symptoms = 6`.
 
-## 7.1. Holdout Validation
+## 8.1. Holdout Validation
 Holdout validation splits the data into training (70%) and test (30%) sets. Optimal combinations are derived on the training set and evaluated on the held-out test set.
 
 ```{r Holdout Validation, echo=TRUE, message=FALSE}
@@ -411,7 +495,7 @@ knitr::kable(
 )
 ```
 
-## 7.2. Cross-Validation
+## 8.2. Cross-Validation
 k-fold cross-validation provides a more robust estimate of generalization by repeating the train/test split `k` times.
 
 ```{r Cross Validation, echo=TRUE, message=FALSE}
@@ -480,7 +564,7 @@ if (!is.null(cv_results$with_clusters$combinations_summary)) {
 
 Key metrics: `Splits_Appeared` (how many folds selected a combination), sensitivity, specificity, PPV, and NPV.
 
-## 7.3. Comparing Validation Approaches
+## 8.3. Comparing Validation Approaches
 
 Both methods serve complementary purposes:
 
@@ -502,7 +586,7 @@ cat(sprintf("CV sensitivity range:                             %.4f – %.4f\n",
             min(cv_fold_sens, na.rm = TRUE), max(cv_fold_sens, na.rm = TRUE)))
 ```
 
-## 7.4. Validation Best Practices
+## 8.4. Validation Best Practices
 
 1. Set a seed for reproducibility: `seed = 123`
 2. Choose the appropriate method:
@@ -513,5 +597,5 @@ cat(sprintf("CV sensitivity range:                             %.4f – %.4f\n",
    - `score_by = "false_cases"` to minimize total misclassifications
 4. Examine multiple metrics — sensitivity for screening, specificity for differential diagnosis, PPV/NPV for clinical decision-making
 
-# 8. Conclusion
-With the `PTSDdiag` package, PCL-5 data can be processed and analyzed efficiently. It allows researchers to identify reduced optimal symptom combinations for PTSD diagnosis, apply ICD-11 criteria, and compare multiple diagnostic systems — DSM-5-TR, ICD-11, and optimized combinations — in a single unified table. Holdout and cross-validation functions provide robust estimates of how well the derived criteria generalize to new samples.
+# 9. Conclusion
+With the `PTSDdiag` package, PCL-5 and CAPS-5 data can be processed and analyzed efficiently. It allows researchers to identify reduced optimal symptom combinations for PTSD diagnosis, apply ICD-11 criteria, validate against the CAPS-5 gold standard, and compare multiple diagnostic systems — DSM-5-TR (PCL-5), DSM-5-TR (CAPS-5), ICD-11, and optimized combinations — in a single unified table. Holdout and cross-validation functions provide robust estimates of how well the derived criteria generalize to new samples.

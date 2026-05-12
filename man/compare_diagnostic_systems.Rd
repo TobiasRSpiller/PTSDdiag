@@ -2,33 +2,52 @@
 % Please edit documentation in R/alternative_criteria.R
 \name{compare_diagnostic_systems}
 \alias{compare_diagnostic_systems}
-\title{Compare multiple diagnostic systems against DSM-5-TR}
+\title{Compare multiple diagnostic systems against a reference standard}
 \usage{
-compare_diagnostic_systems(data, ..., icd11 = TRUE, labels = NULL)
+compare_diagnostic_systems(
+  data,
+  ...,
+  icd11 = TRUE,
+  caps5_data = NULL,
+  reference = c("pcl5", "caps5"),
+  labels = NULL
+)
 }
 \arguments{
 \item{data}{A dataframe containing exactly 20 columns of PCL-5 item scores
-(output of \code{\link{rename_ptsd_columns}}). Used to compute both the
-DSM-5-TR reference diagnosis and, when \code{icd11 = TRUE}, the ICD-11
-diagnosis.}
+(output of \code{\link{rename_ptsd_columns}}). Always required. Used to
+compute the PCL-5 DSM-5-TR diagnosis and, when \code{icd11 = TRUE}, the
+ICD-11 diagnosis.}
 
 \item{...}{Zero or more comparison dataframes, each containing a
 \code{PTSD_orig} column and at least one additional logical column
 representing a diagnostic system (e.g. output of
-\code{\link{apply_symptom_combinations}}). All \code{PTSD_orig} columns
-must be identical to the one computed from \code{data}.}
+\code{\link{apply_symptom_combinations}}). When \code{caps5_data} is
+\code{NULL}, all \code{PTSD_orig} columns must be identical to the one
+computed from \code{data}. When \code{caps5_data} is provided, only
+row counts are validated.}
 
 \item{icd11}{Logical. If \code{TRUE} (default), compute the ICD-11 PTSD
-diagnosis from \code{data} and include it as a row in the output, labelled
-\code{"ICD-11"}. Set to \code{FALSE} to omit ICD-11.}
+diagnosis from \code{data} and include it as a row in the output.}
+
+\item{caps5_data}{Optional dataframe containing exactly 20 columns of CAPS-5
+item severity scores (output of \code{\link{rename_caps5_columns}}). Must
+have the same number of rows as \code{data} (paired participants). When
+provided, the CAPS-5 DSM-5-TR diagnosis is computed internally and
+included in the comparison.}
+
+\item{reference}{Character. Which DSM-5-TR diagnosis serves as the reference
+standard: \code{"pcl5"} (default) or \code{"caps5"}. The reference row
+always has sensitivity = specificity = 1 and zero misclassifications.
+Setting \code{reference = "caps5"} requires \code{caps5_data} to be
+provided.}
 
 \item{labels}{Optional character vector of display names for the systems
 coming from \code{...}, in the order the columns appear across all
 \code{...} inputs (excluding \code{PTSD_orig} columns). Does not apply to
-the \code{"DSM-5-TR"} or \code{"ICD-11"} rows, which are always labelled
+built-in rows (DSM-5-TR, ICD-11, CAPS-5), which are always labelled
 automatically. If \code{NULL} (default), column names are used. A warning
-is issued if the length of \code{labels} does not match the number of
-systems and column names are used as a fallback.}
+is issued if the length does not match.}
 }
 \value{
 A \code{data.frame} with one row per diagnostic system and the
@@ -42,43 +61,48 @@ A \code{data.frame} with one row per diagnostic system and the
   \item \code{specificity}: 4 dp
   \item \code{ppv}: Positive predictive value, 4 dp
   \item \code{npv}: Negative predictive value, 4 dp
-  \item \code{n_false_negative}: Cases missed vs. DSM-5-TR
+  \item \code{n_false_negative}: Cases missed vs. reference
   \item \code{pct_false_negative}: Percentage of total sample, 2 dp
-  \item \code{n_false_positive}: Cases over-diagnosed vs. DSM-5-TR
+  \item \code{n_false_positive}: Cases over-diagnosed vs. reference
   \item \code{pct_false_positive}: Percentage of total sample, 2 dp
   \item \code{n_misclassified}: Total misclassified cases
 }
-
-The DSM-5-TR reference row has sensitivity = specificity = 1.0000 and all
-misclassification counts = 0 by definition.
 }
 \description{
 Produces a single unified summary table comparing the diagnostic performance
-of multiple criteria against DSM-5-TR as the reference standard. Suitable
-for use as a manuscript table (e.g., Table 2) comparing optimized symptom
-combinations, ICD-11, and DSM-5-TR in one \code{\link[knitr]{kable}}-ready
-output.
+of multiple criteria against a chosen reference standard. Suitable for use as
+a manuscript table comparing optimized symptom combinations, ICD-11, CAPS-5,
+and DSM-5-TR in one \code{\link[knitr]{kable}}-ready output.
 }
 \details{
 The function:
 
 \enumerate{
-  \item Computes the DSM-5-TR reference diagnosis (\code{PTSD_orig}) from
-    \code{data} — this always appears as the first row in the output
+  \item Computes the PCL-5 DSM-5-TR diagnosis from \code{data}
+  \item If \code{caps5_data} is provided, computes the CAPS-5 DSM-5-TR
+    diagnosis
+  \item Sets the reference standard based on \code{reference}: either the
+    PCL-5 or CAPS-5 DSM-5-TR diagnosis. The reference row always appears
+    first with sensitivity = specificity = 1.
   \item Optionally computes ICD-11 diagnosis from \code{data} when
     \code{icd11 = TRUE}
   \item Collects all non-\code{PTSD_orig} columns from the \code{...}
     comparison dataframes (e.g. output of
     \code{\link{apply_symptom_combinations}})
-  \item Validates that every \code{PTSD_orig} column in \code{...} is
-    identical to the reference computed from \code{data}
   \item Calls \code{\link{summarize_ptsd_changes}} internally and reshapes
     the result into a presentation-ready table
 }
 
-Built-in display labels: \code{PTSD_orig} → \code{"DSM-5-TR"},
-\code{PTSD_icd11} → \code{"ICD-11"}. These are applied automatically.
-Use the \code{labels} argument to rename the remaining systems.
+When \code{caps5_data} is \code{NULL} (default), labels follow the original
+convention: \code{"DSM-5-TR"} and \code{"ICD-11"}. When \code{caps5_data}
+is provided, labels are disambiguated with the instrument name:
+\code{"DSM-5-TR (PCL-5)"}, \code{"DSM-5-TR (CAPS-5)"},
+\code{"ICD-11 (PCL-5)"}.
+
+When \code{caps5_data} is provided, the strict \code{PTSD_orig} validation
+on \code{...} inputs is relaxed to a row-count check only, because
+comparison dataframes may have been derived from either the PCL-5 or CAPS-5
+data (which produce different \code{PTSD_orig} vectors).
 }
 \examples{
 ptsd_data <- rename_ptsd_columns(simulated_ptsd)
@@ -100,11 +124,25 @@ tbl2 <- compare_diagnostic_systems(
   labels = c("Combo A", "Combo B")
 )
 knitr::kable(tbl2)
+
+# With CAPS-5 as gold standard reference
+caps5_raw <- data.frame(matrix(sample(0:4, ncol(simulated_ptsd) * nrow(simulated_ptsd),
+                                      replace = TRUE), ncol = 20))
+caps5_data <- rename_caps5_columns(caps5_raw)
+tbl3 <- compare_diagnostic_systems(
+  ptsd_data, combos,
+  icd11      = TRUE,
+  caps5_data = caps5_data,
+  reference  = "caps5"
+)
+knitr::kable(tbl3)
 }
 
 }
 \seealso{
 \code{\link{create_icd11_diagnosis}} for the ICD-11 comparison dataframe.
+
+\code{\link{create_caps5_diagnosis}} for standalone CAPS-5 diagnosis.
 
 \code{\link{apply_symptom_combinations}} for generating comparison dataframes
 from optimized symptom combinations.

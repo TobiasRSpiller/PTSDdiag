@@ -35,9 +35,10 @@ navbar:
 
 reference:
   - title: Data Preparation
-    desc: Functions for preparing and standardizing PCL-5 data
+    desc: Functions for preparing and standardizing PCL-5 and CAPS-5 data
     contents:
     - rename_ptsd_columns
+    - rename_caps5_columns
     - binarize_data
 
   - title: Diagnostic Scoring
@@ -69,6 +70,7 @@ reference:
     - summarize_ptsd_changes
     - create_readable_summary
     - create_icd11_diagnosis
+    - create_caps5_diagnosis
     - compare_diagnostic_systems
 
   - title: Validation
