@@ -1,7 +1,7 @@
 Package: PTSDdiag
 Type: Package
 Title: Optimize PTSD Diagnostic Criteria
-Version: 0.2.3
+Version: 0.2.4
 Authors@R: c(
     person(
       "Laura", "Weidmann",
@@ -22,7 +22,7 @@ Authors@R: c(
   )
 Description: Provides tools for analyzing and optimizing PTSD (Post-Traumatic
     Stress Disorder) diagnostic criteria using PCL-5 (PTSD Checklist for DSM-5)
-    data. Functions identify optimal subsets of PCL-5 items that maintain
+    and CAPS-5 (Clinician-Administered PTSD Scale for DSM-5) data. Functions identify optimal subsets of PCL-5 items that maintain
     diagnostic accuracy while reducing assessment burden. Includes tools for
     both hierarchical (cluster-based) and non-hierarchical symptom combinations,
     calculation of diagnostic metrics, and comparison with standard DSM-5
