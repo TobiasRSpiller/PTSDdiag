@@ -68,6 +68,8 @@ reference:
     - summarize_ptsd
     - summarize_ptsd_changes
     - create_readable_summary
+    - create_icd11_diagnosis
+    - compare_diagnostic_systems
 
   - title: Validation
     desc: Model validation methods
