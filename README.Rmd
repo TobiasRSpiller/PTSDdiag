@@ -13,14 +13,19 @@ knitr::opts_chunk$set(
 )
 ```
 
-<img src="man/figures/logo.png" align="right" height="250" style="background: white; padding: 10px;" alt="PTSDdiag logo" />
-
 # PTSDdiag
 
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/PTSDdiag)](https://CRAN.R-project.org/package=PTSDdiag)
 [![R-CMD-check](https://github.com/TobiasRSpiller/PTSDdiag/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/TobiasRSpiller/PTSDdiag/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
+
+<p>
+<a href="https://tobiasrspiller.github.io/PTSDdiag/articles/quickstart.html" class="btn btn-primary btn-lg">Quick Start</a>
+<a href="https://tobiasrspiller.github.io/PTSDdiag/articles/internal_analysis.html" class="btn btn-outline-primary btn-lg">Full Analysis</a>
+<a href="https://tobiasrspiller.github.io/PTSDdiag/reference/index.html" class="btn btn-outline-primary btn-lg">Reference</a>
+<a href="https://doi.org/10.31219/osf.io/6rk72_v1" class="btn btn-outline-secondary btn-lg">Publication</a>
+</p>
 
 ## Description 
 PTSDdiag is a comprehensive R package for analyzing and simplifying PTSD diagnostic criteria using PCL-5 (PTSD Checklist for DSM-5) data. It provides tools to identify optimal subsets of six PCL-5 items that maintain diagnostic accuracy while reducing assessment burden. 
@@ -57,8 +62,10 @@ devtools::install_github("TobiasRSpiller/PTSDdiag")
 
 The vignette demonstrates how to use the package to prepare the PCL-5 data, calculate some basic descriptive statistics and reliability metrics, find the optimal minimal symptom combinations for PTSD diagnosis, compare different diagnostic approaches and perform validation methods for evaluating model performance.
 
- * [An Introduction to PTSDdiag](https://tobiasrspiller.github.io/PTSDdiag/articles/introduction.html)
- * [Package Website](https://tobiasrspiller.github.io/PTSDdiag/)
+ * [Quick Start](https://tobiasrspiller.github.io/PTSDdiag/articles/quickstart.html)
+ * [Full Internal Analysis](https://tobiasrspiller.github.io/PTSDdiag/articles/internal_analysis.html)
+ * [External Validation (PCL-5)](https://tobiasrspiller.github.io/PTSDdiag/articles/external_validation_pcl5.html)
+ * [External Validation (CAPS-5)](https://tobiasrspiller.github.io/PTSDdiag/articles/external_validation_caps5.html)
  
 ## Bugs, Contributions
 

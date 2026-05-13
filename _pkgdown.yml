@@ -7,6 +7,13 @@ template:
     base_font: {google: "Roboto"}
     heading_font: {google: "Roboto Slab"}
     code_font: {google: "JetBrains Mono"}
+    pkgdown-nav-height: 70px
+  opengraph:
+    image:
+      src: man/figures/logo.png
+    twitter:
+      creator: "@TobiasSpiller"
+      card: summary
 
 navbar:
   structure:
@@ -16,22 +23,60 @@ navbar:
     home:
       icon: fas fa-home fa-lg
       href: index.html
+      aria-label: Home
     reference:
       text: Reference
       href: reference/index.html
     articles:
       text: Articles
       menu:
-      - text: Introduction to PTSDdiag
-        href: articles/introduction.html
-      - text: External Validation
-        href: articles/external_validation.html
+      - text: "Quick Start"
+        href: articles/quickstart.html
+      - text: "Full Internal Analysis"
+        href: articles/internal_analysis.html
+      - text: "---"
+      - text: "External Validation (PCL-5)"
+        href: articles/external_validation_pcl5.html
+      - text: "External Validation (CAPS-5)"
+        href: articles/external_validation_caps5.html
     news:
       text: News
       href: news/index.html
     github:
       icon: fab fa-github fa-lg
       href: https://github.com/TobiasRSpiller/PTSDdiag
+      aria-label: GitHub
+
+home:
+  title: PTSDdiag — PTSD Diagnostic Criteria Analysis
+  description: >
+    Identify optimal subsets of PCL-5 items that maintain diagnostic
+    accuracy while reducing assessment burden.
+  links:
+  - text: Quick Start
+    href: articles/quickstart.html
+  - text: Full Internal Analysis
+    href: articles/internal_analysis.html
+  - text: External Validation (PCL-5)
+    href: articles/external_validation_pcl5.html
+  - text: External Validation (CAPS-5)
+    href: articles/external_validation_caps5.html
+  - text: Function Reference
+    href: reference/index.html
+  - text: Publication
+    href: https://doi.org/10.31219/osf.io/6rk72_v1
+
+articles:
+- title: "Getting Started"
+  desc: "Core workflows for new users"
+  contents:
+  - quickstart
+  - internal_analysis
+- title: "External Validation"
+  desc: "Test optimised criteria on independent datasets"
+  contents:
+  - external_validation_pcl5
+  - external_validation_caps5
 
 reference:
   - title: Data Preparation
@@ -92,10 +137,6 @@ authors:
     href: https://github.com/TobiasRSpiller
   Flavio A. Schüepp:
     href: https://github.com/flavioschuepp
-
-home:
-  title: PTSDdiag - PTSD Diagnostic Criteria Analysis
-  description: Tools for analyzing and simplifying PTSD diagnostic criteria using PCL-5 data
 
 footer:
   structure:

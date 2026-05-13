@@ -8,3 +8,6 @@ inst/doc
 README.html
 /doc/
 /Meta/
+.positai
+/docs/
+/pkgdown/

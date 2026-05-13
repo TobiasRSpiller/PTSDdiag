@@ -1,0 +1,177 @@
+---
+title: "External Validation with CAPS-5 Data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{External Validation with CAPS-5 Data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# 1. Introduction
+
+The CAPS-5 (Clinician-Administered PTSD Scale for DSM-5) is the gold standard for PTSD diagnosis. When both PCL-5 and CAPS-5 data are available for the same participants, optimised PCL-5 symptom combinations can be evaluated against the clinician-rated diagnosis.
+
+CAPS-5 mirrors the PCL-5 structure: 20 items on a 0--4 severity scale, where the clinician integrates frequency and intensity into a single rating. All `PTSDdiag` functions work identically on CAPS-5 data once columns are renamed.
+
+This vignette demonstrates how to:
+
+ * Prepare CAPS-5 data for analysis
+ * Apply DSM-5 diagnostic criteria to CAPS-5 data
+ * Compare PCL-5 and CAPS-5 diagnoses using either instrument as the reference standard
+ * Evaluate optimised PCL-5 combinations against the CAPS-5 gold standard
+
+For a single-dataset PCL-5 workflow, see the [Full Internal Analysis](internal_analysis.html) vignette. For cross-sample validation using two PCL-5 datasets, see the [External Validation (PCL-5)](external_validation_pcl5.html) vignette.
+
+# 2. Setup
+
+```{r Loading PTSDdiag, echo=TRUE, warning=FALSE}
+library("PTSDdiag")
+```
+
+We use the included `simulated_ptsd` dataset as the PCL-5 sample. To illustrate the workflow, we simulate CAPS-5 data by adding clinician variance to the PCL-5 scores. In practice, these would come from separate instruments administered to the same participants.
+
+```{r Prepare data, echo=TRUE}
+data("simulated_ptsd")
+simulated_ptsd_renamed <- rename_ptsd_columns(simulated_ptsd)
+```
+
+```{r Simulate CAPS-5 data, echo=TRUE}
+set.seed(42)
+caps5_raw <- simulated_ptsd
+for (j in seq_len(ncol(caps5_raw))) {
+  noise <- sample(c(-1L, 0L, 0L, 0L, 1L), nrow(caps5_raw), replace = TRUE)
+  caps5_raw[[j]] <- pmin(4L, pmax(0L, caps5_raw[[j]] + noise))
+}
+```
+
+# 3. Preparing CAPS-5 data
+
+`rename_caps5_columns()` standardises column names. It works identically to `rename_ptsd_columns()` but includes CAPS-5-specific documentation and error messages.
+
+```{r Rename CAPS-5 columns, echo=TRUE}
+caps5 <- rename_caps5_columns(caps5_raw)
+head(caps5[, 1:5])
+```
+
+# 4. CAPS-5 diagnosis
+
+`create_caps5_diagnosis()` applies the standard DSM-5-TR diagnostic algorithm (binarise at >= 2, require >= 1 symptom in each of Clusters B--E) to CAPS-5 data:
+
+```{r CAPS-5 diagnosis, echo=TRUE, message=FALSE}
+caps5_dx <- create_caps5_diagnosis(caps5)
+cat("CAPS-5 PTSD prevalence:", mean(caps5_dx$PTSD_caps5), "\n")
+cat("PCL-5 PTSD prevalence:", mean(
+  create_ptsd_diagnosis_binarized(simulated_ptsd_renamed)$PTSD_orig
+), "\n")
+```
+
+# 5. Comparing PCL-5 and CAPS-5 diagnoses
+
+Pass `caps5_data` to `compare_diagnostic_systems()` and choose which instrument serves as the reference standard. The reference row always has perfect sensitivity and specificity (1.0000) because it defines the diagnostic "truth".
+
+## 5.1. PCL-5 as reference
+
+When PCL-5 is the reference, we evaluate how well the CAPS-5 and other criteria reproduce the PCL-5-based DSM-5-TR diagnosis:
+
+```{r Compare PCL-5 reference, echo=TRUE, message=FALSE}
+tbl_pcl5_ref <- compare_diagnostic_systems(
+  simulated_ptsd_renamed,
+  icd11      = TRUE,
+  caps5_data = caps5,
+  reference  = "pcl5"
+)
+
+knitr::kable(
+  tbl_pcl5_ref,
+  digits  = 4,
+  caption = "PCL-5 as reference: how do CAPS-5 and ICD-11 compare?"
+)
+```
+
+## 5.2. CAPS-5 as reference
+
+When CAPS-5 is the reference, we evaluate how well the PCL-5 diagnosis and other criteria reproduce the clinician-rated gold standard:
+
+```{r Compare CAPS-5 reference, echo=TRUE, message=FALSE}
+tbl_caps5_ref <- compare_diagnostic_systems(
+  simulated_ptsd_renamed,
+  icd11      = TRUE,
+  caps5_data = caps5,
+  reference  = "caps5"
+)
+
+knitr::kable(
+  tbl_caps5_ref,
+  digits  = 4,
+  caption = "CAPS-5 as reference: how do PCL-5 and ICD-11 compare?"
+)
+```
+
+# 6. Adding optimised combinations
+
+Optimised PCL-5 combinations can be added to the comparison. Here we derive combinations and evaluate them against both reference standards.
+
+```{r Derive combinations, echo=TRUE, message=FALSE}
+best_nonhier <- optimize_combinations(
+  simulated_ptsd_renamed,
+  n_symptoms    = 4,
+  n_required    = 3,
+  n_top         = 3,
+  score_by      = "newly_nondiagnosed",
+  show_progress = FALSE
+)
+```
+
+**Against PCL-5 reference:**
+
+```{r Optimised vs PCL-5, echo=TRUE, message=FALSE}
+tbl_opt_pcl5 <- compare_diagnostic_systems(
+  simulated_ptsd_renamed,
+  best_nonhier$diagnosis_comparison,
+  icd11      = TRUE,
+  caps5_data = caps5,
+  reference  = "pcl5"
+)
+
+knitr::kable(
+  tbl_opt_pcl5,
+  digits  = 4,
+  caption = "PCL-5 as reference: DSM-5-TR, ICD-11, CAPS-5, and optimised combinations"
+)
+```
+
+**Against CAPS-5 reference:**
+
+```{r Optimised vs CAPS-5, echo=TRUE, message=FALSE}
+tbl_opt_caps5 <- compare_diagnostic_systems(
+  simulated_ptsd_renamed,
+  best_nonhier$diagnosis_comparison,
+  icd11      = TRUE,
+  caps5_data = caps5,
+  reference  = "caps5"
+)
+
+knitr::kable(
+  tbl_opt_caps5,
+  digits  = 4,
+  caption = "CAPS-5 as reference: DSM-5-TR, ICD-11, PCL-5, and optimised combinations"
+)
+```
+
+# 7. Interpreting results
+
+When comparing across instruments:
+
+ * When `caps5_data` is provided, labels are disambiguated automatically: `"DSM-5-TR (PCL-5)"` and `"DSM-5-TR (CAPS-5)"`.
+ * The `reference` parameter controls which instrument defines diagnostic "truth". Running the comparison twice (once with each reference) provides a complete picture.
+ * ICD-11 criteria are always computed from PCL-5 data and labelled `"ICD-11 (PCL-5)"`.
+ * All workflows without `caps5_data` remain unchanged.
+
+The degree of agreement between PCL-5 and CAPS-5 diagnoses is itself informative: substantial discordance may reflect meaningful differences in what self-report and clinician-administered instruments capture, rather than a failure of the simplified criteria.
