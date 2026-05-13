@@ -1,8 +1,6 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-<img src="man/figures/logo.png" align="right" height="250" style="background: white; padding: 10px;" alt="PTSDdiag logo" />
-
 # PTSDdiag
 
 <!-- badges: start -->
@@ -11,6 +9,15 @@
 status](https://www.r-pkg.org/badges/version/PTSDdiag)](https://CRAN.R-project.org/package=PTSDdiag)
 [![R-CMD-check](https://github.com/TobiasRSpiller/PTSDdiag/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/TobiasRSpiller/PTSDdiag/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
+
+<p>
+
+<a href="https://tobiasrspiller.github.io/PTSDdiag/articles/quickstart.html" class="btn btn-primary btn-lg">Quick
+Start</a>
+<a href="https://tobiasrspiller.github.io/PTSDdiag/articles/introduction.html" class="btn btn-outline-primary btn-lg">Introduction</a>
+<a href="https://tobiasrspiller.github.io/PTSDdiag/reference/index.html" class="btn btn-outline-primary btn-lg">Reference</a>
+<a href="https://doi.org/10.31219/osf.io/6rk72_v1" class="btn btn-outline-secondary btn-lg">Publication</a>
+</p>
 
 ## Description
 
@@ -56,9 +63,12 @@ metrics, find the optimal minimal symptom combinations for PTSD
 diagnosis, compare different diagnostic approaches and perform
 validation methods for evaluating model performance.
 
+- [Quick
+  Start](https://tobiasrspiller.github.io/PTSDdiag/articles/quickstart.html)
 - [An Introduction to
   PTSDdiag](https://tobiasrspiller.github.io/PTSDdiag/articles/introduction.html)
-- [Package Website](https://tobiasrspiller.github.io/PTSDdiag/)
+- [External
+  Validation](https://tobiasrspiller.github.io/PTSDdiag/articles/external_validation.html)
 
 ## Bugs, Contributions
 

@@ -12,3 +12,4 @@
 ^\.git$
 ^doc$
 ^Meta$
+^\.positai$
