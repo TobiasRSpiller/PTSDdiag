@@ -66,6 +66,7 @@ The vignette demonstrates how to use the package to prepare the PCL-5 data, calc
  * [Full Internal Analysis](https://tobiasrspiller.github.io/PTSDdiag/articles/internal_analysis.html)
  * [External Validation (PCL-5)](https://tobiasrspiller.github.io/PTSDdiag/articles/external_validation_pcl5.html)
  * [External Validation (CAPS-5)](https://tobiasrspiller.github.io/PTSDdiag/articles/external_validation_caps5.html)
+ * [Package Website](https://tobiasrspiller.github.io/PTSDdiag/)
  
 ## Bugs, Contributions
 

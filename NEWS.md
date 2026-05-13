@@ -1,3 +1,14 @@
+# PTSDdiag 0.2.5.1
+
+## Bug fixes
+
+* Fixed stale `README.md` that still linked to the removed `introduction.html`
+  vignette instead of the new `internal_analysis.html`.
+* Restored package website link in README.
+* Added pkgdown site URL to DESCRIPTION `URL` field.
+* Updated `JamesIves/github-pages-deploy-action` to v4.7.3 for Node.js 24
+  compatibility.
+
 # PTSDdiag 0.2.5
 
 ## Documentation
