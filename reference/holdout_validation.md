@@ -125,13 +125,13 @@ colnames(sample_data) <- paste0("symptom_", 1:20)
 validation_results <- holdout_validation(sample_data, train_ratio = 0.7)
 #> ℹ Training on 140 observations, testing on 60
 #> Evaluating combinations ■■■■■■■                           20% | ETA:  4s
-#> Evaluating combinations ■■■■■■■■■■■■■■■■■                 55% | ETA:  2s
+#> Evaluating combinations ■■■■■■■■■■■■                      35% | ETA:  3s
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■    96% | ETA:  0s
 #> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
 #> ℹ Evaluated 38760 combinations. Best: 2, 6, 7, 9, 15, 16
 #> ℹ Generated 13685 valid cluster-constrained combinations
-#> Evaluating combinations ■■■■■                             15% | ETA:  6s
-#> Evaluating combinations ■■■■■■■■■■                        30% | ETA:  5s
-#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■          76% | ETA:  2s
+#> Evaluating combinations ■■■■■■                            16% | ETA:  6s
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■              63% | ETA:  2s
 #> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
 #> ℹ Evaluated 13685 combinations. Best: 1, 5, 7, 9, 16, 17
 #> ✔ Holdout validation complete

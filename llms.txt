@@ -2,7 +2,8 @@
 
 [Quick
 Start](https://tobiasrspiller.github.io/PTSDdiag/articles/quickstart.html)
-[Introduction](https://tobiasrspiller.github.io/PTSDdiag/articles/introduction.html)
+[Full
+Analysis](https://tobiasrspiller.github.io/PTSDdiag/articles/internal_analysis.html)
 [Reference](https://tobiasrspiller.github.io/PTSDdiag/reference/index.html)
 [Publication](https://doi.org/10.31219/osf.io/6rk72_v1)
 
@@ -54,10 +55,13 @@ validation methods for evaluating model performance.
 
 - [Quick
   Start](https://tobiasrspiller.github.io/PTSDdiag/articles/quickstart.html)
-- [An Introduction to
-  PTSDdiag](https://tobiasrspiller.github.io/PTSDdiag/articles/introduction.html)
-- [External
-  Validation](https://tobiasrspiller.github.io/PTSDdiag/articles/external_validation.html)
+- [Full Internal
+  Analysis](https://tobiasrspiller.github.io/PTSDdiag/articles/internal_analysis.html)
+- [External Validation
+  (PCL-5)](https://tobiasrspiller.github.io/PTSDdiag/articles/external_validation_pcl5.html)
+- [External Validation
+  (CAPS-5)](https://tobiasrspiller.github.io/PTSDdiag/articles/external_validation_caps5.html)
+- [Package Website](https://tobiasrspiller.github.io/PTSDdiag/)
 
 ## Bugs, Contributions
 
