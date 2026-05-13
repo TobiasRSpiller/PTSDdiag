@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>PTSDdiag - PTSD Diagnostic Criteria Analysis • PTSDdiag</title>
+<title>PTSDdiag — PTSD Diagnostic Criteria Analysis • PTSDdiag</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/Roboto-0.4.10/font.css" rel="stylesheet">
@@ -13,10 +13,15 @@
 <link href="deps/Roboto_Slab-0.4.10/font.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="PTSDdiag - PTSD Diagnostic Criteria Analysis">
-<meta name="description" content="Tools for analyzing and simplifying PTSD diagnostic criteria using PCL-5 data">
-<meta property="og:description" content="Tools for analyzing and simplifying PTSD diagnostic criteria using PCL-5 data">
-<meta property="og:image" content="https://tobiasrspiller.github.io/PTSDdiag/logo.png">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="PTSDdiag — PTSD Diagnostic Criteria Analysis">
+<meta name="description" content="Identify optimal subsets of PCL-5 items that maintain diagnostic accuracy while reducing assessment burden.
+">
+<meta property="og:description" content="Identify optimal subsets of PCL-5 items that maintain diagnostic accuracy while reducing assessment burden.
+">
+<meta property="og:image" content="https://tobiasrspiller.github.io/PTSDdiag/reference/figures/logo.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:creator" content="@TobiasSpiller">
+<meta name="twitter:site" content="@TobiasSpiller">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -26,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,8 +44,11 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/introduction.html">Introduction to PTSDdiag</a></li>
-    <li><a class="dropdown-item" href="articles/external_validation.html">External Validation</a></li>
+<li><a class="dropdown-item" href="articles/quickstart.html">Quick Start</a></li>
+    <li><a class="dropdown-item" href="articles/internal_analysis.html">Full Internal Analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="articles/external_validation_pcl5.html">External Validation (PCL-5)</a></li>
+    <li><a class="dropdown-item" href="articles/external_validation_caps5.html">External Validation (CAPS-5)</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">News</a></li>
@@ -49,7 +57,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/TobiasRSpiller/PTSDdiag"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/TobiasRSpiller/PTSDdiag" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -57,14 +65,16 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9"><p><img src="reference/figures/logo.png" align="right" height="250" style="background: white; padding: 10px;" alt="PTSDdiag logo"></p>
-<div class="section level1">
+  <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header">
 <img src="logo.png" class="logo" alt=""><h1 id="ptsddiag">PTSDdiag<a class="anchor" aria-label="anchor" href="#ptsddiag"></a>
 </h1>
 </div>
 <!-- badges: start -->
 
+<p>
+<a href="https://tobiasrspiller.github.io/PTSDdiag/articles/quickstart.html" class="btn btn-primary btn-lg">Quick Start</a> <a href="https://tobiasrspiller.github.io/PTSDdiag/articles/introduction.html" class="btn btn-outline-primary btn-lg">Introduction</a> <a href="https://tobiasrspiller.github.io/PTSDdiag/reference/index.html" class="btn btn-outline-primary btn-lg">Reference</a> <a href="https://doi.org/10.31219/osf.io/6rk72_v1" class="external-link btn btn-outline-secondary btn-lg">Publication</a>
+</p>
 <div class="section level2">
 <h2 id="description">Description<a class="anchor" aria-label="anchor" href="#description"></a>
 </h2>
@@ -109,8 +119,9 @@
 </h2>
 <p>The vignette demonstrates how to use the package to prepare the PCL-5 data, calculate some basic descriptive statistics and reliability metrics, find the optimal minimal symptom combinations for PTSD diagnosis, compare different diagnostic approaches and perform validation methods for evaluating model performance.</p>
 <ul>
+<li><a href="https://tobiasrspiller.github.io/PTSDdiag/articles/quickstart.html">Quick Start</a></li>
 <li><a href="https://tobiasrspiller.github.io/PTSDdiag/articles/introduction.html">An Introduction to PTSDdiag</a></li>
-<li><a href="https://tobiasrspiller.github.io/PTSDdiag/">Package Website</a></li>
+<li><a href="https://tobiasrspiller.github.io/PTSDdiag/articles/external_validation.html">External Validation</a></li>
 </ul>
 </div>
 <div class="section level2">
@@ -122,13 +133,18 @@
 </ul>
 </div>
 </div>
-
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
 <li><a href="https://cloud.r-project.org/package=PTSDdiag" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/TobiasRSpiller/PTSDdiag/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/TobiasRSpiller/PTSDdiag/issues" class="external-link">Report a bug</a></li>
+<li><a href="articles/quickstart.html">Quick Start</a></li>
+<li><a href="articles/internal_analysis.html">Full Internal Analysis</a></li>
+<li><a href="articles/external_validation_pcl5.html">External Validation (PCL-5)</a></li>
+<li><a href="articles/external_validation_caps5.html">External Validation (CAPS-5)</a></li>
+<li><a href="reference/index.html">Function Reference</a></li>
+<li><a href="https://doi.org/10.31219/osf.io/6rk72_v1" class="external-link">Publication</a></li>
 </ul>
 </div>
 

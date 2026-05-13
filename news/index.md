@@ -1,5 +1,73 @@
 # Changelog
 
+## PTSDdiag 0.2.5
+
+### Documentation
+
+- Restructured vignettes into four focused articles: Quick Start, Full
+  Internal Analysis, External Validation (PCL-5), and External
+  Validation (CAPS-5).
+- Updated pkgdown website configuration: fixed duplicate logo, added
+  call-to-action buttons on the home page, added OpenGraph metadata for
+  social sharing.
+- Added changelog entries for versions 0.2.2–0.2.4.
+
+## PTSDdiag 0.2.4
+
+### New functions
+
+- [`create_caps5_diagnosis()`](https://tobiasrspiller.github.io/PTSDdiag/reference/create_caps5_diagnosis.md)
+  applies the DSM-5-TR diagnostic algorithm to CAPS-5
+  (Clinician-Administered PTSD Scale for DSM-5) item scores and returns
+  the clinician-rated diagnostic status.
+- [`rename_caps5_columns()`](https://tobiasrspiller.github.io/PTSDdiag/reference/rename_caps5_columns.md)
+  standardises CAPS-5 column names to `symptom_1` through `symptom_20`,
+  enabling all downstream functions to work transparently on CAPS-5
+  data.
+
+### Improvements
+
+- [`compare_diagnostic_systems()`](https://tobiasrspiller.github.io/PTSDdiag/reference/compare_diagnostic_systems.md)
+  gains a `caps5_data` argument for including CAPS-5 diagnoses in the
+  unified comparison table, and a `reference` argument (`"pcl5"` or
+  `"caps5"`) for selecting which instrument defines diagnostic “truth”.
+  Labels are disambiguated automatically when both instruments are
+  present (e.g. `"DSM-5-TR (PCL-5)"`, `"DSM-5-TR (CAPS-5)"`).
+
+### Infrastructure
+
+- Updated GitHub Actions workflows to Node.js 24 compatible versions.
+
+## PTSDdiag 0.2.3
+
+### New functions
+
+- [`create_icd11_diagnosis()`](https://tobiasrspiller.github.io/PTSDdiag/reference/create_icd11_diagnosis.md)
+  applies ICD-11 PTSD diagnostic criteria to PCL-5 data and returns a
+  comparison dataframe against DSM-5-TR. Output is directly compatible
+  with
+  [`summarize_ptsd_changes()`](https://tobiasrspiller.github.io/PTSDdiag/reference/summarize_ptsd_changes.md).
+- [`compare_diagnostic_systems()`](https://tobiasrspiller.github.io/PTSDdiag/reference/compare_diagnostic_systems.md)
+  produces a single unified summary table comparing the diagnostic
+  performance of DSM-5-TR, ICD-11, and any number of optimised symptom
+  combinations. Output is
+  [`knitr::kable()`](https://rdrr.io/pkg/knitr/man/kable.html)-ready for
+  manuscript tables.
+
+## PTSDdiag 0.2.2
+
+### Improvements
+
+- [`create_readable_summary()`](https://tobiasrspiller.github.io/PTSDdiag/reference/create_readable_summary.md)
+  gains a `DT` parameter for optional interactive
+  [`DT::datatable()`](https://rdrr.io/pkg/DT/man/datatable.html) widget
+  output, consistent with the optimisation functions.
+- [`optimize_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations.md)
+  and
+  [`optimize_combinations_clusters()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations_clusters.md)
+  gain a `show_progress` parameter (default `TRUE`). Set to `FALSE` for
+  batch or non-interactive use.
+
 ## PTSDdiag 0.2.1
 
 ### Improvements

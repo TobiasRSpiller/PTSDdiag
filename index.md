@@ -1,6 +1,10 @@
 # PTSDdiag
 
-![PTSDdiag logo](reference/figures/logo.png)
+[Quick
+Start](https://tobiasrspiller.github.io/PTSDdiag/articles/quickstart.html)
+[Introduction](https://tobiasrspiller.github.io/PTSDdiag/articles/introduction.html)
+[Reference](https://tobiasrspiller.github.io/PTSDdiag/reference/index.html)
+[Publication](https://doi.org/10.31219/osf.io/6rk72_v1)
 
 ## Description
 
@@ -48,9 +52,12 @@ metrics, find the optimal minimal symptom combinations for PTSD
 diagnosis, compare different diagnostic approaches and perform
 validation methods for evaluating model performance.
 
+- [Quick
+  Start](https://tobiasrspiller.github.io/PTSDdiag/articles/quickstart.html)
 - [An Introduction to
   PTSDdiag](https://tobiasrspiller.github.io/PTSDdiag/articles/introduction.html)
-- [Package Website](https://tobiasrspiller.github.io/PTSDdiag/)
+- [External
+  Validation](https://tobiasrspiller.github.io/PTSDdiag/articles/external_validation.html)
 
 ## Bugs, Contributions
 
