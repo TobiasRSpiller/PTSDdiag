@@ -34,6 +34,8 @@ navbar:
         href: articles/quickstart.html
       - text: "Full Internal Analysis"
         href: articles/internal_analysis.html
+      - text: "Joining diagnoses to demographics"
+        href: articles/id_column_workflow.html
       - text: "---"
       - text: "External Validation (PCL-5)"
         href: articles/external_validation_pcl5.html
@@ -72,6 +74,7 @@ articles:
   contents:
   - quickstart
   - internal_analysis
+  - id_column_workflow
 - title: "External Validation"
   desc: "Test optimised criteria on independent datasets"
   contents:
