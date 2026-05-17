@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,6 +20,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Quick Start</a></li>
     <li><a class="dropdown-item" href="../articles/internal_analysis.html">Full Internal Analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/id_column_workflow.html">Joining diagnoses to demographics</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/external_validation_pcl5.html">External Validation (PCL-5)</a></li>
     <li><a class="dropdown-item" href="../articles/external_validation_caps5.html">External Validation (CAPS-5)</a></li>
@@ -39,6 +40,29 @@
       <small>Source: <a href="https://github.com/TobiasRSpiller/PTSDdiag/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.2.7" id="ptsddiag-027">PTSDdiag 0.2.7<a class="anchor" aria-label="anchor" href="#ptsddiag-027"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-2-7">New features<a class="anchor" aria-label="anchor" href="#new-features-0-2-7"></a></h3>
+<ul><li>
+<code><a href="../reference/rename_ptsd_columns.html">rename_ptsd_columns()</a></code> and <code><a href="../reference/rename_caps5_columns.html">rename_caps5_columns()</a></code> gain an <code>id_col</code> argument: a character vector of column name(s) to preserve through the workflow as participant identifiers. When supplied, the named columns are prepended to the renamed dataframe and propagate automatically through <code><a href="../reference/optimize_combinations.html">optimize_combinations()</a></code>, <code><a href="../reference/optimize_combinations_clusters.html">optimize_combinations_clusters()</a></code>, <code><a href="../reference/apply_symptom_combinations.html">apply_symptom_combinations()</a></code>, <code><a href="../reference/holdout_validation.html">holdout_validation()</a></code>, <code><a href="../reference/cross_validation.html">cross_validation()</a></code>, <code><a href="../reference/create_icd11_diagnosis.html">create_icd11_diagnosis()</a></code>, and <code><a href="../reference/create_caps5_diagnosis.html">create_caps5_diagnosis()</a></code>. The result of each per-row function (<code>diagnosis_comparison</code>, <code>test_results</code>, <code>fold_results</code>, etc.) prepends these ID columns so diagnoses can be joined back to the original dataframe — for example, to compare demographics between participants who do and do not meet an optimized criterion.</li>
+<li>
+<code><a href="../reference/compare_diagnostic_systems.html">compare_diagnostic_systems()</a></code> automatically skips carry-through ID columns in its <code>...</code> inputs so they are not mistaken for diagnostic systems.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="behavior-changes-0-2-7">Behavior changes<a class="anchor" aria-label="anchor" href="#behavior-changes-0-2-7"></a></h3>
+<ul><li>
+<code><a href="../reference/binarize_data.html">binarize_data()</a></code> now mutates only the <code>symptom_1</code>..<code>symptom_20</code> columns rather than the whole dataframe. Any additional columns (e.g. an ID column) are preserved unchanged. This fixes a latent bug where a non-numeric carry-through column would have been coerced or errored.</li>
+<li>
+<code><a href="../reference/create_ptsd_diagnosis_binarized.html">create_ptsd_diagnosis_binarized()</a></code> now operates on the symptom subset only, accepting input dataframes with extra columns.</li>
+<li>
+<code><a href="../reference/summarize_ptsd_changes.html">summarize_ptsd_changes()</a></code> silently drops non-logical columns before computing metrics (previously errored). This lets ID columns ride along in comparison dataframes without breaking downstream summarization.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-0-2-7">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-2-7"></a></h3>
+<ul><li>New vignette <code>id-column-workflow</code> demonstrating how to use <code>id_col</code> to merge per-row diagnoses back to a dataframe with demographics.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.6" id="ptsddiag-026">PTSDdiag 0.2.6<a class="anchor" aria-label="anchor" href="#ptsddiag-026"></a></h2>
 <div class="section level3">

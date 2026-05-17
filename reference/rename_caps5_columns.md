@@ -10,16 +10,16 @@ used with the same downstream functions as PCL-5 data (e.g.,
 ## Usage
 
 ``` r
-rename_caps5_columns(data)
+rename_caps5_columns(data, id_col = NULL)
 ```
 
 ## Arguments
 
 - data:
 
-  A dataframe containing exactly 20 columns, where each column
-  represents a CAPS-5 item severity rating. Scores are on a 0–4 scale
-  where:
+  A dataframe containing exactly 20 columns of CAPS-5 item severity
+  ratings (plus any columns named in `id_col` for carry-through). Scores
+  are on a 0–4 scale where:
 
   - 0 = Absent
 
@@ -31,10 +31,18 @@ rename_caps5_columns(data)
 
   - 4 = Extreme / incapacitating
 
+- id_col:
+
+  Optional character vector naming column(s) in `data` to preserve as
+  identifiers. These columns propagate through the workflow and can be
+  used to merge per-row diagnoses back to the original dataframe.
+  Defaults to `NULL`.
+
 ## Value
 
-A dataframe with the same data but renamed columns following the pattern
-`symptom_1` through `symptom_20`.
+A dataframe with CAPS-5 columns renamed to `symptom_1` through
+`symptom_20`. If `id_col` is supplied, the named columns are prepended
+(in original order).
 
 ## Details
 

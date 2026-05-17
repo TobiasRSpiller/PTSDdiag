@@ -57,6 +57,10 @@ apply_symptom_combinations(data, combinations, n_required = 4, clusters = NULL)
 
 A dataframe with columns:
 
+- Any carry-through columns from `data` (e.g. an ID column added via
+  [`rename_ptsd_columns`](https://tobiasrspiller.github.io/PTSDdiag/reference/rename_ptsd_columns.md)),
+  prepended in original order.
+
 - `PTSD_orig`: Logical. Full DSM-5 diagnosis computed on this data.
 
 - One column per combination (logical): Simplified diagnosis for each

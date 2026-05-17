@@ -31,6 +31,11 @@ A `data.frame` with two logical columns and one row per participant:
 
 - `PTSD_icd11`: ICD-11 diagnosis
 
+Any carry-through columns present in `data` (e.g. an ID column added via
+[`rename_ptsd_columns`](https://tobiasrspiller.github.io/PTSDdiag/reference/rename_ptsd_columns.md))
+are prepended in original order so results can be joined back to the
+source dataframe.
+
 This dataframe can be passed directly to
 [`summarize_ptsd_changes`](https://tobiasrspiller.github.io/PTSDdiag/reference/summarize_ptsd_changes.md)
 or used as an input to

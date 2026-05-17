@@ -92,7 +92,10 @@ A list containing:
   symptom numbers representing the best combinations found
 
 - diagnosis_comparison: Dataframe comparing original DSM-5 diagnosis
-  with diagnoses based on the best combinations
+  with diagnoses based on the best combinations. If `data` carried
+  non-symptom columns (e.g. an ID column added via
+  [`rename_ptsd_columns`](https://tobiasrspiller.github.io/PTSDdiag/reference/rename_ptsd_columns.md)),
+  those are prepended in original order.
 
 - summary: Diagnostic accuracy metrics for each combination. A
   data.frame by default, or an interactive

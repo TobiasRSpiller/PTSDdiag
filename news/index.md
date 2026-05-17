@@ -1,5 +1,53 @@
 # Changelog
 
+## PTSDdiag 0.2.7
+
+### New features
+
+- [`rename_ptsd_columns()`](https://tobiasrspiller.github.io/PTSDdiag/reference/rename_ptsd_columns.md)
+  and
+  [`rename_caps5_columns()`](https://tobiasrspiller.github.io/PTSDdiag/reference/rename_caps5_columns.md)
+  gain an `id_col` argument: a character vector of column name(s) to
+  preserve through the workflow as participant identifiers. When
+  supplied, the named columns are prepended to the renamed dataframe and
+  propagate automatically through
+  [`optimize_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations.md),
+  [`optimize_combinations_clusters()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations_clusters.md),
+  [`apply_symptom_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/apply_symptom_combinations.md),
+  [`holdout_validation()`](https://tobiasrspiller.github.io/PTSDdiag/reference/holdout_validation.md),
+  [`cross_validation()`](https://tobiasrspiller.github.io/PTSDdiag/reference/cross_validation.md),
+  [`create_icd11_diagnosis()`](https://tobiasrspiller.github.io/PTSDdiag/reference/create_icd11_diagnosis.md),
+  and
+  [`create_caps5_diagnosis()`](https://tobiasrspiller.github.io/PTSDdiag/reference/create_caps5_diagnosis.md).
+  The result of each per-row function (`diagnosis_comparison`,
+  `test_results`, `fold_results`, etc.) prepends these ID columns so
+  diagnoses can be joined back to the original dataframe — for example,
+  to compare demographics between participants who do and do not meet an
+  optimized criterion.
+- [`compare_diagnostic_systems()`](https://tobiasrspiller.github.io/PTSDdiag/reference/compare_diagnostic_systems.md)
+  automatically skips carry-through ID columns in its `...` inputs so
+  they are not mistaken for diagnostic systems.
+
+### Behavior changes
+
+- [`binarize_data()`](https://tobiasrspiller.github.io/PTSDdiag/reference/binarize_data.md)
+  now mutates only the `symptom_1`..`symptom_20` columns rather than the
+  whole dataframe. Any additional columns (e.g. an ID column) are
+  preserved unchanged. This fixes a latent bug where a non-numeric
+  carry-through column would have been coerced or errored.
+- [`create_ptsd_diagnosis_binarized()`](https://tobiasrspiller.github.io/PTSDdiag/reference/create_ptsd_diagnosis_binarized.md)
+  now operates on the symptom subset only, accepting input dataframes
+  with extra columns.
+- [`summarize_ptsd_changes()`](https://tobiasrspiller.github.io/PTSDdiag/reference/summarize_ptsd_changes.md)
+  silently drops non-logical columns before computing metrics
+  (previously errored). This lets ID columns ride along in comparison
+  dataframes without breaking downstream summarization.
+
+### Documentation
+
+- New vignette `id-column-workflow` demonstrating how to use `id_col` to
+  merge per-row diagnoses back to a dataframe with demographics.
+
 ## PTSDdiag 0.2.6
 
 ### Improvements

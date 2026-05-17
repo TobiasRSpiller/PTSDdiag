@@ -23,9 +23,14 @@ holdout_validation(
 
 - data:
 
-  A dataframe containing exactly 20 columns with PCL-5 item scores
-  (output of rename_ptsd_columns). Each symptom should be scored on a
-  0-4 scale.
+  A dataframe containing the 20 PCL-5 item columns `symptom_1` through
+  `symptom_20` (output of
+  [`rename_ptsd_columns`](https://tobiasrspiller.github.io/PTSDdiag/reference/rename_ptsd_columns.md)).
+  Each symptom should be scored on a 0-4 scale. Any additional
+  non-symptom columns (e.g. an ID column passed via
+  `rename_ptsd_columns(..., id_col = "patient_id")`) are carried through
+  the train/test split and prepended to `test_results` so diagnoses can
+  be joined back to the original dataframe.
 
 - train_ratio:
 
@@ -124,13 +129,14 @@ colnames(sample_data) <- paste0("symptom_", 1:20)
 # Perform holdout validation
 validation_results <- holdout_validation(sample_data, train_ratio = 0.7)
 #> ℹ Training on 140 observations, testing on 60
-#> Evaluating combinations ■■■■■■■■                          25% | ETA:  3s
-#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      89% | ETA:  0s
+#> Evaluating combinations ■■■■■■■■                          23% | ETA:  3s
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■             65% | ETA:  1s
 #> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
 #> ℹ Evaluated 38760 combinations. Best: 2, 6, 7, 9, 15, 16 (1 additional tied)
 #> ℹ Generated 13685 valid cluster-constrained combinations
-#> Evaluating combinations ■■■■■■                            16% | ETA:  5s
-#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■              63% | ETA:  2s
+#> Evaluating combinations ■■■■■■                            15% | ETA:  6s
+#> Evaluating combinations ■■■■■■■■■■■■■                     41% | ETA:  4s
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■       87% | ETA:  1s
 #> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
 #> ℹ Evaluated 13685 combinations. Best: 1, 5, 7, 9, 16, 17 (1 additional tied)
 #> ✔ Holdout validation complete

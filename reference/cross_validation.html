@@ -9,7 +9,7 @@ generalization performance and identify stable symptom combinations."><meta prop
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,6 +22,7 @@ generalization performance and identify stable symptom combinations."><meta prop
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Quick Start</a></li>
     <li><a class="dropdown-item" href="../articles/internal_analysis.html">Full Internal Analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/id_column_workflow.html">Joining diagnoses to demographics</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/external_validation_pcl5.html">External Validation (PCL-5)</a></li>
     <li><a class="dropdown-item" href="../articles/external_validation_caps5.html">External Validation (CAPS-5)</a></li>
@@ -66,8 +67,13 @@ generalization performance and identify stable symptom combinations.</p>
 
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>A dataframe containing exactly 20 columns with PCL-5 item scores
-(output of rename_ptsd_columns). Each symptom should be scored on a 0-4 scale.</p></dd>
+<dd><p>A dataframe containing the 20 PCL-5 item columns
+<code>symptom_1</code> through <code>symptom_20</code> (output of
+<code><a href="rename_ptsd_columns.html">rename_ptsd_columns</a></code>). Any additional non-symptom columns
+(e.g. an ID column passed via
+<code>rename_ptsd_columns(..., id_col = "patient_id")</code>) are carried
+through every fold and prepended to each <code>fold_results</code> entry so
+diagnoses can be joined back to the original dataframe.</p></dd>
 
 
 <dt id="arg-k">k<a class="anchor" aria-label="anchor" href="#arg-k"></a></dt>

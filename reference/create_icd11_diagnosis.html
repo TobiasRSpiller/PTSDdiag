@@ -15,7 +15,7 @@ symptom combinations."><meta property="og:image" content="https://tobiasrspiller
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,6 +28,7 @@ symptom combinations."><meta property="og:image" content="https://tobiasrspiller
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Quick Start</a></li>
     <li><a class="dropdown-item" href="../articles/internal_analysis.html">Full Internal Analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/id_column_workflow.html">Joining diagnoses to demographics</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/external_validation_pcl5.html">External Validation (PCL-5)</a></li>
     <li><a class="dropdown-item" href="../articles/external_validation_caps5.html">External Validation (CAPS-5)</a></li>
@@ -78,7 +79,10 @@ no missing values.</p></dd>
   participant:</p>
 <ul><li><p><code>PTSD_orig</code>: DSM-5-TR diagnosis (reference standard)</p></li>
 <li><p><code>PTSD_icd11</code>: ICD-11 diagnosis</p></li>
-</ul><p>This dataframe can be passed directly to <code><a href="summarize_ptsd_changes.html">summarize_ptsd_changes</a></code>
+</ul><p>Any carry-through columns present in <code>data</code> (e.g. an ID column added
+via <code><a href="rename_ptsd_columns.html">rename_ptsd_columns</a></code>) are prepended in original order so
+results can be joined back to the source dataframe.</p>
+<p>This dataframe can be passed directly to <code><a href="summarize_ptsd_changes.html">summarize_ptsd_changes</a></code>
 or used as an input to <code><a href="compare_diagnostic_systems.html">compare_diagnostic_systems</a></code>.</p>
     </div>
     <div class="section level2">

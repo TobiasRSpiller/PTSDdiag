@@ -8,16 +8,16 @@ functions in the package.
 ## Usage
 
 ``` r
-rename_ptsd_columns(data)
+rename_ptsd_columns(data, id_col = NULL)
 ```
 
 ## Arguments
 
 - data:
 
-  A dataframe containing exactly 20 columns, where each column
-  represents a PCL-5 item score. The scores should be on a 0-4 scale
-  where:
+  A dataframe containing exactly 20 columns of PCL-5 item scores (plus
+  any columns named in `id_col` for carry-through). The scores should be
+  on a 0-4 scale where:
 
   - 0 = Not at all
 
@@ -29,10 +29,24 @@ rename_ptsd_columns(data)
 
   - 4 = Extremely
 
+- id_col:
+
+  Optional character vector naming column(s) in `data` to preserve as
+  identifiers. These columns are kept alongside the renamed symptom
+  columns and propagate through the rest of the workflow
+  ([`optimize_combinations`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations.md),
+  [`apply_symptom_combinations`](https://tobiasrspiller.github.io/PTSDdiag/reference/apply_symptom_combinations.md),
+  [`holdout_validation`](https://tobiasrspiller.github.io/PTSDdiag/reference/holdout_validation.md),
+  [`cross_validation`](https://tobiasrspiller.github.io/PTSDdiag/reference/cross_validation.md)).
+  Use them as a join key to merge per-row diagnoses back to the original
+  dataframe (e.g. demographics). Defaults to `NULL` (no carry-through;
+  all non-symptom columns are dropped).
+
 ## Value
 
-A dataframe with the same data but renamed columns following the pattern
-'symptom_1' through 'symptom_20'
+A dataframe with PCL-5 columns renamed to `symptom_1` through
+`symptom_20`. If `id_col` is supplied, the named columns are prepended
+(in original order).
 
 ## Details
 
@@ -66,4 +80,30 @@ colnames(renamed_data)  # Shows new column names
 #>  [6] "symptom_6"  "symptom_7"  "symptom_8"  "symptom_9"  "symptom_10"
 #> [11] "symptom_11" "symptom_12" "symptom_13" "symptom_14" "symptom_15"
 #> [16] "symptom_16" "symptom_17" "symptom_18" "symptom_19" "symptom_20"
+
+# Carry a participant identifier through the workflow
+sample_data$patient_id <- sprintf("P%03d", seq_len(nrow(sample_data)))
+with_id <- rename_ptsd_columns(sample_data, id_col = "patient_id")
+head(with_id)
+#>   patient_id symptom_1 symptom_2 symptom_3 symptom_4 symptom_5 symptom_6
+#> 1       P001         1         4         3         3         1         1
+#> 2       P002         2         0         0         3         0         0
+#> 3       P003         0         2         4         1         1         2
+#> 4       P004         1         0         0         1         1         2
+#> 5       P005         1         2         3         4         4         3
+#> 6       P006         0         1         2         0         3         1
+#>   symptom_7 symptom_8 symptom_9 symptom_10 symptom_11 symptom_12 symptom_13
+#> 1         2         3         3          1          3          1          1
+#> 2         0         2         4          4          4          1          1
+#> 3         0         3         2          0          3          1          2
+#> 4         4         2         2          2          1          3          2
+#> 5         3         4         1          2          1          2          0
+#> 6         1         0         1          0          1          1          3
+#>   symptom_14 symptom_15 symptom_16 symptom_17 symptom_18 symptom_19 symptom_20
+#> 1          2          4          3          2          0          2          4
+#> 2          1          1          2          1          4          3          3
+#> 3          0          0          1          1          4          2          1
+#> 4          3          0          1          1          2          0          0
+#> 5          1          4          1          1          3          3          4
+#> 6          1          2          2          4          4          1          1
 ```

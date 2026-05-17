@@ -22,9 +22,13 @@ cross_validation(
 
 - data:
 
-  A dataframe containing exactly 20 columns with PCL-5 item scores
-  (output of rename_ptsd_columns). Each symptom should be scored on a
-  0-4 scale.
+  A dataframe containing the 20 PCL-5 item columns `symptom_1` through
+  `symptom_20` (output of
+  [`rename_ptsd_columns`](https://tobiasrspiller.github.io/PTSDdiag/reference/rename_ptsd_columns.md)).
+  Any additional non-symptom columns (e.g. an ID column passed via
+  `rename_ptsd_columns(..., id_col = "patient_id")`) are carried through
+  every fold and prepended to each `fold_results` entry so diagnoses can
+  be joined back to the original dataframe.
 
 - k:
 

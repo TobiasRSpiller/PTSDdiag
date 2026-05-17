@@ -13,7 +13,7 @@ per combination, the required threshold, and how many top results to return."><m
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,6 +26,7 @@ per combination, the required threshold, and how many top results to return."><m
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Quick Start</a></li>
     <li><a class="dropdown-item" href="../articles/internal_analysis.html">Full Internal Analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/id_column_workflow.html">Joining diagnoses to demographics</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/external_validation_pcl5.html">External Validation (PCL-5)</a></li>
     <li><a class="dropdown-item" href="../articles/external_validation_caps5.html">External Validation (CAPS-5)</a></li>
@@ -123,7 +124,9 @@ non-interactive use.</p></dd>
 <ul><li><p>best_symptoms: List of <code>n_top</code> vectors, each containing
     <code>n_symptoms</code> symptom numbers representing the best combinations found</p></li>
 <li><p>diagnosis_comparison: Dataframe comparing original DSM-5 diagnosis with
-    diagnoses based on the best combinations</p></li>
+    diagnoses based on the best combinations. If <code>data</code> carried
+    non-symptom columns (e.g. an ID column added via
+    <code><a href="rename_ptsd_columns.html">rename_ptsd_columns</a></code>), those are prepended in original order.</p></li>
 <li><p>summary: Diagnostic accuracy metrics for each combination. A data.frame
     by default, or an interactive <code><a href="https://rdrr.io/pkg/DT/man/datatable.html" class="external-link">datatable</a></code> if
     <code>DT = TRUE</code>.</p></li>
@@ -162,8 +165,7 @@ non-interactive use.</p></dd>
 <span class="r-in"><span><span class="co"># Find best 6-symptom combinations requiring 4 present (classic defaults)</span></span></span>
 <span class="r-in"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">optimize_combinations</span><span class="op">(</span><span class="va">ptsd_data</span>, n_symptoms <span class="op">=</span> <span class="fl">6</span>, n_required <span class="op">=</span> <span class="fl">4</span>,</span></span>
 <span class="r-in"><span>             score_by <span class="op">=</span> <span class="st">"false_cases"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■                       </span>  28% | ETA:  3s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■■■■■   </span>  94% | ETA:  0s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■                 </span>  47% | ETA:  2s</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ </span> 100% | ETA:  0s</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 1, 2, 4, 9, 13, 14 (417 additional tied)</span>
 <span class="r-in"><span></span></span>

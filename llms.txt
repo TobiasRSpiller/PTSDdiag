@@ -168,6 +168,8 @@ Core workflows for new users
   Start](https://tobiasrspiller.github.io/PTSDdiag/articles/quickstart.md):
 - [Full Internal
   Analysis](https://tobiasrspiller.github.io/PTSDdiag/articles/internal_analysis.md):
+- [Joining diagnoses back to demographics with
+  id_col](https://tobiasrspiller.github.io/PTSDdiag/articles/id_column_workflow.md):
 
 ### External Validation
 

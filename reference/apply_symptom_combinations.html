@@ -15,7 +15,7 @@ on another."><meta property="og:image" content="https://tobiasrspiller.github.io
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,6 +28,7 @@ on another."><meta property="og:image" content="https://tobiasrspiller.github.io
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Quick Start</a></li>
     <li><a class="dropdown-item" href="../articles/internal_analysis.html">Full Internal Analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/id_column_workflow.html">Joining diagnoses to demographics</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/external_validation_pcl5.html">External Validation (PCL-5)</a></li>
     <li><a class="dropdown-item" href="../articles/external_validation_caps5.html">External Validation (CAPS-5)</a></li>
@@ -102,7 +103,9 @@ Must be between 1 and the length of each combination.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A dataframe with columns:</p>
-<ul><li><p><code>PTSD_orig</code>: Logical. Full DSM-5 diagnosis computed on this data.</p></li>
+<ul><li><p>Any carry-through columns from <code>data</code> (e.g. an ID column added
+    via <code><a href="rename_ptsd_columns.html">rename_ptsd_columns</a></code>), prepended in original order.</p></li>
+<li><p><code>PTSD_orig</code>: Logical. Full DSM-5 diagnosis computed on this data.</p></li>
 <li><p>One column per combination (logical): Simplified diagnosis for each
     combination. Column names follow the <code>symptom_X_Y_Z</code> pattern.</p></li>
 </ul><p>This dataframe can be passed directly to <code><a href="summarize_ptsd_changes.html">summarize_ptsd_changes</a></code>

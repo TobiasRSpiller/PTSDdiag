@@ -29,6 +29,10 @@ A `data.frame` with one logical column and one row per participant:
 
 - `PTSD_caps5`: CAPS-5 DSM-5-TR diagnosis
 
+Any carry-through columns present in `data` (e.g. an ID column added via
+[`rename_caps5_columns`](https://tobiasrspiller.github.io/PTSDdiag/reference/rename_caps5_columns.md))
+are prepended in original order.
+
 ## Details
 
 The DSM-5-TR diagnostic criteria applied are:

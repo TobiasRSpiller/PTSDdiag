@@ -82,7 +82,10 @@ A list containing:
   symptom numbers representing the best combinations found
 
 - diagnosis_comparison: Dataframe comparing original DSM-5 diagnosis
-  with diagnoses based on the best combinations
+  with diagnoses based on the best combinations. If `data` carried
+  non-symptom columns (e.g. an ID column added via
+  [`rename_ptsd_columns`](https://tobiasrspiller.github.io/PTSDdiag/reference/rename_ptsd_columns.md)),
+  those are prepended in original order.
 
 - summary: Diagnostic accuracy metrics for each combination. A
   data.frame by default, or an interactive
@@ -135,8 +138,7 @@ names(ptsd_data) <- paste0("symptom_", 1:20)
 # Find best 6-symptom combinations requiring 4 present (classic defaults)
 results <- optimize_combinations(ptsd_data, n_symptoms = 6, n_required = 4,
              score_by = "false_cases")
-#> Evaluating combinations ■■■■■■■■■                         28% | ETA:  3s
-#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■     94% | ETA:  0s
+#> Evaluating combinations ■■■■■■■■■■■■■■■                   47% | ETA:  2s
 #> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
 #> ℹ Evaluated 38760 combinations. Best: 1, 2, 4, 9, 13, 14 (417 additional tied)
 
