@@ -1,3 +1,30 @@
+# PTSDdiag 0.2.6
+
+## Improvements
+
+* All user-facing error messages now use the `cli` package for consistent,
+  rich formatting: argument names are highlighted, actual values are shown,
+  and hint bullets guide users toward fixes.
+* Centralized input validation via `.validate_pcl5_data()` now accepts
+  `strict_cols`, `warn_total`, and `instrument` parameters, reducing code
+  duplication across exported functions.
+* `holdout_validation()` and `cross_validation()` now correctly restore
+  the global RNG state on exit (replaced buggy `withr::local_seed()` with
+  manual `on.exit` save/restore).
+* Removed `withr` from Imports (no longer used).
+
+## Documentation
+
+* Added `@note` to `simulated_ptsd` and `simulated_ptsd_genpop` dataset
+  documentation clarifying that symptoms were simulated independently
+  (no within-cluster correlations).
+
+## Tests
+
+* New tests for RNG state restoration, edge cases (all-positive/all-negative
+  baselines, binarize boundary values), non-integer `k` rejection, empty
+  split guard, and `n_tied` output from optimization functions.
+
 # PTSDdiag 0.2.5.1
 
 ## Bug fixes

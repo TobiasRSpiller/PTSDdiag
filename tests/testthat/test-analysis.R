@@ -31,7 +31,7 @@ test_that("analyze_best_six_symptoms_four_required works correctly", {
   # Check invalid scoring method
   expect_error(
     suppressWarnings(analyze_best_six_symptoms_four_required(test_data, "invalid_method")),
-    ("score_by must be one of: false_cases, newly_nondiagnosed")
+    "must be one of"
   )
 })
 
@@ -75,7 +75,7 @@ test_that("analyze_best_six_symptoms_four_required_clusters works correctly", {
   # Check invalid scoring method
   expect_error(
     suppressWarnings(analyze_best_six_symptoms_four_required_clusters(test_data, "invalid_method")),
-    ("score_by must be one of: false_cases, newly_nondiagnosed")
+    "must be one of"
   )
 })
 
@@ -191,6 +191,40 @@ test_that("combination IDs are consistent across optimize -> write -> read pipel
   summary_ids <- results$summary$combination_id[!is.na(results$summary$combination_id)]
   expect_equal(spec$combination_ids, summary_ids)
   expect_equal(spec$ranks, c(1L, 2L))
+})
+
+test_that("optimize_combinations returns n_tied count", {
+  set.seed(42)
+  test_data <- data.frame(
+    matrix(sample(0:4, 20 * 50, replace = TRUE),
+           nrow = 50, ncol = 20)
+  )
+  colnames(test_data) <- paste0("symptom_", 1:20)
+
+  results <- optimize_combinations(test_data, n_symptoms = 4, n_required = 3,
+                                   n_top = 2, score_by = "false_cases")
+
+  expect_true("n_tied" %in% names(results))
+  expect_true(is.integer(results$n_tied))
+  expect_true(results$n_tied >= 0L)
+})
+
+test_that("optimize_combinations_clusters returns n_tied count", {
+  set.seed(42)
+  test_data <- data.frame(
+    matrix(sample(0:4, 20 * 50, replace = TRUE),
+           nrow = 50, ncol = 20)
+  )
+  colnames(test_data) <- paste0("symptom_", 1:20)
+
+  clusters <- list(B = 1:5, C = 6:7, D = 8:14, E = 15:20)
+  results <- optimize_combinations_clusters(test_data, n_symptoms = 5,
+               n_required = 4, n_top = 2, score_by = "false_cases",
+               clusters = clusters)
+
+  expect_true("n_tied" %in% names(results))
+  expect_true(is.integer(results$n_tied))
+  expect_true(results$n_tied >= 0L)
 })
 
 test_that("read_combinations falls back gracefully for old JSON files without IDs", {

@@ -1,42 +1,54 @@
 # Internal helper functions for PTSDdiag
 # These are NOT exported. All prefixed with "." and tagged @noRd.
 
-#' Validate PCL-5 input data
+#' Validate PCL-5 / CAPS-5 input data
+#'
+#' @param data Data frame to validate.
+#' @param strict_cols If TRUE (default), require exactly 20 columns.
+#'   If FALSE, only require symptom_1:symptom_20 to be present (allows
+#'   extra columns like "total").
+#' @param warn_total If TRUE (default), warn when a "total" column is present.
+#' @param instrument Label for error messages ("PCL-5" or "CAPS-5").
 #' @noRd
-.validate_pcl5_data <- function(data) {
+.validate_pcl5_data <- function(data, strict_cols = TRUE, warn_total = TRUE,
+                                instrument = "PCL-5") {
   if (!is.data.frame(data)) {
-    stop("Input must be a dataframe")
-  }
-
-  if (ncol(data) != 20) {
-    stop("Data must contain exactly 20 columns (one for each PCL-5 item)")
+    cli::cli_abort("{.arg data} must be a data frame, not {.cls {class(data)}}.")
   }
 
   expected_cols <- paste0("symptom_", 1:20)
-  if (!all(expected_cols %in% colnames(data))) {
-    stop("Data must contain columns named 'symptom_1' through 'symptom_20'")
+
+  if (strict_cols && ncol(data) != 20) {
+    cli::cli_abort(c(
+      "{.arg data} must contain exactly 20 columns (one for each {instrument} item).",
+      "x" = "Got {ncol(data)} column{?s}."
+    ))
   }
 
-  if ("total" %in% colnames(data)) {
-    warning("'total' column detected. This function should only be used with raw symptom scores.")
+  if (!all(expected_cols %in% colnames(data))) {
+    cli::cli_abort("Data must contain columns named {.val symptom_1} through {.val symptom_20}.")
+  }
+
+  if (warn_total && "total" %in% colnames(data)) {
+    cli::cli_warn("{.val total} column detected. This function should only be used with raw symptom scores.")
   }
 
   if (!all(vapply(data[expected_cols], is.numeric, logical(1)))) {
-    stop("All symptom columns must contain numeric values")
+    cli::cli_abort("All symptom columns must contain numeric values.")
   }
 
   if (any(is.na(data[expected_cols]))) {
-    stop("Data contains missing values (NA)")
+    cli::cli_abort("Data contains missing values ({.val NA}).")
   }
 
   invalid_values <- !all(vapply(data[expected_cols], function(x)
     all(x >= 0 & x <= 4 & x == floor(x)), logical(1)))
   if (invalid_values) {
-    stop("All symptom values must be integers between 0 and 4")
+    cli::cli_abort("All symptom values must be integers between 0 and 4.")
   }
 
   if (nrow(data) < 1) {
-    stop("Data must contain at least one row")
+    cli::cli_abort("{.arg data} must contain at least one row.")
   }
 
   invisible(TRUE)
@@ -47,7 +59,10 @@
 .validate_score_by <- function(score_by) {
   valid_scoring <- c("false_cases", "newly_nondiagnosed")
   if (!score_by %in% valid_scoring) {
-    stop("score_by must be one of: ", paste(valid_scoring, collapse = ", "))
+    cli::cli_abort(c(
+      "{.arg score_by} must be one of {.or {.val {valid_scoring}}}.",
+      "x" = "Got {.val {score_by}}."
+    ))
   }
   invisible(TRUE)
 }
@@ -57,7 +72,7 @@
 .validate_n_symptoms <- function(n_symptoms, n_total = 20) {
   if (!is.numeric(n_symptoms) || length(n_symptoms) != 1 ||
       n_symptoms != floor(n_symptoms) || n_symptoms < 1 || n_symptoms > n_total) {
-    stop("n_symptoms must be a single integer between 1 and ", n_total)
+    cli::cli_abort("{.arg n_symptoms} must be a single integer between 1 and {n_total}.")
   }
   invisible(TRUE)
 }
@@ -67,7 +82,7 @@
 .validate_n_required <- function(n_required, n_symptoms) {
   if (!is.numeric(n_required) || length(n_required) != 1 ||
       n_required != floor(n_required) || n_required < 1 || n_required > n_symptoms) {
-    stop("n_required must be a single integer between 1 and n_symptoms (", n_symptoms, ")")
+    cli::cli_abort("{.arg n_required} must be a single integer between 1 and {.arg n_symptoms} ({n_symptoms}).")
   }
   invisible(TRUE)
 }
@@ -77,7 +92,7 @@
 .validate_n_top <- function(n_top) {
   if (!is.numeric(n_top) || length(n_top) != 1 ||
       n_top != floor(n_top) || n_top < 1) {
-    stop("n_top must be a single positive integer")
+    cli::cli_abort("{.arg n_top} must be a single positive integer.")
   }
   invisible(TRUE)
 }
@@ -86,20 +101,23 @@
 #' @noRd
 .validate_clusters <- function(clusters, n_total = 20) {
   if (!is.list(clusters) || length(clusters) < 1) {
-    stop("clusters must be a non-empty named list of integer vectors")
+    cli::cli_abort("{.arg clusters} must be a non-empty named list of integer vectors.")
   }
   if (is.null(names(clusters)) || any(names(clusters) == "")) {
-    stop("clusters must be a named list (e.g., list(B = 1:5, C = 6:7, D = 8:14, E = 15:20))")
+    cli::cli_abort(c(
+      "{.arg clusters} must be a named list.",
+      "i" = "Example: {.code list(B = 1:5, C = 6:7, D = 8:14, E = 15:20)}"
+    ))
   }
   all_items <- unlist(clusters)
   if (!is.numeric(all_items) || any(all_items != floor(all_items))) {
-    stop("All cluster elements must be integers")
+    cli::cli_abort("All cluster elements must be integers.")
   }
   if (any(all_items < 1) || any(all_items > n_total)) {
-    stop("All cluster elements must be between 1 and ", n_total)
+    cli::cli_abort("All cluster elements must be between 1 and {n_total}.")
   }
   if (length(all_items) != length(unique(all_items))) {
-    stop("Cluster elements must not overlap (each item can belong to only one cluster)")
+    cli::cli_abort("Cluster elements must not overlap (each item can belong to only one cluster).")
   }
   invisible(TRUE)
 }
@@ -108,22 +126,22 @@
 #' @noRd
 .validate_combinations_input <- function(combinations, n_total = 20) {
   if (!is.list(combinations) || length(combinations) < 1) {
-    stop("combinations must be a non-empty list of integer vectors")
+    cli::cli_abort("{.arg combinations} must be a non-empty list of integer vectors.")
   }
   lengths_vec <- lengths(combinations)
   if (length(unique(lengths_vec)) != 1) {
-    stop("All combinations must have the same length")
+    cli::cli_abort("All combinations must have the same length.")
   }
   for (i in seq_along(combinations)) {
     combo <- combinations[[i]]
     if (!is.numeric(combo) || any(combo != floor(combo))) {
-      stop("All combination elements must be integers")
+      cli::cli_abort("All combination elements must be integers (problem in combination {i}).")
     }
     if (any(combo < 1) || any(combo > n_total)) {
-      stop("All combination elements must be between 1 and ", n_total)
+      cli::cli_abort("All combination elements must be between 1 and {n_total} (problem in combination {i}).")
     }
     if (length(combo) != length(unique(combo))) {
-      stop("Combination elements must be unique (no duplicate symptom indices)")
+      cli::cli_abort("Combination elements must be unique (duplicate found in combination {i}).")
     }
   }
   invisible(TRUE)
@@ -135,11 +153,10 @@
   required_keys <- c("combinations", "parameters")
   missing <- setdiff(required_keys, names(x))
   if (length(missing) > 0) {
-    stop("Invalid combinations file: missing required fields: ",
-         paste(missing, collapse = ", "))
+    cli::cli_abort("Invalid combinations file: missing required field{?s}: {.val {missing}}.")
   }
   if (!is.list(x$parameters) || is.null(x$parameters$n_required)) {
-    stop("Invalid combinations file: 'parameters' must contain 'n_required'")
+    cli::cli_abort("Invalid combinations file: {.field parameters} must contain {.field n_required}.")
   }
   invisible(TRUE)
 }
@@ -224,7 +241,9 @@
 #' @param score_by Character: "false_cases" or "newly_nondiagnosed".
 #' @param n_top Integer: how many top combinations to track.
 #' @param diagnose_fn Function(binarized_data, symptoms) -> logical vector.
-#' @return List of n_top elements, each with $combination, $score, $diagnoses.
+#' @return Named list with $top (list of n_top elements, each with
+#'   $combination, $score, $diagnoses) and $n_tied (integer count of
+#'   combinations that scored identically to the best).
 #' @noRd
 .find_top_n <- function(combinations, binarized_data, baseline_results,
                         score_by, n_top, diagnose_fn, show_progress = TRUE) {
@@ -232,6 +251,7 @@
     list(combination = NULL, score = -Inf, diagnoses = NULL),
     simplify = FALSE
   )
+  n_tied_with_best <- 0L
 
   if (show_progress) {
     cli::cli_progress_bar("Evaluating combinations", total = length(combinations))
@@ -249,9 +269,15 @@
       -newly_nondiagnosed
     }
 
-    # Find insertion position
+    # Track ties with the best score (once we have a real best)
+    if (!is.null(top[[1]]$combination) && score == top[[1]]$score) {
+      n_tied_with_best <- n_tied_with_best + 1L
+    }
+
+    # Find insertion position (strict > means first-encountered wins ties)
     for (pos in seq_len(n_top)) {
       if (score > top[[pos]]$score) {
+        if (pos == 1L) n_tied_with_best <- 0L
         # Shift everything from pos onward down by one
         if (n_top > pos) {
           for (j in n_top:(pos + 1)) {
@@ -272,7 +298,7 @@
 
   if (show_progress) cli::cli_progress_done()
 
-  return(top)
+  return(list(top = top, n_tied = n_tied_with_best))
 }
 
 #' Build comparison dataframe from top combinations
@@ -289,7 +315,7 @@
   n_valid <- length(top_combinations)
 
   if (n_valid == 0) {
-    stop("No valid combinations found")
+    cli::cli_abort("No valid combinations found.")
   }
 
   comparison_df <- data.frame(
@@ -332,7 +358,7 @@
 
   if (isTRUE(DT)) {
     if (!requireNamespace("DT", quietly = TRUE)) {
-      stop("Package 'DT' is required when DT = TRUE. Install it with install.packages('DT').")
+      cli::cli_abort("Package {.pkg DT} is required when {.code DT = TRUE}. Install it with {.run install.packages(\"DT\")}.")
     }
     summary_table <- DT::datatable(summary_table, options = list(scrollX = TRUE))
   }
@@ -342,7 +368,7 @@
 #' Run a single cross-validation fold
 #'
 #' @param i Integer fold index.
-#' @param cv_splits Object from modelr::crossv_kfold().
+#' @param cv_splits Object from rsample::vfold_cv().
 #' @param n_symptoms Integer.
 #' @param n_required Integer.
 #' @param n_top Integer.
@@ -352,8 +378,13 @@
 #' @noRd
 .run_cv_fold <- function(i, cv_splits, n_symptoms, n_required, n_top,
                          score_by, default_clusters) {
-  train_data <- as.data.frame(cv_splits$train[[i]])
-  test_data <- as.data.frame(cv_splits$test[[i]])
+  split_obj <- cv_splits$splits[[i]]
+  train_data <- rsample::analysis(split_obj)
+  test_data <- rsample::assessment(split_obj)
+
+  # Drop the stratification column added by cross_validation()
+  train_data$.strata <- NULL
+  test_data$.strata <- NULL
 
   # Model without cluster representation
   train_results_without <- optimize_combinations(

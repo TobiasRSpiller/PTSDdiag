@@ -8,7 +8,8 @@ utils::globalVariables(c(
   "True Positive", "True Negative", "Newly Diagnosed", "Newly Non-Diagnosed",
   "True Cases", "False Cases",
   "True_Positive", "Newly_Non_Diagnosed", "True_Negative", "Newly_Diagnosed",
-  "Splits_Appeared"
+  "Splits_Appeared",
+  ".strata"
 ))
 
 #' Perform holdout validation for PTSD diagnostic models
@@ -108,14 +109,23 @@ holdout_validation <- function(data, train_ratio = 0.7,
   .validate_n_top(n_top)
 
   if (train_ratio <= 0 || train_ratio >= 1) {
-    stop("train_ratio must be between 0 and 1")
+    cli::cli_abort("{.arg train_ratio} must be between 0 and 1 (exclusive).")
   }
 
-  # Set seed for reproducibility
+  # Save and restore user's RNG state so this function is transparent
+  old_seed <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv()) else NULL
+  on.exit({
+    if (is.null(old_seed)) rm(".Random.seed", envir = globalenv())
+    else assign(".Random.seed", old_seed, globalenv())
+  }, add = TRUE)
   set.seed(seed)
 
   # Split data
-  train_index <- sample(seq_len(nrow(data)), size = train_ratio * nrow(data))
+  train_size <- floor(train_ratio * nrow(data))
+  if (train_size < 1 || train_size >= nrow(data)) {
+    cli::cli_abort("{.arg train_ratio} produces an empty training or test set for this data size ({nrow(data)} rows).")
+  }
+  train_index <- sample(seq_len(nrow(data)), size = train_size)
   train_data <- data[train_index, ]
   test_data <- data[-train_index, ]
 
@@ -179,7 +189,8 @@ holdout_validation <- function(data, train_ratio = 0.7,
 #' @details
 #' The function:
 #' \enumerate{
-#'   \item Splits data into k folds
+#'   \item Splits data into k stratified folds (preserving the proportion of
+#'     diagnosed cases in each fold via \code{\link[rsample]{vfold_cv}})
 #'   \item For each fold, trains on k-1 folds and tests on the held-out fold
 #'   \item Identifies symptom combinations that appear across multiple folds
 #'   \item Calculates average performance metrics for repeated combinations
@@ -245,7 +256,6 @@ holdout_validation <- function(data, train_ratio = 0.7,
 #'
 #' @export
 #'
-#' @importFrom modelr crossv_kfold
 #' @importFrom dplyr bind_rows group_by summarise mutate select everything across filter n
 #'
 #' @examples
@@ -279,15 +289,26 @@ cross_validation <- function(data, k = 5, score_by = "newly_nondiagnosed",
   .validate_n_required(n_required, n_symptoms)
   .validate_n_top(n_top)
 
-  if (k < 2 || k > nrow(data)) {
-    stop("k must be between 2 and the number of rows in the data")
+  if (!is.numeric(k) || length(k) != 1 || k != floor(k) ||
+      k < 2 || k > nrow(data)) {
+    cli::cli_abort("{.arg k} must be a single integer between 2 and the number of rows in the data ({nrow(data)}).")
   }
 
-  # Set seed for reproducibility
+  # Save and restore user's RNG state so this function is transparent
+  old_seed <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv()) else NULL
+  on.exit({
+    if (is.null(old_seed)) rm(".Random.seed", envir = globalenv())
+    else assign(".Random.seed", old_seed, globalenv())
+  }, add = TRUE)
   set.seed(seed)
 
-  # Create cross-validation folds
-  cv_splits <- modelr::crossv_kfold(data, k = k)
+  # Compute baseline diagnosis for stratification
+  strata_col <- create_ptsd_diagnosis_binarized(data)$PTSD_orig
+  data_with_strata <- data
+  data_with_strata$.strata <- strata_col
+
+  # Create stratified cross-validation folds
+  cv_splits <- rsample::vfold_cv(data_with_strata, v = k, strata = .strata)
 
   # Default PCL-5 clusters for hierarchical model
   default_clusters <- .get_default_clusters()
@@ -298,26 +319,11 @@ cross_validation <- function(data, k = 5, score_by = "newly_nondiagnosed",
       fold_data <- cv_list[[i]]
       summary_stats <- summarize_ptsd_changes(fold_data)
 
-      # Compute diagnostic metrics and avoid division by zero
-      summary_stats <- summary_stats %>%
-        dplyr::mutate(
-          Sensitivity = ifelse((true_positive + newly_nondiagnosed) == 0, NA,
-                               round(true_positive / (true_positive + newly_nondiagnosed), 4)),
-          Specificity = ifelse((true_negative + newly_diagnosed) == 0, NA,
-                               round(true_negative / (true_negative + newly_diagnosed), 4)),
-          PPV         = ifelse((true_positive + newly_diagnosed) == 0, NA,
-                               round(true_positive / (true_positive + newly_diagnosed), 4)),
-          NPV         = ifelse((true_negative + newly_nondiagnosed) == 0, NA,
-                               round(true_negative / (true_negative + newly_nondiagnosed), 4))
-        ) %>%
-
-        # Replace NA values with 0 to prevent errors in summary display
-        dplyr::mutate(
-          across(c(sensitivity, specificity, ppv, npv),
-                 ~ ifelse(is.na(.), 0, .))
-        )
-
       # Convert to a readable summary table
+      # Note: summarize_ptsd_changes() already computes sensitivity/specificity/
+      # ppv/npv with NA guards for zero denominators. NAs are preserved (not
+      # replaced with 0) to avoid misleading metrics in folds with extreme
+      # class distributions.
       readable <- create_readable_summary(summary_stats)
 
       # Add combination_id and rank
@@ -369,10 +375,14 @@ cross_validation <- function(data, k = 5, score_by = "newly_nondiagnosed",
         .groups = "drop"
       ) %>%
       dplyr::mutate(
-        Sensitivity = round(True_Positive / (True_Positive + Newly_Non_Diagnosed), 4),
-        Specificity = round(True_Negative / (True_Negative + Newly_Diagnosed), 4),
-        PPV = round(True_Positive / (True_Positive + Newly_Diagnosed), 4),
-        NPV = round(True_Negative / (True_Negative + Newly_Non_Diagnosed), 4)
+        Sensitivity = ifelse((True_Positive + Newly_Non_Diagnosed) == 0, NA_real_,
+                             round(True_Positive / (True_Positive + Newly_Non_Diagnosed), 4)),
+        Specificity = ifelse((True_Negative + Newly_Diagnosed) == 0, NA_real_,
+                             round(True_Negative / (True_Negative + Newly_Diagnosed), 4)),
+        PPV = ifelse((True_Positive + Newly_Diagnosed) == 0, NA_real_,
+                     round(True_Positive / (True_Positive + Newly_Diagnosed), 4)),
+        NPV = ifelse((True_Negative + Newly_Non_Diagnosed) == 0, NA_real_,
+                     round(True_Negative / (True_Negative + Newly_Non_Diagnosed), 4))
       )
 
     multiple_appearance <- combo_summary %>% dplyr::filter(Splits_Appeared > 1)
@@ -422,7 +432,7 @@ cross_validation <- function(data, k = 5, score_by = "newly_nondiagnosed",
   wrap_output <- function(x) {
     if (!is.null(x) && isTRUE(DT)) {
       if (!requireNamespace("DT", quietly = TRUE)) {
-        stop("Package 'DT' is required when DT = TRUE. Install it with install.packages('DT').")
+        cli::cli_abort("Package {.pkg DT} is required when {.code DT = TRUE}. Install it with {.run install.packages(\"DT\")}.")
       }
       DT::datatable(x, options = list(scrollX = TRUE))
     } else {

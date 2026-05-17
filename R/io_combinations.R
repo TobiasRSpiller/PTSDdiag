@@ -114,11 +114,11 @@ write_combinations <- function(combinations, file, n_required = 4,
   }
 
   if (!is.character(file) || length(file) != 1) {
-    stop("'file' must be a single character string specifying the output path")
+    cli::cli_abort("{.arg file} must be a single character string specifying the output path.")
   }
 
   if (!is.character(description) || length(description) != 1) {
-    stop("'description' must be a single character string")
+    cli::cli_abort("{.arg description} must be a single character string.")
   }
 
   # Compute canonical combination IDs and ranks
@@ -147,7 +147,7 @@ write_combinations <- function(combinations, file, n_required = 4,
   jsonlite::write_json(output, path = file, pretty = TRUE, auto_unbox = TRUE,
                        null = "null")
 
-  message("Combinations written to ", file)
+  cli::cli_alert_success("Combinations written to {.file {file}}")
   invisible(file)
 }
 
@@ -239,11 +239,11 @@ write_combinations <- function(combinations, file, n_required = 4,
 #'
 read_combinations <- function(file) {
   if (!is.character(file) || length(file) != 1) {
-    stop("'file' must be a single character string specifying the file path")
+    cli::cli_abort("{.arg file} must be a single character string specifying the file path.")
   }
 
   if (!file.exists(file)) {
-    stop("File not found: ", file)
+    cli::cli_abort("File not found: {.file {file}}")
   }
 
   # Read JSON (keep as nested lists to handle varying structures)
@@ -281,8 +281,7 @@ read_combinations <- function(file) {
   if (!is.null(file_version)) {
     current_version <- as.character(utils::packageVersion("PTSDdiag"))
     if (file_version != current_version) {
-      message("Note: File was created with PTSDdiag ", file_version,
-              ", currently using ", current_version)
+      cli::cli_inform("File was created with {.pkg PTSDdiag} {file_version}, currently using {current_version}.")
     }
   }
 

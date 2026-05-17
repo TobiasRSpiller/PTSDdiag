@@ -23,38 +23,46 @@ test_that("calculate_ptsd_total works correctly", {
   expect_true(all(data_with_total$total <= 80))
 })
 
+test_that("calculate_ptsd_total rejects data with NAs", {
+  test_data <- data.frame(matrix(2, nrow = 5, ncol = 20))
+  colnames(test_data) <- paste0("symptom_", 1:20)
+  test_data[3, 5] <- NA
+
+  expect_error(calculate_ptsd_total(test_data), "missing values")
+})
+
 test_that("create_ptsd_diagnosis_nonbinarized works correctly", {
   # Test case 1: All criteria met
   test_data <- data.frame(matrix(3, nrow = 1, ncol = 20))  # All symptoms rated 3 (above threshold)
   colnames(test_data) <- paste0("symptom_", 1:20)
   result <- create_ptsd_diagnosis_nonbinarized(test_data)
-  expect_true(result$PTSD_Diagnosis)
+  expect_true(result$PTSD_orig)
 
   # Test case 2: Cluster 1 not met
   test_data[1, 1:5] <- 1  # Set all symptoms of cluster 1 below threshold
   result <- create_ptsd_diagnosis_nonbinarized(test_data)
-  expect_false(result$PTSD_Diagnosis)
+  expect_false(result$PTSD_orig)
 
   # Test case 3: Cluster 2 not met
   test_data <- data.frame(matrix(3, nrow = 1, ncol = 20))
   colnames(test_data) <- paste0("symptom_", 1:20)
   test_data[1, 6:7] <- 1  # Set all symptoms of cluster 2 below threshold
   result <- create_ptsd_diagnosis_nonbinarized(test_data)
-  expect_false(result$PTSD_Diagnosis)
+  expect_false(result$PTSD_orig)
 
   # Test case 4: Cluster 3 not met
   test_data <- data.frame(matrix(3, nrow = 1, ncol = 20))
   colnames(test_data) <- paste0("symptom_", 1:20)
   test_data[1, 8:14] <- 1  # Set all symptoms of cluster 3 below threshold
   result <- create_ptsd_diagnosis_nonbinarized(test_data)
-  expect_false(result$PTSD_Diagnosis)
+  expect_false(result$PTSD_orig)
 
   # Test case 5: Cluster 4 not met
   test_data <- data.frame(matrix(3, nrow = 1, ncol = 20))
   colnames(test_data) <- paste0("symptom_", 1:20)
   test_data[1, 15:20] <- 1  # Set all symptoms of cluster 4 below threshold
   result <- create_ptsd_diagnosis_nonbinarized(test_data)
-  expect_false(result$PTSD_Diagnosis)
+  expect_false(result$PTSD_orig)
 
   # Test case 6: Multiple rows
   test_data <- data.frame(matrix(3, nrow = 3, ncol = 20))
@@ -66,7 +74,7 @@ test_that("create_ptsd_diagnosis_nonbinarized works correctly", {
   test_data[3, 8:14] <- 1
 
   result <- create_ptsd_diagnosis_nonbinarized(test_data)
-  expect_equal(result$PTSD_Diagnosis, c(TRUE, FALSE, FALSE))
+  expect_equal(result$PTSD_orig, c(TRUE, FALSE, FALSE))
 
   # Test case 7: Edge cases for multiple criteria
   test_data <- data.frame(matrix(1, nrow = 4, ncol = 20))  # Start with all below threshold
@@ -94,7 +102,7 @@ test_that("create_ptsd_diagnosis_nonbinarized works correctly", {
   test_data[4, ] <- 2
 
   result <- create_ptsd_diagnosis_nonbinarized(test_data)
-  expect_equal(result$PTSD_Diagnosis, c(TRUE, FALSE, FALSE, TRUE))
+  expect_equal(result$PTSD_orig, c(TRUE, FALSE, FALSE, TRUE))
 })
 
 
@@ -103,13 +111,13 @@ test_that("summarize_ptsd works correctly", {
   # Create test data with known values
   test_data <- data.frame(
     total = c(30, 40, 50, 60),
-    PTSD_Diagnosis = c(TRUE, FALSE, TRUE, TRUE)
+    PTSD_orig = c(TRUE, FALSE, TRUE, TRUE)
   )
 
   results <- summarize_ptsd(test_data)
 
   # Test summary calculations
   expect_equal(results$mean_total, mean(test_data$total))
-  expect_equal(results$n_diagnosed, sum(test_data$PTSD_Diagnosis))
+  expect_equal(results$n_diagnosed, sum(test_data$PTSD_orig))
   expect_equal(results$sd_total, sd(test_data$total))
 })

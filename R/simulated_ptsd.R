@@ -49,5 +49,10 @@
 #' \item Symptoms 15-20: Criterion E (Alterations in arousal and reactivity)
 #'}
 #'
+#' @note Symptoms were simulated independently. Real PCL-5 data exhibits
+#'   within-cluster correlations (e.g., between intrusion symptoms). Optimization
+#'   results on these data are for illustration only; real-world performance
+#'   should be evaluated on empirical datasets.
+#'
 #' @source Simulated data for demonstration purposes
 "simulated_ptsd"

@@ -68,6 +68,12 @@ The data was simulated as a mixture of approximately 17\% individuals with
 elevated symptom profiles (PTSD-like) and 83\% with low symptom levels,
 resulting in approximately 21\% meeting full DSM-5 diagnostic criteria.
 }
+\note{
+Symptoms were simulated independently. Real PCL-5 data exhibits
+  within-cluster correlations (e.g., between intrusion symptoms). Optimization
+  results on these data are for illustration only; real-world performance
+  should be evaluated on empirical datasets.
+}
 \seealso{
 \code{\link{simulated_ptsd}} for the clinical veteran sample with
   higher prevalence.
