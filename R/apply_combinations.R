@@ -66,6 +66,8 @@
 #' @returns A dataframe with columns:
 #'
 #' \itemize{
+#'   \item Any carry-through columns from \code{data} (e.g. an ID column added
+#'     via \code{\link{rename_ptsd_columns}}), prepended in original order.
 #'   \item \code{PTSD_orig}: Logical. Full DSM-5 diagnosis computed on this data.
 #'   \item One column per combination (logical): Simplified diagnosis for each
 #'     combination. Column names follow the \code{symptom_X_Y_Z} pattern.
@@ -114,7 +116,7 @@
 apply_symptom_combinations <- function(data, combinations, n_required = 4,
                                        clusters = NULL) {
   # Validate inputs
-  .validate_pcl5_data(data)
+  .validate_pcl5_data(data, strict_cols = FALSE)
   .validate_combinations_input(combinations)
 
   combo_length <- length(combinations[[1]])
@@ -124,14 +126,18 @@ apply_symptom_combinations <- function(data, combinations, n_required = 4,
     .validate_clusters(clusters)
   }
 
+  # Capture carry-through columns (e.g. patient IDs) for the final output
+  carry_df <- .extract_carry_df(data)
+
   # Compute baseline DSM-5 diagnosis
   baseline_results <- create_ptsd_diagnosis_binarized(data)$PTSD_orig
 
-  # Binarize data
+  # Binarize data (operate on symptom columns only)
+  binarized_symptoms <- binarize_data(data)[, paste0("symptom_", 1:20), drop = FALSE]
   if (is.null(clusters)) {
-    binarized_data <- binarize_data(data)
+    binarized_data <- binarized_symptoms
   } else {
-    binarized_data <- as.matrix(binarize_data(data))
+    binarized_data <- as.matrix(binarized_symptoms)
   }
 
   # Build comparison dataframe
@@ -144,5 +150,6 @@ apply_symptom_combinations <- function(data, combinations, n_required = 4,
     )
   }
 
+  comparison_df <- .attach_carry_cols(comparison_df, carry_df)
   return(comparison_df)
 }

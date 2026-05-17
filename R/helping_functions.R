@@ -53,11 +53,13 @@
 #' binary_data # Should only show 0s and 1s
 #'
 binarize_data <- function(data) {
-  .validate_pcl5_data(data, warn_total = FALSE)
+  .validate_pcl5_data(data, strict_cols = FALSE, warn_total = FALSE)
 
-  # Binarize values (0,1 -> 0; 2,3,4 -> 1)
-  data[data <= 1] <- 0
-  data[data >= 2] <- 1
+  symptom_cols <- paste0("symptom_", 1:20)
+  sym <- data[, symptom_cols, drop = FALSE]
+  sym[sym <= 1] <- 0
+  sym[sym >= 2] <- 1
+  data[, symptom_cols] <- sym
   return(data)
 }
 
@@ -117,7 +119,7 @@ binarize_data <- function(data) {
 #' diagnosis_results$PTSD_orig
 #'
 create_ptsd_diagnosis_binarized <- function(data) {
-  .validate_pcl5_data(data)
+  .validate_pcl5_data(data, strict_cols = FALSE)
 
   check_ptsd_criteria <- function(symptoms) {
     criterion_1 <- any(symptoms[1:5] == 1)
@@ -127,10 +129,10 @@ create_ptsd_diagnosis_binarized <- function(data) {
     return(criterion_1 & criterion_2 & criterion_3 & criterion_4)
   }
 
-  # Binarize data
+  # Binarize symptom columns and check criteria per row
   binarized_data <- binarize_data(data)
-  # Check PTSD criteria for each row
-  ptsd_results <- apply(binarized_data, 1, check_ptsd_criteria)
+  symptom_matrix <- as.matrix(binarized_data[, paste0("symptom_", 1:20)])
+  ptsd_results <- apply(symptom_matrix, 1, check_ptsd_criteria)
 
   return(data.frame(PTSD_orig = ptsd_results))
 }
@@ -217,9 +219,10 @@ summarize_ptsd_changes <- function(data) {
     cli::cli_abort("{.arg data} must contain a column named {.val PTSD_orig} as the baseline criterion.")
   }
 
-  if (!all(vapply(data, is.logical, logical(1)))) {
-    cli::cli_abort("All columns must contain logical ({.val TRUE}/{.val FALSE}) values.")
-  }
+  # Silently drop non-logical carry-through columns (e.g. ID columns).
+  # Diagnostic systems are by definition logical.
+  logical_cols <- vapply(data, is.logical, logical(1))
+  data <- data[, logical_cols, drop = FALSE]
 
   if (any(vapply(data, anyNA, logical(1)))) {
     cli::cli_abort("Data contains missing values ({.val NA}).")

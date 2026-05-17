@@ -312,3 +312,48 @@ test_that("create_readable_summary returns data.frame by default and DT widget w
   result_dt <- create_readable_summary(stats, DT = TRUE)
   expect_s3_class(result_dt, "datatables")
 })
+
+# ---------------------------------------------------------------------------
+# binarize_data() and create_ptsd_diagnosis_binarized() carry-through behavior
+# ---------------------------------------------------------------------------
+
+test_that("binarize_data preserves non-symptom (carry-through) columns unchanged", {
+  raw <- data.frame(
+    patient_id = sprintf("P%02d", 1:5),
+    matrix(rep(0:4, 4), nrow = 5, ncol = 20),
+    stringsAsFactors = FALSE
+  )
+  names(raw)[-1] <- paste0("symptom_", 1:20)
+
+  out <- binarize_data(raw)
+  expect_equal(out$patient_id, raw$patient_id)
+  expect_true(is.character(out$patient_id))
+
+  # Symptom columns binarized correctly
+  expect_equal(out$symptom_1, c(0, 0, 1, 1, 1))
+})
+
+test_that("create_ptsd_diagnosis_binarized accepts data with carry-through columns", {
+  raw <- data.frame(
+    patient_id = "P01",
+    matrix(3, nrow = 1, ncol = 20),
+    stringsAsFactors = FALSE
+  )
+  names(raw)[-1] <- paste0("symptom_", 1:20)
+
+  result <- create_ptsd_diagnosis_binarized(raw)
+  expect_equal(names(result), "PTSD_orig")
+  expect_true(result$PTSD_orig)
+})
+
+test_that("summarize_ptsd_changes silently ignores non-logical carry-through columns", {
+  data <- data.frame(
+    patient_id = sprintf("P%02d", 1:4),
+    PTSD_orig  = c(TRUE, TRUE, FALSE, FALSE),
+    PTSD_alt1  = c(TRUE, FALSE, FALSE, FALSE),
+    stringsAsFactors = FALSE
+  )
+  stats <- summarize_ptsd_changes(data)
+  expect_false("patient_id" %in% stats$column)
+  expect_setequal(stats$column, c("PTSD_orig", "PTSD_alt1"))
+})

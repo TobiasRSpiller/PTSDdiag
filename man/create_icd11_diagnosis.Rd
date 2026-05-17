@@ -21,6 +21,10 @@ A \code{data.frame} with two logical columns and one row per
   \item \code{PTSD_icd11}: ICD-11 diagnosis
 }
 
+Any carry-through columns present in \code{data} (e.g. an ID column added
+via \code{\link{rename_ptsd_columns}}) are prepended in original order so
+results can be joined back to the source dataframe.
+
 This dataframe can be passed directly to \code{\link{summarize_ptsd_changes}}
 or used as an input to \code{\link{compare_diagnostic_systems}}.
 }

@@ -1,7 +1,7 @@
 Package: PTSDdiag
 Type: Package
 Title: Optimize PTSD Diagnostic Criteria
-Version: 0.2.6
+Version: 0.2.7
 Authors@R: c(
     person(
       "Laura", "Weidmann",

@@ -19,6 +19,9 @@ A \code{data.frame} with one logical column and one row per
 \itemize{
   \item \code{PTSD_caps5}: CAPS-5 DSM-5-TR diagnosis
 }
+
+Any carry-through columns present in \code{data} (e.g. an ID column added
+via \code{\link{rename_caps5_columns}}) are prepended in original order.
 }
 \description{
 Applies the DSM-5-TR PTSD diagnostic algorithm to CAPS-5

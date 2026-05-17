@@ -39,6 +39,10 @@
 #'   \item \code{PTSD_icd11}: ICD-11 diagnosis
 #' }
 #'
+#' Any carry-through columns present in \code{data} (e.g. an ID column added
+#' via \code{\link{rename_ptsd_columns}}) are prepended in original order so
+#' results can be joined back to the source dataframe.
+#'
 #' This dataframe can be passed directly to \code{\link{summarize_ptsd_changes}}
 #' or used as an input to \code{\link{compare_diagnostic_systems}}.
 #'
@@ -62,8 +66,9 @@
 #' create_readable_summary(metrics)
 #'
 create_icd11_diagnosis <- function(data) {
-  .validate_pcl5_data(data)
+  .validate_pcl5_data(data, strict_cols = FALSE)
 
+  carry_df <- .extract_carry_df(data)
   ptsd_orig <- create_ptsd_diagnosis_binarized(data)$PTSD_orig
 
   reexperiencing <- rowSums(data[, paste0("symptom_", c(1, 2, 3))]        >= 2) >= 1
@@ -71,10 +76,11 @@ create_icd11_diagnosis <- function(data) {
   threat         <- rowSums(data[, paste0("symptom_", c(16, 17))]         >= 2) >= 1
   min_total      <- rowSums(data[, paste0("symptom_", c(1,2,3,6,7,16,17))] >= 2) >= 3
 
-  data.frame(
+  result <- data.frame(
     PTSD_orig  = ptsd_orig,
     PTSD_icd11 = reexperiencing & avoidance & threat & min_total
   )
+  .attach_carry_cols(result, carry_df)
 }
 
 
@@ -124,6 +130,9 @@ create_icd11_diagnosis <- function(data) {
 #'   \item \code{PTSD_caps5}: CAPS-5 DSM-5-TR diagnosis
 #' }
 #'
+#' Any carry-through columns present in \code{data} (e.g. an ID column added
+#' via \code{\link{rename_caps5_columns}}) are prepended in original order.
+#'
 #' @seealso
 #' \code{\link{rename_caps5_columns}} for standardizing CAPS-5 column names.
 #'
@@ -144,9 +153,10 @@ create_icd11_diagnosis <- function(data) {
 #' table(caps5_dx$PTSD_caps5)
 #'
 create_caps5_diagnosis <- function(data) {
-  .validate_pcl5_data(data)
+  .validate_pcl5_data(data, strict_cols = FALSE)
+  carry_df <- .extract_carry_df(data)
   caps5_dx <- create_ptsd_diagnosis_binarized(data)$PTSD_orig
-  data.frame(PTSD_caps5 = caps5_dx)
+  .attach_carry_cols(data.frame(PTSD_caps5 = caps5_dx), carry_df)
 }
 
 
@@ -295,7 +305,7 @@ compare_diagnostic_systems <- function(data, ..., icd11 = TRUE,
   reference <- match.arg(reference)
 
   # --- Validate primary PCL-5 data ---
-  .validate_pcl5_data(data)
+  .validate_pcl5_data(data, strict_cols = FALSE)
   pcl5_orig <- create_ptsd_diagnosis_binarized(data)$PTSD_orig
 
   # --- Validate CAPS-5 data if provided ---
@@ -303,7 +313,7 @@ compare_diagnostic_systems <- function(data, ..., icd11 = TRUE,
   has_caps5  <- !is.null(caps5_data)
 
   if (has_caps5) {
-    .validate_pcl5_data(caps5_data)
+    .validate_pcl5_data(caps5_data, strict_cols = FALSE)
     if (nrow(caps5_data) != nrow(data)) {
       cli::cli_abort(
         "{.arg caps5_data} has {nrow(caps5_data)} rows but {.arg data} has \\
@@ -356,8 +366,11 @@ compare_diagnostic_systems <- function(data, ..., icd11 = TRUE,
     }
   }
 
-  # --- Collect extra columns from ... and check for duplicates ---
-  extra_cols <- unlist(lapply(dfs, function(df) setdiff(names(df), "PTSD_orig")))
+  # --- Collect extra (diagnostic) columns from ..., excluding carry-throughs
+  # (ID-like non-symptom columns) which are not diagnostic systems.
+  extra_cols <- unlist(lapply(dfs, function(df) {
+    setdiff(names(df), c("PTSD_orig", .detect_carry_cols(df)))
+  }))
 
   if (anyDuplicated(extra_cols)) {
     dup_names <- unique(extra_cols[duplicated(extra_cols)])
@@ -404,9 +417,10 @@ compare_diagnostic_systems <- function(data, ..., icd11 = TRUE,
     combined$PTSD_icd11 <- create_icd11_diagnosis(data)$PTSD_icd11
   }
 
-  # Add columns from ... inputs
+  # Add columns from ... inputs (excluding carry-through ID columns)
   for (df in dfs) {
-    for (col in setdiff(names(df), "PTSD_orig")) {
+    df_carry <- .detect_carry_cols(df)
+    for (col in setdiff(names(df), c("PTSD_orig", df_carry))) {
       combined[[col]] <- df[[col]]
     }
   }

@@ -227,6 +227,84 @@ test_that("optimize_combinations_clusters returns n_tied count", {
   expect_true(results$n_tied >= 0L)
 })
 
+# ---------------------------------------------------------------------------
+# id_col / carry-through round-trip
+# ---------------------------------------------------------------------------
+
+test_that("optimize_combinations carries ID columns into diagnosis_comparison", {
+  set.seed(7)
+  raw <- data.frame(
+    patient_id = sprintf("P%03d", 1:60),
+    age        = sample(20:70, 60, replace = TRUE),
+    matrix(sample(0:4, 20 * 60, replace = TRUE), nrow = 60, ncol = 20),
+    stringsAsFactors = FALSE
+  )
+  sym <- rename_ptsd_columns(raw, id_col = c("patient_id", "age"))
+  res <- optimize_combinations(sym, n_symptoms = 6, n_required = 4,
+                               n_top = 2, show_progress = FALSE)
+  expect_equal(names(res$diagnosis_comparison)[1:2], c("patient_id", "age"))
+  expect_equal(res$diagnosis_comparison$patient_id, raw$patient_id)
+  expect_equal(nrow(res$diagnosis_comparison), nrow(raw))
+})
+
+test_that("optimize_combinations gives identical numeric results with vs without id_col", {
+  set.seed(11)
+  base <- data.frame(matrix(sample(0:4, 20 * 80, replace = TRUE),
+                            nrow = 80, ncol = 20))
+  names(base) <- paste0("symptom_", 1:20)
+  with_id <- base
+  with_id$patient_id <- sprintf("P%03d", 1:80)
+  with_id <- with_id[, c("patient_id", paste0("symptom_", 1:20))]
+
+  res_plain <- optimize_combinations(base, n_symptoms = 6, n_required = 4,
+                                     n_top = 3, show_progress = FALSE)
+  res_id    <- optimize_combinations(with_id, n_symptoms = 6, n_required = 4,
+                                     n_top = 3, show_progress = FALSE)
+
+  expect_equal(res_plain$best_symptoms, res_id$best_symptoms)
+  expect_equal(res_plain$n_tied, res_id$n_tied)
+  # diagnosis_comparison content is the same once IDs are stripped
+  expect_equal(
+    res_plain$diagnosis_comparison,
+    res_id$diagnosis_comparison[, names(res_plain$diagnosis_comparison)]
+  )
+})
+
+test_that("optimize_combinations_clusters carries ID columns through", {
+  set.seed(13)
+  raw <- data.frame(
+    patient_id = sprintf("P%03d", 1:50),
+    matrix(sample(0:4, 20 * 50, replace = TRUE), nrow = 50, ncol = 20),
+    stringsAsFactors = FALSE
+  )
+  sym <- rename_ptsd_columns(raw, id_col = "patient_id")
+  clusters <- list(B = 1:5, C = 6:7, D = 8:14, E = 15:20)
+  res <- optimize_combinations_clusters(
+    sym, n_symptoms = 6, n_required = 4, n_top = 2,
+    clusters = clusters, show_progress = FALSE
+  )
+  expect_equal(names(res$diagnosis_comparison)[1], "patient_id")
+  expect_equal(res$diagnosis_comparison$patient_id, raw$patient_id)
+})
+
+test_that("apply_symptom_combinations carries ID columns through", {
+  set.seed(17)
+  raw <- data.frame(
+    patient_id = sprintf("P%03d", 1:40),
+    matrix(sample(0:4, 20 * 40, replace = TRUE), nrow = 40, ncol = 20),
+    stringsAsFactors = FALSE
+  )
+  sym <- rename_ptsd_columns(raw, id_col = "patient_id")
+  combos <- list(c(1, 6, 8, 10, 15, 19), c(2, 7, 9, 11, 16, 20))
+  out <- apply_symptom_combinations(sym, combos, n_required = 4)
+  expect_equal(names(out)[1], "patient_id")
+  expect_equal(out$patient_id, raw$patient_id)
+
+  # Demographics join-back recovers full dataframe
+  joined <- merge(raw[, "patient_id", drop = FALSE], out, by = "patient_id")
+  expect_equal(nrow(joined), nrow(raw))
+})
+
 test_that("read_combinations falls back gracefully for old JSON files without IDs", {
   # Create a JSON file without combination_ids/ranks (simulating v0.2.0 format)
   tmp <- tempfile(fileext = ".json")
