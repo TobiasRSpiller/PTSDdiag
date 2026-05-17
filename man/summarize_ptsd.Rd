@@ -11,7 +11,7 @@ summarize_ptsd(data)
 
 \itemize{
   \item A 'total' column with PCL-5 total scores (from calculate_ptsd_total)
-  \item A 'PTSD_Diagnosis' column with TRUE/FALSE values (from
+  \item A 'PTSD_orig' column with TRUE/FALSE values (from
     determine_ptsd_diagnosis)
 }}
 }
@@ -41,7 +41,7 @@ This function calculates key summary statistics for PCL-5 data:
 # Create sample data
 sample_data <- data.frame(
   total = sample(0:80, 100, replace = TRUE),
-  PTSD_Diagnosis = sample(c(TRUE, FALSE), 100, replace = TRUE)
+  PTSD_orig = sample(c(TRUE, FALSE), 100, replace = TRUE)
 )
 
 # Generate summary statistics

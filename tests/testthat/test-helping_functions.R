@@ -108,7 +108,7 @@ test_that("create_ptsd_diagnosis_binarized and create_ptsd_diagnosis_nonbinarize
   results_diagnosis_nonbinarized <- create_ptsd_diagnosis_nonbinarized(test_data)
 
   expect_equal(results_diagnosis_binarized$PTSD_orig,
-               results_diagnosis_nonbinarized$PTSD_Diagnosis)
+               results_diagnosis_nonbinarized$PTSD_orig)
 
   # Test case 2: Edge case data with threshold values
   edge_data <- data.frame(matrix(2, nrow = 5, ncol = 20))  # All values at threshold
@@ -118,7 +118,7 @@ test_that("create_ptsd_diagnosis_binarized and create_ptsd_diagnosis_nonbinarize
   results_edge_nonbinarized <- create_ptsd_diagnosis_nonbinarized(edge_data)
 
   expect_equal(results_edge_binarized$PTSD_orig,
-               results_edge_nonbinarized$PTSD_Diagnosis)
+               results_edge_nonbinarized$PTSD_orig)
 })
 
 test_that("create_readable_summary works correctly", {
@@ -232,6 +232,67 @@ test_that("summarize_ptsd_changes works correctly", {
   multi_result <- summarize_ptsd_changes(multi_data)
   expect_equal(nrow(multi_result), 4)  # One row for each criterion
   expect_true(all(c("PTSD_orig", "PTSD_alt1", "PTSD_alt2", "PTSD_alt3") %in% multi_result$column))
+})
+
+test_that("summarize_ptsd_changes handles all-positive baseline (specificity denom = 0)", {
+  all_pos_data <- data.frame(
+    PTSD_orig = c(TRUE, TRUE, TRUE),
+    PTSD_alt = c(TRUE, TRUE, FALSE)
+  )
+  result <- summarize_ptsd_changes(all_pos_data)
+  alt_row <- result[result$column == "PTSD_alt", ]
+
+  # Specificity denominator is 0 (no true negatives possible)
+  expect_true(is.na(alt_row$specificity))
+  # NPV denominator is also 0 when all baseline are positive and alt misses one
+  # true_negative = 0, newly_nondiagnosed = 1, so NPV denom = 0 + 1 = 1 -> not NA
+
+  expect_false(is.na(alt_row$npv))
+
+  # Sensitivity should still be defined
+  expect_false(is.na(alt_row$sensitivity))
+})
+
+test_that("summarize_ptsd_changes handles all-negative baseline (sensitivity denom = 0)", {
+  all_neg_data <- data.frame(
+    PTSD_orig = c(FALSE, FALSE, FALSE),
+    PTSD_alt = c(FALSE, TRUE, FALSE)
+  )
+  result <- summarize_ptsd_changes(all_neg_data)
+  alt_row <- result[result$column == "PTSD_alt", ]
+
+  # Sensitivity denominator is 0 (no true positives possible)
+  expect_true(is.na(alt_row$sensitivity))
+  # PPV denominator: true_positive(0) + newly_diagnosed(1) = 1, not NA
+  expect_false(is.na(alt_row$ppv))
+  # Specificity should still be defined
+  expect_false(is.na(alt_row$specificity))
+})
+
+test_that("binarize_data handles edge cases: all zeros, all fours, at threshold", {
+  # All zeros
+  all_zero <- data.frame(matrix(0, nrow = 3, ncol = 20))
+  colnames(all_zero) <- paste0("symptom_", 1:20)
+  result_zero <- binarize_data(all_zero)
+  expect_true(all(result_zero == 0))
+
+  # All fours
+  all_four <- data.frame(matrix(4, nrow = 3, ncol = 20))
+  colnames(all_four) <- paste0("symptom_", 1:20)
+  result_four <- binarize_data(all_four)
+  expect_true(all(result_four == 1))
+
+  # Exactly at threshold (2)
+  at_threshold <- data.frame(matrix(2, nrow = 3, ncol = 20))
+  colnames(at_threshold) <- paste0("symptom_", 1:20)
+  result_thresh <- binarize_data(at_threshold)
+  expect_true(all(result_thresh == 1))
+
+  # Just below threshold (1)
+  below_threshold <- data.frame(matrix(1, nrow = 3, ncol = 20))
+  colnames(below_threshold) <- paste0("symptom_", 1:20)
+  result_below <- binarize_data(below_threshold)
+  expect_true(all(result_below == 0))
 })
 
 test_that("create_readable_summary returns data.frame by default and DT widget when requested", {

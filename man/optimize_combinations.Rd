@@ -63,6 +63,11 @@ A list containing:
   \item summary: Diagnostic accuracy metrics for each combination. A data.frame
     by default, or an interactive \code{\link[DT]{datatable}} if
     \code{DT = TRUE}.
+  \item n_tied: Integer. Number of additional combinations that scored
+    identically to the best combination but are not included in the top
+    results. When \code{n_tied > 0}, the reported "best" combination is one
+    of several equivalent solutions. Ties are broken by lexicographic order
+    of symptom indices.
 }
 }
 \description{
@@ -115,6 +120,9 @@ results2 <- optimize_combinations(ptsd_data, n_symptoms = 5, n_required = 3,
 
 # Get symptom numbers
 results$best_symptoms
+
+# Check how many combinations tied with the best
+results$n_tied
 
 # View summary statistics
 results$summary

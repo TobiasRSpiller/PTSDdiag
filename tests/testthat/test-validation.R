@@ -33,8 +33,8 @@ test_that("holdout_validation works correctly", {
   expect_true("PTSD_orig" %in% names(results$without_clusters$test_results))
   expect_true("PTSD_orig" %in% names(results$with_clusters$test_results))
   
-  # Check that test results have correct number of rows (30% of data)
-  expected_test_rows <- floor((1 - 0.7) * nrow(test_data))
+  # Check that test results have correct number of rows (nrow - floor(train_ratio * nrow))
+  expected_test_rows <- nrow(test_data) - floor(0.7 * nrow(test_data))
   expect_equal(nrow(results$without_clusters$test_results), expected_test_rows)
   expect_equal(nrow(results$with_clusters$test_results), expected_test_rows)
   
@@ -100,28 +100,28 @@ test_that("holdout_validation validates input correctly", {
   # Test invalid train_ratio
   expect_error(
     holdout_validation(test_data, train_ratio = 0),
-    "train_ratio must be between 0 and 1"
+    "must be between 0 and 1"
   )
   expect_error(
     holdout_validation(test_data, train_ratio = 1),
-    "train_ratio must be between 0 and 1"
+    "must be between 0 and 1"
   )
   expect_error(
     holdout_validation(test_data, train_ratio = 1.5),
-    "train_ratio must be between 0 and 1"
+    "must be between 0 and 1"
   )
   
   # Test invalid score_by
   expect_error(
     holdout_validation(test_data, score_by = "invalid"),
-    "score_by must be one of"
+    "must be one of"
   )
   
   # Test with wrong number of columns
   wrong_cols <- test_data[, 1:15]
   expect_error(
     holdout_validation(wrong_cols),
-    "Data must contain exactly 20 columns"
+    "must contain exactly 20 columns"
   )
   
   # Test with wrong column names
@@ -129,7 +129,7 @@ test_that("holdout_validation validates input correctly", {
   colnames(wrong_names) <- paste0("col_", 1:20)
   expect_error(
     holdout_validation(wrong_names),
-    "Data must contain columns named 'symptom_1' through 'symptom_20'"
+    "must contain columns named"
   )
 })
 
@@ -190,9 +190,9 @@ test_that("cross_validation handles different k values", {
   fold_sizes_2 <- sapply(results_2$without_clusters$fold_results, nrow)
   fold_sizes_5 <- sapply(results_5$without_clusters$fold_results, nrow)
   
-  # Allow for small differences due to rounding
-  expect_true(max(fold_sizes_2) - min(fold_sizes_2) <= 1)
-  expect_true(max(fold_sizes_5) - min(fold_sizes_5) <= 1)
+  # Allow for small differences due to stratified splitting
+  expect_true(max(fold_sizes_2) - min(fold_sizes_2) <= 3)
+  expect_true(max(fold_sizes_5) - min(fold_sizes_5) <= 3)
 })
 
 test_that("cross_validation validates input correctly", {
@@ -207,30 +207,30 @@ test_that("cross_validation validates input correctly", {
   # Test invalid k values
   expect_error(
     cross_validation(test_data, k = 1),
-    "k must be between 2 and the number of rows"
+    "must be a single integer between 2"
   )
   expect_error(
     cross_validation(test_data, k = 51),
-    "k must be between 2 and the number of rows"
+    "must be a single integer between 2"
   )
   
   # Test invalid score_by
   expect_error(
     cross_validation(test_data, score_by = "invalid"),
-    "score_by must be one of"
+    "must be one of"
   )
   
   # Test with wrong number of columns
   wrong_cols <- test_data[, 1:15]
   expect_error(
     cross_validation(wrong_cols),
-    "Data must contain exactly 20 columns"
+    "must contain exactly 20 columns"
   )
   
   # Test with non-dataframe input
   expect_error(
     cross_validation(as.matrix(test_data)),
-    "Input must be a dataframe"
+    "must be a data frame"
   )
 })
 
@@ -339,14 +339,88 @@ test_that("cross_validation produces consistent results with same seed", {
            ncol = 20)
   )
   colnames(test_data) <- paste0("symptom_", 1:20)
-  
+
   # Run twice with same seed
   results1 <- cross_validation(test_data, k = 3, seed = 42)
   results2 <- cross_validation(test_data, k = 3, seed = 42)
-  
+
   # Check that fold assignments are the same
   for (i in 1:3) {
     expect_equal(nrow(results1$without_clusters$fold_results[[i]]),
                  nrow(results2$without_clusters$fold_results[[i]]))
   }
+})
+
+test_that("holdout_validation restores user RNG state", {
+  test_data <- data.frame(
+    matrix(sample(0:4, 20 * 50, replace = TRUE), nrow = 50, ncol = 20)
+  )
+  colnames(test_data) <- paste0("symptom_", 1:20)
+
+  # After holdout_validation returns, the user's RNG stream should resume
+  # exactly as if the function was never called.
+  set.seed(99)
+  expected <- runif(1)
+
+  set.seed(99)
+  holdout_validation(test_data, seed = 555)
+  actual <- runif(1)
+
+  expect_equal(actual, expected)
+})
+
+test_that("cross_validation restores user RNG state", {
+  test_data <- data.frame(
+    matrix(sample(0:4, 20 * 50, replace = TRUE), nrow = 50, ncol = 20)
+  )
+  colnames(test_data) <- paste0("symptom_", 1:20)
+
+  set.seed(99)
+  expected <- runif(1)
+
+  set.seed(99)
+  cross_validation(test_data, k = 2, seed = 555)
+  actual <- runif(1)
+
+  expect_equal(actual, expected)
+})
+
+test_that("cross_validation rejects non-integer k", {
+  test_data <- data.frame(
+    matrix(sample(0:4, 20 * 50, replace = TRUE), nrow = 50, ncol = 20)
+  )
+  colnames(test_data) <- paste0("symptom_", 1:20)
+
+  expect_error(
+    cross_validation(test_data, k = 3.5),
+    "must be a single integer"
+  )
+  expect_error(
+    cross_validation(test_data, k = 2.1),
+    "must be a single integer"
+  )
+})
+
+test_that("holdout_validation rejects train_ratio that produces empty splits", {
+  # With 3 rows: floor(0.01 * 3) = 0 → empty train set
+  test_data <- data.frame(
+    matrix(sample(0:4, 20 * 3, replace = TRUE), nrow = 3, ncol = 20)
+  )
+  colnames(test_data) <- paste0("symptom_", 1:20)
+
+  expect_error(
+    holdout_validation(test_data, train_ratio = 0.01),
+    "produces an empty training or test set"
+  )
+
+  # With 1 row: floor(0.7 * 1) = 0 → empty train set
+  test_data_1 <- data.frame(
+    matrix(sample(0:4, 20, replace = TRUE), nrow = 1, ncol = 20)
+  )
+  colnames(test_data_1) <- paste0("symptom_", 1:20)
+
+  expect_error(
+    holdout_validation(test_data_1, train_ratio = 0.7),
+    "produces an empty training or test set"
+  )
 })

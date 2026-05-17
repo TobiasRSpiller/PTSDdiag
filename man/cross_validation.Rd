@@ -73,7 +73,8 @@ generalization performance and identify stable symptom combinations.
 \details{
 The function:
 \enumerate{
-  \item Splits data into k folds
+  \item Splits data into k stratified folds (preserving the proportion of
+    diagnosed cases in each fold via \code{\link[rsample]{vfold_cv}})
   \item For each fold, trains on k-1 folds and tests on the held-out fold
   \item Identifies symptom combinations that appear across multiple folds
   \item Calculates average performance metrics for repeated combinations

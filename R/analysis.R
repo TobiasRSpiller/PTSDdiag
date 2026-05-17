@@ -81,6 +81,11 @@
 #'   \item summary: Diagnostic accuracy metrics for each combination. A data.frame
 #'     by default, or an interactive \code{\link[DT]{datatable}} if
 #'     \code{DT = TRUE}.
+#'   \item n_tied: Integer. Number of additional combinations that scored
+#'     identically to the best combination but are not included in the top
+#'     results. When \code{n_tied > 0}, the reported "best" combination is one
+#'     of several equivalent solutions. Ties are broken by lexicographic order
+#'     of symptom indices.
 #'}
 #'
 #' @export
@@ -103,6 +108,9 @@
 #'
 #' # Get symptom numbers
 #' results$best_symptoms
+#'
+#' # Check how many combinations tied with the best
+#' results$n_tied
 #'
 #' # View summary statistics
 #' results$summary
@@ -132,16 +140,19 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
   }
 
   # Find best combinations
-  top_combinations <- .find_top_n(combinations, binarized_data, baseline_results,
-                                  score_by, n_top, diagnose_fn,
-                                  show_progress = show_progress)
+  search_result <- .find_top_n(combinations, binarized_data, baseline_results,
+                               score_by, n_top, diagnose_fn,
+                               show_progress = show_progress)
+  top_combinations <- search_result$top
+  n_tied <- search_result$n_tied
 
   # Build output
   comparison_df <- .build_comparison_df(baseline_results, top_combinations, nrow(data))
 
   best_combo <- top_combinations[[1]]$combination
   if (!is.null(best_combo)) {
-    cli::cli_alert_info("Evaluated {length(combinations)} combination{?s}. Best: {paste(best_combo, collapse = ', ')}")
+    tied_msg <- if (n_tied > 0) paste0(" (", n_tied, " additional tied)") else ""
+    cli::cli_alert_info("Evaluated {length(combinations)} combination{?s}. Best: {paste(best_combo, collapse = ', ')}{tied_msg}")
   }
 
   summary_table <- .wrap_summary(comparison_df, DT = DT)
@@ -152,7 +163,8 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
       function(x) x$combination
     ),
     diagnosis_comparison = comparison_df,
-    summary = summary_table
+    summary = summary_table,
+    n_tied = n_tied
   ))
 }
 
@@ -344,16 +356,19 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
   }
 
   # Find best combinations
-  top_combinations <- .find_top_n(valid_combinations, binarized_data,
-                                  baseline_results, score_by, n_top, diagnose_fn,
-                                  show_progress = show_progress)
+  search_result <- .find_top_n(valid_combinations, binarized_data,
+                               baseline_results, score_by, n_top, diagnose_fn,
+                               show_progress = show_progress)
+  top_combinations <- search_result$top
+  n_tied <- search_result$n_tied
 
   # Build output
   comparison_df <- .build_comparison_df(baseline_results, top_combinations, nrow(data))
 
   best_combo <- top_combinations[[1]]$combination
   if (!is.null(best_combo)) {
-    cli::cli_alert_info("Evaluated {length(valid_combinations)} combination{?s}. Best: {paste(best_combo, collapse = ', ')}")
+    tied_msg <- if (n_tied > 0) paste0(" (", n_tied, " additional tied)") else ""
+    cli::cli_alert_info("Evaluated {length(valid_combinations)} combination{?s}. Best: {paste(best_combo, collapse = ', ')}{tied_msg}")
   }
 
   summary_table <- .wrap_summary(comparison_df, DT = DT)
@@ -364,7 +379,8 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
       function(x) x$combination
     ),
     diagnosis_comparison = comparison_df,
-    summary = summary_table
+    summary = summary_table,
+    n_tied = n_tied
   ))
 }
 

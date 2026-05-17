@@ -1,7 +1,7 @@
 Package: PTSDdiag
 Type: Package
 Title: Optimize PTSD Diagnostic Criteria
-Version: 0.2.5.1
+Version: 0.2.6
 Authors@R: c(
     person(
       "Laura", "Weidmann",
@@ -41,8 +41,8 @@ Imports:
     magrittr,
     rlang,
     stats,
-    utils,
-    modelr
+    rsample,
+    utils
 Depends: 
     R (>= 3.5.0)
 Suggests:

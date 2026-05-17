@@ -48,24 +48,19 @@
 #' colnames(renamed_data)  # Shows new column names
 #'
 rename_ptsd_columns <- function(data) {
-  # Validate number of columns
+  if (!is.data.frame(data)) {
+    cli::cli_abort("{.arg data} must be a data frame, not {.cls {class(data)}}.")
+  }
   if (ncol(data) != 20) {
-    stop("Data must contain exactly 20 columns (one for each PCL-5 item)")
-  }
-  # Check for missing values
-  if (any(is.na(data))) {
-    stop("Data contains missing values (NA). All PCL-5 items must be rated")
-  }
-
-  # Validate data type and range
-  if (!all(vapply(data, is.numeric, logical(1)))) {
-    stop("All columns must contain numeric values")
+    cli::cli_abort(c(
+      "{.arg data} must contain exactly 20 columns (one for each PCL-5 item).",
+      "x" = "Got {ncol(data)} column{?s}."
+    ))
   }
 
-  invalid_values <- !all(vapply(data, function(x) all(x >= 0 & x <= 4 & x == floor(x)), logical(1)))
-  if (invalid_values) {
-    stop("All values must be integers between 0 and 4")
-  }
+  renamed <- data
+  names(renamed) <- paste0("symptom_", 1:20)
+  .validate_pcl5_data(renamed, warn_total = FALSE)
 
   data %>%
       rename_with(~ paste0("symptom_", 1:20))
@@ -140,20 +135,19 @@ rename_ptsd_columns <- function(data) {
 #' colnames(renamed_caps5)  # symptom_1 through symptom_20
 #'
 rename_caps5_columns <- function(data) {
+  if (!is.data.frame(data)) {
+    cli::cli_abort("{.arg data} must be a data frame, not {.cls {class(data)}}.")
+  }
   if (ncol(data) != 20) {
-    stop("Data must contain exactly 20 columns (one for each CAPS-5 item)")
-  }
-  if (any(is.na(data))) {
-    stop("Data contains missing values (NA). All CAPS-5 items must be rated")
-  }
-  if (!all(vapply(data, is.numeric, logical(1)))) {
-    stop("All columns must contain numeric values")
+    cli::cli_abort(c(
+      "{.arg data} must contain exactly 20 columns (one for each CAPS-5 item).",
+      "x" = "Got {ncol(data)} column{?s}."
+    ))
   }
 
-  invalid_values <- !all(vapply(data, function(x) all(x >= 0 & x <= 4 & x == floor(x)), logical(1)))
-  if (invalid_values) {
-    stop("All values must be integers between 0 and 4")
-  }
+  renamed <- data
+  names(renamed) <- paste0("symptom_", 1:20)
+  .validate_pcl5_data(renamed, warn_total = FALSE, instrument = "CAPS-5")
 
   data %>%
     rename_with(~ paste0("symptom_", 1:20))
