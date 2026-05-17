@@ -94,7 +94,9 @@ A list containing:
 
 The function:
 
-1.  Splits data into k folds
+1.  Splits data into k stratified folds (preserving the proportion of
+    diagnosed cases in each fold via
+    [`vfold_cv`](https://rsample.tidymodels.org/reference/vfold_cv.html))
 
 2.  For each fold, trains on k-1 folds and tests on the held-out fold
 
@@ -136,96 +138,98 @@ colnames(sample_data) <- paste0("symptom_", 1:20)
 # \donttest{
 # Perform 5-fold cross-validation
 cv_results <- cross_validation(sample_data, k = 5)
+#> ℹ Evaluated 38760 combinations. Best: 6, 7, 9, 14, 15, 16
+#> ℹ Generated 13685 valid cluster-constrained combinations
+#> ℹ Evaluated 13685 combinations. Best: 3, 4, 7, 8, 15, 16 (3 additional tied)
 #> ℹ Evaluated 38760 combinations. Best: 3, 6, 7, 8, 11, 16
 #> ℹ Generated 13685 valid cluster-constrained combinations
 #> ℹ Evaluated 13685 combinations. Best: 3, 5, 6, 13, 15, 16
-#> ℹ Evaluated 38760 combinations. Best: 6, 7, 8, 9, 15, 16
-#> ℹ Generated 13685 valid cluster-constrained combinations
-#> ℹ Evaluated 13685 combinations. Best: 4, 5, 7, 8, 15, 16
-#> ℹ Evaluated 38760 combinations. Best: 3, 6, 7, 8, 11, 16
-#> ℹ Generated 13685 valid cluster-constrained combinations
-#> ℹ Evaluated 13685 combinations. Best: 3, 5, 6, 13, 15, 16
-#> ℹ Evaluated 38760 combinations. Best: 3, 6, 7, 8, 11, 16
+#> ℹ Evaluated 38760 combinations. Best: 2, 6, 7, 8, 15, 16 (1 additional tied)
 #> ℹ Generated 13685 valid cluster-constrained combinations
 #> ℹ Evaluated 13685 combinations. Best: 3, 4, 7, 8, 15, 16
-#> ℹ Evaluated 38760 combinations. Best: 3, 6, 7, 11, 13, 17
+#> ℹ Evaluated 38760 combinations. Best: 3, 6, 7, 8, 11, 15 (3 additional tied)
 #> ℹ Generated 13685 valid cluster-constrained combinations
-#> ℹ Evaluated 13685 combinations. Best: 3, 5, 6, 13, 15, 16
+#> ℹ Evaluated 13685 combinations. Best: 4, 5, 7, 8, 15, 16
+#> ℹ Evaluated 38760 combinations. Best: 6, 7, 8, 9, 15, 16
+#> ℹ Generated 13685 valid cluster-constrained combinations
+#> ℹ Evaluated 13685 combinations. Best: 2, 4, 6, 8, 17, 20
 
 # View summary for each fold
 cv_results$without_clusters$summary_by_fold
-#>      Split               Scenario Total Diagnosed Total Non-Diagnosed
-#> 1  Split 1              PTSD_orig        28 (70%)            12 (30%)
-#> 2  Split 1  symptom_3_6_7_8_11_16        22 (55%)            18 (45%)
-#> 3  Split 1  symptom_6_7_8_9_15_16        20 (50%)            20 (50%)
-#> 4  Split 1   symptom_3_6_7_8_9_11        20 (50%)            20 (50%)
-#> 5  Split 2              PTSD_orig        26 (65%)            14 (35%)
-#> 6  Split 2  symptom_6_7_8_9_15_16        22 (55%)            18 (45%)
-#> 7  Split 2 symptom_6_7_8_15_16_17        18 (45%)            22 (55%)
-#> 8  Split 2 symptom_6_7_9_14_15_16      23 (57.5%)          17 (42.5%)
-#> 9  Split 3              PTSD_orig        36 (90%)             4 (10%)
-#> 10 Split 3  symptom_3_6_7_8_11_16      29 (72.5%)          11 (27.5%)
-#> 11 Split 3  symptom_6_7_8_9_15_16      29 (72.5%)          11 (27.5%)
-#> 12 Split 3  symptom_2_6_7_8_15_16      27 (67.5%)          13 (32.5%)
-#> 13 Split 4              PTSD_orig        34 (85%)             6 (15%)
-#> 14 Split 4  symptom_3_6_7_8_11_16      27 (67.5%)          13 (32.5%)
-#> 15 Split 4  symptom_6_7_8_9_15_16        26 (65%)            14 (35%)
-#> 16 Split 4   symptom_3_6_7_8_9_16        24 (60%)            16 (40%)
-#> 17 Split 5              PTSD_orig        30 (75%)            10 (25%)
-#> 18 Split 5 symptom_3_6_7_11_13_17        18 (45%)            22 (55%)
-#> 19 Split 5  symptom_3_6_7_8_11_15        22 (55%)            18 (45%)
-#> 20 Split 5  symptom_3_6_7_8_11_16      27 (67.5%)          13 (32.5%)
+#>      Split                Scenario Total Diagnosed Total Non-Diagnosed
+#> 1  Split 1               PTSD_orig     31 (75.61%)         10 (24.39%)
+#> 2  Split 1  symptom_6_7_9_14_15_16      23 (56.1%)          18 (43.9%)
+#> 3  Split 1  symptom_3_6_7_11_13_17     21 (51.22%)         20 (48.78%)
+#> 4  Split 1 symptom_6_7_11_14_15_16     22 (53.66%)         19 (46.34%)
+#> 5  Split 2               PTSD_orig      31 (77.5%)           9 (22.5%)
+#> 6  Split 2   symptom_3_6_7_8_11_16        26 (65%)            14 (35%)
+#> 7  Split 2   symptom_2_6_7_9_15_16        24 (60%)            16 (40%)
+#> 8  Split 2    symptom_3_6_7_8_9_11        24 (60%)            16 (40%)
+#> 9  Split 3               PTSD_orig      31 (77.5%)           9 (22.5%)
+#> 10 Split 3   symptom_2_6_7_8_15_16        20 (50%)            20 (50%)
+#> 11 Split 3   symptom_3_6_7_8_11_16        22 (55%)            18 (45%)
+#> 12 Split 3    symptom_3_6_7_8_9_11      23 (57.5%)          17 (42.5%)
+#> 13 Split 4               PTSD_orig      31 (77.5%)           9 (22.5%)
+#> 14 Split 4   symptom_3_6_7_8_11_15        20 (50%)            20 (50%)
+#> 15 Split 4   symptom_3_6_7_8_11_16      25 (62.5%)          15 (37.5%)
+#> 16 Split 4  symptom_3_6_7_11_12_16      21 (52.5%)          19 (47.5%)
+#> 17 Split 5               PTSD_orig     30 (76.92%)          9 (23.08%)
+#> 18 Split 5   symptom_6_7_8_9_15_16     21 (53.85%)         18 (46.15%)
+#> 19 Split 5  symptom_6_7_9_14_15_16     23 (58.97%)         16 (41.03%)
+#> 20 Split 5   symptom_2_6_7_9_15_16     22 (56.41%)         17 (43.59%)
 #>    True Positive True Negative Newly Diagnosed Newly Non-Diagnosed True Cases
-#> 1             28            12               0                   0         40
-#> 2             19             9               3                   9         28
-#> 3             19            11               1                   9         30
-#> 4             19            11               1                   9         30
-#> 5             26            14               0                   0         40
-#> 6             19            11               3                   7         30
-#> 7             15            11               3                  11         26
-#> 8             18             9               5                   8         27
-#> 9             36             4               0                   0         40
-#> 10            28             3               1                   8         31
-#> 11            29             4               0                   7         33
-#> 12            27             4               0                   9         31
-#> 13            34             6               0                   0         40
-#> 14            24             3               3                  10         27
-#> 15            24             4               2                  10         28
-#> 16            21             3               3                  13         24
-#> 17            30            10               0                   0         40
-#> 18            17             9               1                  13         26
-#> 19            20             8               2                  10         28
-#> 20            25             8               2                   5         33
-#>    False Cases Sensitivity Specificity    PPV    NPV combination_id rank
-#> 1            0      1.0000      1.0000 1.0000 1.0000           <NA>   NA
-#> 2           12      0.6786      0.7500 0.8636 0.5000  3_6_7_8_11_16    1
-#> 3           10      0.6786      0.9167 0.9500 0.5500  6_7_8_9_15_16    2
-#> 4           10      0.6786      0.9167 0.9500 0.5500   3_6_7_8_9_11    3
-#> 5            0      1.0000      1.0000 1.0000 1.0000           <NA>   NA
-#> 6           10      0.7308      0.7857 0.8636 0.6111  6_7_8_9_15_16    1
-#> 7           14      0.5769      0.7857 0.8333 0.5000 6_7_8_15_16_17    2
-#> 8           13      0.6923      0.6429 0.7826 0.5294 6_7_9_14_15_16    3
-#> 9            0      1.0000      1.0000 1.0000 1.0000           <NA>   NA
-#> 10           9      0.7778      0.7500 0.9655 0.2727  3_6_7_8_11_16    1
-#> 11           7      0.8056      1.0000 1.0000 0.3636  6_7_8_9_15_16    2
-#> 12           9      0.7500      1.0000 1.0000 0.3077  2_6_7_8_15_16    3
-#> 13           0      1.0000      1.0000 1.0000 1.0000           <NA>   NA
-#> 14          13      0.7059      0.5000 0.8889 0.2308  3_6_7_8_11_16    1
-#> 15          12      0.7059      0.6667 0.9231 0.2857  6_7_8_9_15_16    2
-#> 16          16      0.6176      0.5000 0.8750 0.1875   3_6_7_8_9_16    3
-#> 17           0      1.0000      1.0000 1.0000 1.0000           <NA>   NA
-#> 18          14      0.5667      0.9000 0.9444 0.4091 3_6_7_11_13_17    1
-#> 19          12      0.6667      0.8000 0.9091 0.4444  3_6_7_8_11_15    2
-#> 20           7      0.8333      0.8000 0.9259 0.6154  3_6_7_8_11_16    3
+#> 1             31            10               0                   0         41
+#> 2             22             9               1                   9         31
+#> 3             19             8               2                  12         27
+#> 4             20             8               2                  11         28
+#> 5             31             9               0                   0         40
+#> 6             23             6               3                   8         29
+#> 7             21             6               3                  10         27
+#> 8             23             8               1                   8         31
+#> 9             31             9               0                   0         40
+#> 10            18             7               2                  13         25
+#> 11            21             8               1                  10         29
+#> 12            21             7               2                  10         28
+#> 13            31             9               0                   0         40
+#> 14            19             8               1                  12         27
+#> 15            24             8               1                   7         32
+#> 16            19             7               2                  12         26
+#> 17            30             9               0                   0         39
+#> 18            20             8               1                  10         28
+#> 19            21             7               2                   9         28
+#> 20            20             7               2                  10         27
+#>    False Cases Sensitivity Specificity    PPV    NPV  combination_id rank
+#> 1            0      1.0000      1.0000 1.0000 1.0000            <NA>   NA
+#> 2           10      0.7097      0.9000 0.9565 0.5000  6_7_9_14_15_16    1
+#> 3           14      0.6129      0.8000 0.9048 0.4000  3_6_7_11_13_17    2
+#> 4           13      0.6452      0.8000 0.9091 0.4211 6_7_11_14_15_16    3
+#> 5            0      1.0000      1.0000 1.0000 1.0000            <NA>   NA
+#> 6           11      0.7419      0.6667 0.8846 0.4286   3_6_7_8_11_16    1
+#> 7           13      0.6774      0.6667 0.8750 0.3750   2_6_7_9_15_16    2
+#> 8            9      0.7419      0.8889 0.9583 0.5000    3_6_7_8_9_11    3
+#> 9            0      1.0000      1.0000 1.0000 1.0000            <NA>   NA
+#> 10          15      0.5806      0.7778 0.9000 0.3500   2_6_7_8_15_16    1
+#> 11          11      0.6774      0.8889 0.9545 0.4444   3_6_7_8_11_16    2
+#> 12          12      0.6774      0.7778 0.9130 0.4118    3_6_7_8_9_11    3
+#> 13           0      1.0000      1.0000 1.0000 1.0000            <NA>   NA
+#> 14          13      0.6129      0.8889 0.9500 0.4000   3_6_7_8_11_15    1
+#> 15           8      0.7742      0.8889 0.9600 0.5333   3_6_7_8_11_16    2
+#> 16          14      0.6129      0.7778 0.9048 0.3684  3_6_7_11_12_16    3
+#> 17           0      1.0000      1.0000 1.0000 1.0000            <NA>   NA
+#> 18          11      0.6667      0.8889 0.9524 0.4444   6_7_8_9_15_16    1
+#> 19          11      0.7000      0.7778 0.9130 0.4375  6_7_9_14_15_16    2
+#> 20          12      0.6667      0.7778 0.9091 0.4118   2_6_7_9_15_16    3
 
 # View combinations that appeared multiple times
 cv_results$without_clusters$combinations_summary
-#> # A tibble: 3 × 15
+#> # A tibble: 5 × 15
 #>   Scenario    combination_id Splits_Appeared Total_Diagnosed Total_Non_Diagnosed
 #>   <chr>       <chr>                    <int> <chr>           <chr>              
-#> 1 PTSD_orig   NA                           5 30.8 (77%)      9.2 (23%)          
-#> 2 symptom_3_… 3_6_7_8_11_16                4 26.25 (65.62%)  13.75 (34.38%)     
-#> 3 symptom_6_… 6_7_8_9_15_16                4 24.25 (60.62%)  15.75 (39.38%)     
+#> 1 PTSD_orig   NA                           5 30.8 (77.01%)   9.2 (22.99%)       
+#> 2 symptom_2_… 2_6_7_9_15_16                2 23 (58.2%)      16.5 (41.8%)       
+#> 3 symptom_3_… 3_6_7_8_11_16                3 24.33 (60.83%)  15.67 (39.17%)     
+#> 4 symptom_3_… 3_6_7_8_9_11                 2 23.5 (58.75%)   16.5 (41.25%)      
+#> 5 symptom_6_… 6_7_9_14_15_16               2 23 (57.53%)     17 (42.47%)        
 #> # ℹ 10 more variables: True_Positive <dbl>, True_Negative <dbl>,
 #> #   Newly_Diagnosed <dbl>, Newly_Non_Diagnosed <dbl>, True_Cases <dbl>,
 #> #   False_Cases <dbl>, Sensitivity <dbl>, Specificity <dbl>, PPV <dbl>,

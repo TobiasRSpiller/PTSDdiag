@@ -131,6 +131,13 @@ with elevated symptom profiles (PTSD-like) and 83% with low symptom
 levels, resulting in approximately 21% meeting full DSM-5 diagnostic
 criteria.
 
+## Note
+
+Symptoms were simulated independently. Real PCL-5 data exhibits
+within-cluster correlations (e.g., between intrusion symptoms).
+Optimization results on these data are for illustration only; real-world
+performance should be evaluated on empirical datasets.
+
 ## See also
 
 [`simulated_ptsd`](https://tobiasrspiller.github.io/PTSDdiag/reference/simulated_ptsd.md)

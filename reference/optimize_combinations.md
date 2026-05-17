@@ -89,6 +89,12 @@ A list containing:
   [`datatable`](https://rdrr.io/pkg/DT/man/datatable.html) if
   `DT = TRUE`.
 
+- n_tied: Integer. Number of additional combinations that scored
+  identically to the best combination but are not included in the top
+  results. When `n_tied > 0`, the reported "best" combination is one of
+  several equivalent solutions. Ties are broken by lexicographic order
+  of symptom indices.
+
 ## Details
 
 The function:
@@ -129,44 +135,48 @@ names(ptsd_data) <- paste0("symptom_", 1:20)
 # Find best 6-symptom combinations requiring 4 present (classic defaults)
 results <- optimize_combinations(ptsd_data, n_symptoms = 6, n_required = 4,
              score_by = "false_cases")
-#> Evaluating combinations ■■■■■■■                           21% | ETA:  4s
-#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■           74% | ETA:  1s
+#> Evaluating combinations ■■■■■■■■■                         28% | ETA:  3s
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■     94% | ETA:  0s
 #> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
-#> ℹ Evaluated 38760 combinations. Best: 1, 2, 4, 7, 15, 16
+#> ℹ Evaluated 38760 combinations. Best: 1, 2, 4, 9, 13, 14 (417 additional tied)
 
 # Find best 5-symptom combinations requiring 3 present, return top 5
 results2 <- optimize_combinations(ptsd_data, n_symptoms = 5, n_required = 3,
               n_top = 5, score_by = "false_cases")
-#> ℹ Evaluated 15504 combinations. Best: 1, 4, 7, 10, 15
+#> ℹ Evaluated 15504 combinations. Best: 1, 2, 4, 9, 13 (1052 additional tied)
 
 # Get symptom numbers
 results$best_symptoms
 #> [[1]]
-#> [1]  1  2  4  7 15 16
+#> [1]  1  2  4  9 13 14
 #> 
 #> [[2]]
-#> [1]  1  2  6  7  8 15
+#> [1]  1  2  4  9 13 16
 #> 
 #> [[3]]
-#> [1]  1  2  6  7 14 15
+#> [1]  1  2  4  9 14 16
 #> 
+
+# Check how many combinations tied with the best
+results$n_tied
+#> [1] 417
 
 # View summary statistics
 results$summary
 #>                Scenario combination_id rank Total Diagnosed Total Non-Diagnosed
-#> 1             PTSD_orig           <NA>   NA         5 (50%)             5 (50%)
-#> 2 symptom_1_2_4_7_15_16  1_2_4_7_15_16    1         5 (50%)             5 (50%)
-#> 3  symptom_1_2_6_7_8_15   1_2_6_7_8_15    2         5 (50%)             5 (50%)
-#> 4 symptom_1_2_6_7_14_15  1_2_6_7_14_15    3         5 (50%)             5 (50%)
+#> 1             PTSD_orig           <NA>   NA       10 (100%)              0 (0%)
+#> 2 symptom_1_2_4_9_13_14  1_2_4_9_13_14    1       10 (100%)              0 (0%)
+#> 3 symptom_1_2_4_9_13_16  1_2_4_9_13_16    2       10 (100%)              0 (0%)
+#> 4 symptom_1_2_4_9_14_16  1_2_4_9_14_16    3       10 (100%)              0 (0%)
 #>   True Positive True Negative Newly Diagnosed Newly Non-Diagnosed True Cases
-#> 1             5             5               0                   0         10
-#> 2             5             5               0                   0         10
-#> 3             5             5               0                   0         10
-#> 4             5             5               0                   0         10
+#> 1            10             0               0                   0         10
+#> 2            10             0               0                   0         10
+#> 3            10             0               0                   0         10
+#> 4            10             0               0                   0         10
 #>   False Cases Sensitivity Specificity PPV NPV
-#> 1           0           1           1   1   1
-#> 2           0           1           1   1   1
-#> 3           0           1           1   1   1
-#> 4           0           1           1   1   1
+#> 1           0           1          NA   1  NA
+#> 2           0           1          NA   1  NA
+#> 3           0           1          NA   1  NA
+#> 4           0           1          NA   1  NA
 # }
 ```

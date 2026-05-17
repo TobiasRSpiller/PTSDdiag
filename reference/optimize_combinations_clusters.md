@@ -145,36 +145,36 @@ pcl5_clusters <- list(B = 1:5, C = 6:7, D = 8:14, E = 15:20)
 results <- optimize_combinations_clusters(ptsd_data, n_symptoms = 6,
              n_required = 4, score_by = "false_cases", clusters = pcl5_clusters)
 #> ℹ Generated 13685 valid cluster-constrained combinations
-#> ℹ Evaluated 13685 combinations. Best: 1, 4, 6, 9, 15, 20
+#> ℹ Evaluated 13685 combinations. Best: 1, 6, 8, 10, 17, 19 (7 additional tied)
 
 # Get symptom numbers
 results$best_symptoms
 #> [[1]]
-#> [1]  1  4  6  9 15 20
+#> [1]  1  6  8 10 17 19
 #> 
 #> [[2]]
-#> [1]  2  4  6  9 15 20
+#> [1]  1  6  8 10 17 20
 #> 
 #> [[3]]
-#> [1]  1  4  6  9 17 18
+#> [1]  1  6 12 14 17 19
 #> 
 
 # View summary statistics
 results$summary
-#>                Scenario combination_id rank Total Diagnosed Total Non-Diagnosed
-#> 1             PTSD_orig           <NA>   NA       10 (100%)              0 (0%)
-#> 2 symptom_1_4_6_9_15_20  1_4_6_9_15_20    1         7 (70%)             3 (30%)
-#> 3 symptom_2_4_6_9_15_20  2_4_6_9_15_20    2         7 (70%)             3 (30%)
-#> 4 symptom_1_4_6_9_17_18  1_4_6_9_17_18    3         7 (70%)             3 (30%)
-#>   True Positive True Negative Newly Diagnosed Newly Non-Diagnosed True Cases
-#> 1            10             0               0                   0         10
-#> 2             7             0               0                   3          7
-#> 3             7             0               0                   3          7
-#> 4             7             0               0                   3          7
-#>   False Cases Sensitivity Specificity PPV NPV
-#> 1           0         1.0          NA   1  NA
-#> 2           3         0.7          NA   1   0
-#> 3           3         0.7          NA   1   0
-#> 4           3         0.7          NA   1   0
+#>                  Scenario  combination_id rank Total Diagnosed
+#> 1               PTSD_orig            <NA>   NA         8 (80%)
+#> 2  symptom_1_6_8_10_17_19  1_6_8_10_17_19    1         6 (60%)
+#> 3  symptom_1_6_8_10_17_20  1_6_8_10_17_20    2         6 (60%)
+#> 4 symptom_1_6_12_14_17_19 1_6_12_14_17_19    3         6 (60%)
+#>   Total Non-Diagnosed True Positive True Negative Newly Diagnosed
+#> 1             2 (20%)             8             2               0
+#> 2             4 (40%)             6             2               0
+#> 3             4 (40%)             6             2               0
+#> 4             4 (40%)             6             2               0
+#>   Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity PPV NPV
+#> 1                   0         10           0        1.00           1   1 1.0
+#> 2                   2          8           2        0.75           1   1 0.5
+#> 3                   2          8           2        0.75           1   1 0.5
+#> 4                   2          8           2        0.75           1   1 0.5
 # }
 ```

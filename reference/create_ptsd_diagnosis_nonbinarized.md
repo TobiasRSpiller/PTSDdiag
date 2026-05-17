@@ -36,7 +36,7 @@ create_ptsd_diagnosis_nonbinarized(data)
 ## Value
 
 A dataframe with all original columns (including 'total' if present)
-plus an additional column "PTSD_Diagnosis" containing TRUE/FALSE values
+plus an additional column "PTSD_orig" containing TRUE/FALSE values
 indicating whether DSM-5 diagnostic criteria are met
 
 ## Details
@@ -68,7 +68,7 @@ colnames(sample_data1) <- paste0("symptom_", 1:20)
 diagnosed_data1 <- create_ptsd_diagnosis_nonbinarized(sample_data1)
 
 # Check diagnosis results
-diagnosed_data1$PTSD_Diagnosis
+diagnosed_data1$PTSD_orig
 #>  [1]  TRUE FALSE  TRUE  TRUE  TRUE  TRUE FALSE FALSE FALSE  TRUE
 
 # Example with output from calculate_ptsd_total
@@ -76,6 +76,6 @@ sample_data2 <- calculate_ptsd_total(sample_data1)
 diagnosed_data2 <- create_ptsd_diagnosis_nonbinarized(sample_data2)
 
 # Check diagnosis results
-diagnosed_data2$PTSD_Diagnosis
+diagnosed_data2$PTSD_orig
 #>  [1]  TRUE FALSE  TRUE  TRUE  TRUE  TRUE FALSE FALSE FALSE  TRUE
 ```

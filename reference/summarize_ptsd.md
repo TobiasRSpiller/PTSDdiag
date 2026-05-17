@@ -17,7 +17,7 @@ summarize_ptsd(data)
 
   - A 'total' column with PCL-5 total scores (from calculate_ptsd_total)
 
-  - A 'PTSD_Diagnosis' column with TRUE/FALSE values (from
+  - A 'PTSD_orig' column with TRUE/FALSE values (from
     determine_ptsd_diagnosis)
 
 ## Value
@@ -46,12 +46,12 @@ This function calculates key summary statistics for PCL-5 data:
 # Create sample data
 sample_data <- data.frame(
   total = sample(0:80, 100, replace = TRUE),
-  PTSD_Diagnosis = sample(c(TRUE, FALSE), 100, replace = TRUE)
+  PTSD_orig = sample(c(TRUE, FALSE), 100, replace = TRUE)
 )
 
 # Generate summary statistics
 summary_stats <- summarize_ptsd(sample_data)
 print(summary_stats)
 #>   mean_total sd_total n_diagnosed
-#> 1      37.73 23.30425          53
+#> 1      40.89 22.96545          56
 ```
