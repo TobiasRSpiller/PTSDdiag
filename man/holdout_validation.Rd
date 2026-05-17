@@ -16,8 +16,13 @@ holdout_validation(
 )
 }
 \arguments{
-\item{data}{A dataframe containing exactly 20 columns with PCL-5 item scores
-(output of rename_ptsd_columns). Each symptom should be scored on a 0-4 scale.}
+\item{data}{A dataframe containing the 20 PCL-5 item columns
+\code{symptom_1} through \code{symptom_20} (output of
+\code{\link{rename_ptsd_columns}}). Each symptom should be scored on a 0-4
+scale. Any additional non-symptom columns (e.g. an ID column passed via
+\code{rename_ptsd_columns(..., id_col = "patient_id")}) are carried
+through the train/test split and prepended to \code{test_results} so
+diagnoses can be joined back to the original dataframe.}
 
 \item{train_ratio}{Numeric between 0 and 1 indicating proportion of data for training
 (default: 0.7 for 70/30 split)}

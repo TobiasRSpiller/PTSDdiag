@@ -117,13 +117,13 @@ test_that("holdout_validation validates input correctly", {
     "must be one of"
   )
   
-  # Test with wrong number of columns
+  # Test with wrong number of columns (missing symptom_* names)
   wrong_cols <- test_data[, 1:15]
   expect_error(
     holdout_validation(wrong_cols),
-    "must contain exactly 20 columns"
+    "must contain columns named"
   )
-  
+
   # Test with wrong column names
   wrong_names <- test_data
   colnames(wrong_names) <- paste0("col_", 1:20)
@@ -220,13 +220,13 @@ test_that("cross_validation validates input correctly", {
     "must be one of"
   )
   
-  # Test with wrong number of columns
+  # Test with wrong number of columns (missing symptom_* names)
   wrong_cols <- test_data[, 1:15]
   expect_error(
     cross_validation(wrong_cols),
-    "must contain exactly 20 columns"
+    "must contain columns named"
   )
-  
+
   # Test with non-dataframe input
   expect_error(
     cross_validation(as.matrix(test_data)),
@@ -423,4 +423,56 @@ test_that("holdout_validation rejects train_ratio that produces empty splits", {
     holdout_validation(test_data_1, train_ratio = 0.7),
     "produces an empty training or test set"
   )
+})
+
+# ---------------------------------------------------------------------------
+# id_col carry-through through validation
+# ---------------------------------------------------------------------------
+
+test_that("holdout_validation carries ID columns into test_results", {
+  set.seed(31)
+  raw <- data.frame(
+    patient_id = sprintf("P%03d", 1:120),
+    age        = sample(20:70, 120, replace = TRUE),
+    matrix(sample(0:4, 20 * 120, replace = TRUE), nrow = 120, ncol = 20),
+    stringsAsFactors = FALSE
+  )
+  sym <- rename_ptsd_columns(raw, id_col = c("patient_id", "age"))
+
+  res <- holdout_validation(sym, train_ratio = 0.7, seed = 99,
+                            n_symptoms = 6, n_required = 4, n_top = 2)
+  tw <- res$without_clusters$test_results
+  expect_true(all(c("patient_id", "age") %in% names(tw)))
+  expect_true(all(tw$patient_id %in% raw$patient_id))
+  expect_equal(length(unique(tw$patient_id)), nrow(tw))
+
+  # Demographics merge back recovers exactly the test subset
+  joined <- merge(raw[, c("patient_id", "age")], tw, by = "patient_id")
+  expect_equal(nrow(joined), nrow(tw))
+})
+
+test_that("cross_validation carries ID columns into every fold_results entry", {
+  skip_if_not_installed("rsample")
+  set.seed(37)
+  raw <- data.frame(
+    patient_id = sprintf("P%03d", 1:200),
+    matrix(sample(0:4, 20 * 200, replace = TRUE), nrow = 200, ncol = 20),
+    stringsAsFactors = FALSE
+  )
+  sym <- rename_ptsd_columns(raw, id_col = "patient_id")
+
+  res <- cross_validation(sym, k = 4, seed = 99,
+                          n_symptoms = 6, n_required = 4, n_top = 2)
+  folds_w <- res$without_clusters$fold_results
+  expect_length(folds_w, 4)
+
+  for (fold in folds_w) {
+    expect_true("patient_id" %in% names(fold))
+    expect_true(all(fold$patient_id %in% raw$patient_id))
+  }
+
+  # Fold patient IDs are disjoint and partition the input rows
+  all_ids <- unlist(lapply(folds_w, `[[`, "patient_id"), use.names = FALSE)
+  expect_equal(length(all_ids), length(unique(all_ids)))
+  expect_setequal(all_ids, raw$patient_id)
 })

@@ -77,7 +77,9 @@
 #'   \item best_symptoms: List of \code{n_top} vectors, each containing
 #'     \code{n_symptoms} symptom numbers representing the best combinations found
 #'   \item diagnosis_comparison: Dataframe comparing original DSM-5 diagnosis with
-#'     diagnoses based on the best combinations
+#'     diagnoses based on the best combinations. If \code{data} carried
+#'     non-symptom columns (e.g. an ID column added via
+#'     \code{\link{rename_ptsd_columns}}), those are prepended in original order.
 #'   \item summary: Diagnostic accuracy metrics for each combination. A data.frame
 #'     by default, or an interactive \code{\link[DT]{datatable}} if
 #'     \code{DT = TRUE}.
@@ -120,11 +122,14 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
                                   n_top = 3, score_by = "false_cases",
                                   DT = FALSE, show_progress = TRUE) {
   # Validate inputs
-  .validate_pcl5_data(data)
+  .validate_pcl5_data(data, strict_cols = FALSE)
   .validate_score_by(score_by)
   .validate_n_symptoms(n_symptoms)
   .validate_n_required(n_required, n_symptoms)
   .validate_n_top(n_top)
+
+  # Capture carry-through columns (e.g. patient IDs) for the final output
+  carry_df <- .extract_carry_df(data)
 
   # Get baseline results and binarize data
   baseline_results <- create_ptsd_diagnosis_binarized(data)$PTSD_orig
@@ -148,6 +153,7 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
 
   # Build output
   comparison_df <- .build_comparison_df(baseline_results, top_combinations, nrow(data))
+  comparison_df <- .attach_carry_cols(comparison_df, carry_df)
 
   best_combo <- top_combinations[[1]]$combination
   if (!is.null(best_combo)) {
@@ -257,7 +263,9 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
 #'   \item best_symptoms: List of \code{n_top} vectors, each containing
 #'     \code{n_symptoms} symptom numbers representing the best combinations found
 #'   \item diagnosis_comparison: Dataframe comparing original DSM-5 diagnosis with
-#'     diagnoses based on the best combinations
+#'     diagnoses based on the best combinations. If \code{data} carried
+#'     non-symptom columns (e.g. an ID column added via
+#'     \code{\link{rename_ptsd_columns}}), those are prepended in original order.
 #'   \item summary: Diagnostic accuracy metrics for each combination. A data.frame
 #'     by default, or an interactive \code{\link[DT]{datatable}} if
 #'     \code{DT = TRUE}.
@@ -289,7 +297,7 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
                                            n_top = 3, score_by = "false_cases",
                                            clusters, DT = FALSE, show_progress = TRUE) {
   # Validate inputs
-  .validate_pcl5_data(data)
+  .validate_pcl5_data(data, strict_cols = FALSE)
   .validate_score_by(score_by)
   .validate_n_symptoms(n_symptoms)
   .validate_n_required(n_required, n_symptoms)
@@ -302,9 +310,13 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
          n_clusters, ")")
   }
 
-  # Get baseline results and binarize data
+  # Capture carry-through columns (e.g. patient IDs) for the final output
+  carry_df <- .extract_carry_df(data)
+
+  # Get baseline results and binarize data (operate on symptom columns only)
   baseline_results <- create_ptsd_diagnosis_binarized(data)$PTSD_orig
-  binarized_data <- as.matrix(binarize_data(data))
+  symptom_data <- binarize_data(data)[, paste0("symptom_", 1:20), drop = FALSE]
+  binarized_data <- as.matrix(symptom_data)
 
   # Generate valid combinations ensuring representation from all clusters
   # Strategy: pick one symptom from each cluster as "base", then fill remaining
@@ -364,6 +376,7 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
 
   # Build output
   comparison_df <- .build_comparison_df(baseline_results, top_combinations, nrow(data))
+  comparison_df <- .attach_carry_cols(comparison_df, carry_df)
 
   best_combo <- top_combinations[[1]]$combination
   if (!is.null(best_combo)) {

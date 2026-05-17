@@ -40,7 +40,7 @@ test_that("rename_caps5_columns works correctly", {
 
 test_that("rename_caps5_columns errors on wrong number of columns", {
   bad <- data.frame(matrix(0L, nrow = 5, ncol = 19))
-  expect_error(rename_caps5_columns(bad), "20 columns")
+  expect_error(rename_caps5_columns(bad), "exactly 20")
 })
 
 test_that("rename_caps5_columns errors on non-numeric data", {
@@ -57,4 +57,81 @@ test_that("rename_caps5_columns errors on NA values", {
   bad <- data.frame(matrix(0L, nrow = 5, ncol = 20))
   bad[1, 1] <- NA
   expect_error(rename_caps5_columns(bad), "missing values")
+})
+
+# ---------------------------------------------------------------------------
+# id_col carry-through
+# ---------------------------------------------------------------------------
+
+test_that("rename_ptsd_columns preserves a single id_col", {
+  raw <- data.frame(
+    patient_id = sprintf("P%03d", 1:10),
+    matrix(sample(0:4, 20 * 10, replace = TRUE), nrow = 10, ncol = 20),
+    stringsAsFactors = FALSE
+  )
+  renamed <- rename_ptsd_columns(raw, id_col = "patient_id")
+  expect_equal(names(renamed), c("patient_id", paste0("symptom_", 1:20)))
+  expect_equal(renamed$patient_id, raw$patient_id)
+})
+
+test_that("rename_ptsd_columns preserves multiple id_col entries", {
+  raw <- data.frame(
+    patient_id = sprintf("P%03d", 1:10),
+    visit      = rep(1:2, 5),
+    matrix(sample(0:4, 20 * 10, replace = TRUE), nrow = 10, ncol = 20),
+    stringsAsFactors = FALSE
+  )
+  renamed <- rename_ptsd_columns(raw, id_col = c("patient_id", "visit"))
+  expect_equal(names(renamed)[1:2], c("patient_id", "visit"))
+  expect_equal(names(renamed)[-(1:2)], paste0("symptom_", 1:20))
+})
+
+test_that("rename_ptsd_columns default is unchanged when id_col is NULL", {
+  raw <- data.frame(matrix(sample(0:4, 20 * 10, replace = TRUE),
+                           nrow = 10, ncol = 20))
+  renamed <- rename_ptsd_columns(raw)
+  expect_equal(names(renamed), paste0("symptom_", 1:20))
+  expect_equal(nrow(renamed), 10)
+})
+
+test_that("rename_ptsd_columns errors when id_col is missing from data", {
+  raw <- data.frame(matrix(sample(0:4, 20 * 10, replace = TRUE),
+                           nrow = 10, ncol = 20))
+  expect_error(
+    rename_ptsd_columns(raw, id_col = "patient_id"),
+    "not present"
+  )
+})
+
+test_that("rename_ptsd_columns errors when id_col collides with reserved names", {
+  raw <- data.frame(
+    total = 1:10,
+    matrix(sample(0:4, 20 * 10, replace = TRUE), nrow = 10, ncol = 20)
+  )
+  expect_error(
+    rename_ptsd_columns(raw, id_col = "total"),
+    "reserved"
+  )
+})
+
+test_that("rename_ptsd_columns errors when remaining columns are not 20", {
+  raw <- data.frame(
+    patient_id = sprintf("P%03d", 1:10),
+    matrix(sample(0:4, 19 * 10, replace = TRUE), nrow = 10, ncol = 19)
+  )
+  expect_error(
+    rename_ptsd_columns(raw, id_col = "patient_id"),
+    "20"
+  )
+})
+
+test_that("rename_caps5_columns preserves id_col", {
+  raw <- data.frame(
+    patient_id = sprintf("P%03d", 1:10),
+    matrix(sample(0:4, 20 * 10, replace = TRUE), nrow = 10, ncol = 20),
+    stringsAsFactors = FALSE
+  )
+  renamed <- rename_caps5_columns(raw, id_col = "patient_id")
+  expect_equal(names(renamed), c("patient_id", paste0("symptom_", 1:20)))
+  expect_equal(renamed$patient_id, raw$patient_id)
 })

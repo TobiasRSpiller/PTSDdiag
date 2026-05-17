@@ -54,6 +54,99 @@
   invisible(TRUE)
 }
 
+#' Validate user-supplied id_col argument
+#'
+#' Ensures the id_col argument refers to existing columns and does not collide
+#' with reserved names used elsewhere in the workflow.
+#'
+#' @param data Data frame the id columns must live in.
+#' @param id_col Character vector of column names (>=1), or NULL.
+#' @noRd
+.validate_id_col <- function(data, id_col) {
+  if (is.null(id_col)) return(invisible(TRUE))
+
+  if (!is.character(id_col) || length(id_col) < 1 || any(is.na(id_col)) ||
+      any(!nzchar(id_col))) {
+    cli::cli_abort(
+      "{.arg id_col} must be a non-empty character vector of column names."
+    )
+  }
+
+  if (anyDuplicated(id_col)) {
+    cli::cli_abort("{.arg id_col} must not contain duplicate column names.")
+  }
+
+  missing <- setdiff(id_col, names(data))
+  if (length(missing) > 0) {
+    cli::cli_abort(c(
+      "{.arg id_col} references {cli::qty(length(missing))} column{?s} not present in {.arg data}.",
+      "x" = "Missing: {.val {missing}}."
+    ))
+  }
+
+  reserved_static <- c(paste0("symptom_", 1:20), "total",
+                       "PTSD_orig", "PTSD_icd11", "PTSD_caps5", "PTSD_pcl5",
+                       ".strata")
+  is_reserved_combo <- grepl("^symptom_[0-9]+(_[0-9]+)+$", id_col)
+  bad <- id_col[id_col %in% reserved_static | is_reserved_combo]
+  if (length(bad) > 0) {
+    cli::cli_abort(c(
+      "{.arg id_col} contains {cli::qty(length(bad))} reserved name{?s} used by the workflow.",
+      "x" = "Reserved: {.val {bad}}.",
+      "i" = "Rename the {cli::qty(length(bad))}column{?s} before calling this function."
+    ))
+  }
+
+  invisible(TRUE)
+}
+
+#' Detect carry-through (ID-like) columns in a workflow data frame
+#'
+#' Returns the names of columns that are neither part of the canonical
+#' symptom_1..symptom_20 set, nor any other reserved name produced by the
+#' workflow (total, PTSD_orig, PTSD_*, .strata, combination-output columns).
+#'
+#' @param data A data frame.
+#' @return Character vector of carry-through column names (possibly empty).
+#' @noRd
+.detect_carry_cols <- function(data) {
+  reserved_static <- c(paste0("symptom_", 1:20), "total",
+                       "PTSD_orig", "PTSD_icd11", "PTSD_caps5", "PTSD_pcl5",
+                       ".strata")
+  nm <- names(data)
+  is_combo <- grepl("^symptom_[0-9]+(_[0-9]+)+$", nm)
+  nm[!(nm %in% reserved_static | is_combo)]
+}
+
+#' Extract carry-through (ID-like) columns from a data frame
+#'
+#' @param data A data frame.
+#' @return A data frame of the carry-through columns (zero columns if none).
+#'   Row order matches \code{data}.
+#' @noRd
+.extract_carry_df <- function(data) {
+  cols <- .detect_carry_cols(data)
+  data[, cols, drop = FALSE]
+}
+
+#' Prepend carry-through columns to a row-aligned result data frame
+#'
+#' @param result_df A data frame whose rows are aligned with the rows the
+#'   carry-through columns were extracted from.
+#' @param carry_df A data frame of carry-through columns (zero columns ok).
+#' @return \code{result_df} with carry-through columns prepended.
+#' @noRd
+.attach_carry_cols <- function(result_df, carry_df) {
+  if (ncol(carry_df) == 0) return(result_df)
+  if (nrow(carry_df) != nrow(result_df)) {
+    cli::cli_abort(c(
+      "Internal error: carry-through column row count does not match result.",
+      "i" = "Got {nrow(carry_df)} ID row{?s} and {nrow(result_df)} result row{?s}."
+    ))
+  }
+  cbind(carry_df, result_df, stringsAsFactors = FALSE)
+}
+
 #' Validate score_by parameter
 #' @noRd
 .validate_score_by <- function(score_by) {

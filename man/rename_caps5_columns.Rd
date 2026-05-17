@@ -4,11 +4,12 @@
 \alias{rename_caps5_columns}
 \title{Rename CAPS-5 symptom columns}
 \usage{
-rename_caps5_columns(data)
+rename_caps5_columns(data, id_col = NULL)
 }
 \arguments{
-\item{data}{A dataframe containing exactly 20 columns, where each column
-  represents a CAPS-5 item severity rating. Scores are on a 0--4 scale where:
+\item{data}{A dataframe containing exactly 20 columns of CAPS-5 item severity
+  ratings (plus any columns named in \code{id_col} for carry-through). Scores
+  are on a 0--4 scale where:
 
 \itemize{
   \item 0 = Absent
@@ -17,10 +18,16 @@ rename_caps5_columns(data)
   \item 3 = Severe / markedly elevated
   \item 4 = Extreme / incapacitating
 }}
+
+\item{id_col}{Optional character vector naming column(s) in \code{data} to
+preserve as identifiers. These columns propagate through the workflow and
+can be used to merge per-row diagnoses back to the original dataframe.
+Defaults to \code{NULL}.}
 }
 \value{
-A dataframe with the same data but renamed columns following the
-  pattern \code{symptom_1} through \code{symptom_20}.
+A dataframe with CAPS-5 columns renamed to \code{symptom_1} through
+  \code{symptom_20}. If \code{id_col} is supplied, the named columns are
+  prepended (in original order).
 }
 \description{
 Standardizes column names in CAPS-5 (Clinician-Administered PTSD Scale for

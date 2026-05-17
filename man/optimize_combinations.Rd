@@ -59,7 +59,9 @@ A list containing:
   \item best_symptoms: List of \code{n_top} vectors, each containing
     \code{n_symptoms} symptom numbers representing the best combinations found
   \item diagnosis_comparison: Dataframe comparing original DSM-5 diagnosis with
-    diagnoses based on the best combinations
+    diagnoses based on the best combinations. If \code{data} carried
+    non-symptom columns (e.g. an ID column added via
+    \code{\link{rename_ptsd_columns}}), those are prepended in original order.
   \item summary: Diagnostic accuracy metrics for each combination. A data.frame
     by default, or an interactive \code{\link[DT]{datatable}} if
     \code{DT = TRUE}.

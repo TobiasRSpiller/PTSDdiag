@@ -35,8 +35,13 @@ utils::globalVariables(c(
 #'     \code{n_symptoms} symptoms with at least one from each cluster
 #' }
 #'
-#' @param data A dataframe containing exactly 20 columns with PCL-5 item scores
-#'   (output of rename_ptsd_columns). Each symptom should be scored on a 0-4 scale.
+#' @param data A dataframe containing the 20 PCL-5 item columns
+#'   \code{symptom_1} through \code{symptom_20} (output of
+#'   \code{\link{rename_ptsd_columns}}). Each symptom should be scored on a 0-4
+#'   scale. Any additional non-symptom columns (e.g. an ID column passed via
+#'   \code{rename_ptsd_columns(..., id_col = "patient_id")}) are carried
+#'   through the train/test split and prepended to \code{test_results} so
+#'   diagnoses can be joined back to the original dataframe.
 #' @param train_ratio Numeric between 0 and 1 indicating proportion of data for training
 #'   (default: 0.7 for 70/30 split)
 #' @param score_by Character string specifying optimization criterion:
@@ -102,7 +107,7 @@ holdout_validation <- function(data, train_ratio = 0.7,
                                n_symptoms = 6, n_required = 4, n_top = 3,
                                DT = FALSE) {
   # Input validation
-  .validate_pcl5_data(data)
+  .validate_pcl5_data(data, strict_cols = FALSE)
   .validate_score_by(score_by)
   .validate_n_symptoms(n_symptoms)
   .validate_n_required(n_required, n_symptoms)
@@ -211,8 +216,13 @@ holdout_validation <- function(data, train_ratio = 0.7,
 #' (including Apple Silicon), use \code{future::multisession} rather than
 #' \code{future::multicore}, especially inside RStudio.
 #'
-#' @param data A dataframe containing exactly 20 columns with PCL-5 item scores
-#'   (output of rename_ptsd_columns). Each symptom should be scored on a 0-4 scale.
+#' @param data A dataframe containing the 20 PCL-5 item columns
+#'   \code{symptom_1} through \code{symptom_20} (output of
+#'   \code{\link{rename_ptsd_columns}}). Any additional non-symptom columns
+#'   (e.g. an ID column passed via
+#'   \code{rename_ptsd_columns(..., id_col = "patient_id")}) are carried
+#'   through every fold and prepended to each \code{fold_results} entry so
+#'   diagnoses can be joined back to the original dataframe.
 #' @param k Number of folds for cross-validation (default: 5)
 #' @param score_by Character string specifying optimization criterion:
 #'   \itemize{
@@ -283,7 +293,7 @@ cross_validation <- function(data, k = 5, score_by = "newly_nondiagnosed",
                              seed = 123, n_symptoms = 6, n_required = 4,
                              n_top = 3, DT = FALSE) {
   # Input validation
-  .validate_pcl5_data(data)
+  .validate_pcl5_data(data, strict_cols = FALSE)
   .validate_score_by(score_by)
   .validate_n_symptoms(n_symptoms)
   .validate_n_required(n_required, n_symptoms)

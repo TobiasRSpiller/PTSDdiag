@@ -380,3 +380,52 @@ test_that("compare_diagnostic_systems caps5_data only (no ... no icd11)", {
   expect_equal(nrow(result), 2L)
   expect_equal(result$system, c("DSM-5-TR (PCL-5)", "DSM-5-TR (CAPS-5)"))
 })
+
+# ---------------------------------------------------------------------------
+# id_col carry-through
+# ---------------------------------------------------------------------------
+
+test_that("create_icd11_diagnosis prepends ID columns when present", {
+  data_with_id <- icd11_cases
+  data_with_id$patient_id <- sprintf("P%02d", seq_len(nrow(icd11_cases)))
+  data_with_id <- data_with_id[, c("patient_id", paste0("symptom_", 1:20))]
+
+  result <- create_icd11_diagnosis(data_with_id)
+  expect_equal(names(result), c("patient_id", "PTSD_orig", "PTSD_icd11"))
+  expect_equal(result$patient_id, data_with_id$patient_id)
+
+  # Diagnostic columns must match the no-ID version
+  plain <- create_icd11_diagnosis(icd11_cases)
+  expect_equal(result$PTSD_orig, plain$PTSD_orig)
+  expect_equal(result$PTSD_icd11, plain$PTSD_icd11)
+})
+
+test_that("create_caps5_diagnosis prepends ID columns when present", {
+  data_with_id <- icd11_cases
+  data_with_id$patient_id <- sprintf("P%02d", seq_len(nrow(icd11_cases)))
+  data_with_id <- data_with_id[, c("patient_id", paste0("symptom_", 1:20))]
+
+  result <- create_caps5_diagnosis(data_with_id)
+  expect_equal(names(result), c("patient_id", "PTSD_caps5"))
+  expect_equal(result$patient_id, data_with_id$patient_id)
+})
+
+test_that("compare_diagnostic_systems ignores ID columns in ... inputs", {
+  set.seed(41)
+  raw <- data.frame(
+    patient_id = sprintf("P%03d", 1:60),
+    matrix(sample(0:4, 20 * 60, replace = TRUE), nrow = 60, ncol = 20),
+    stringsAsFactors = FALSE
+  )
+  sym <- rename_ptsd_columns(raw, id_col = "patient_id")
+
+  combos <- list(c(1, 6, 8, 10, 15, 19), c(2, 7, 9, 11, 16, 20))
+  applied <- apply_symptom_combinations(sym, combos, n_required = 4)
+
+  tbl <- compare_diagnostic_systems(sym, applied, icd11 = TRUE)
+  # System names should be DSM-5-TR, ICD-11, plus the two combinations -- no patient_id
+  expect_false("patient_id" %in% tbl$system)
+  expect_true(all(c("DSM-5-TR", "ICD-11") %in% tbl$system))
+  # Two combination rows
+  expect_equal(sum(grepl("^symptom_", tbl$system)), 2L)
+})

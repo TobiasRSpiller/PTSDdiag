@@ -4,11 +4,12 @@
 \alias{rename_ptsd_columns}
 \title{Rename PTSD symptom (= PCL-5 item) columns}
 \usage{
-rename_ptsd_columns(data)
+rename_ptsd_columns(data, id_col = NULL)
 }
 \arguments{
-\item{data}{A dataframe containing exactly 20 columns, where each column
-  represents a PCL-5 item score. The scores should be on a 0-4 scale where:
+\item{data}{A dataframe containing exactly 20 columns of PCL-5 item scores
+  (plus any columns named in \code{id_col} for carry-through). The scores
+  should be on a 0-4 scale where:
 
 \itemize{
   \item 0 = Not at all
@@ -17,10 +18,20 @@ rename_ptsd_columns(data)
   \item 3 = Quite a bit
   \item 4 = Extremely
 }}
+
+\item{id_col}{Optional character vector naming column(s) in \code{data} to
+preserve as identifiers. These columns are kept alongside the renamed
+symptom columns and propagate through the rest of the workflow
+(\code{\link{optimize_combinations}}, \code{\link{apply_symptom_combinations}},
+\code{\link{holdout_validation}}, \code{\link{cross_validation}}). Use
+them as a join key to merge per-row diagnoses back to the original
+dataframe (e.g. demographics). Defaults to \code{NULL} (no carry-through;
+all non-symptom columns are dropped).}
 }
 \value{
-A dataframe with the same data but renamed columns following the pattern
-  'symptom_1' through 'symptom_20'
+A dataframe with PCL-5 columns renamed to \code{symptom_1} through
+  \code{symptom_20}. If \code{id_col} is supplied, the named columns are
+  prepended (in original order).
 }
 \description{
 Standardizes column names in PCL-5 (PTSD Checklist for DSM-5) data by renaming
@@ -49,5 +60,10 @@ sample_data <- data.frame(
 )
 renamed_data <- rename_ptsd_columns(sample_data)
 colnames(renamed_data)  # Shows new column names
+
+# Carry a participant identifier through the workflow
+sample_data$patient_id <- sprintf("P\%03d", seq_len(nrow(sample_data)))
+with_id <- rename_ptsd_columns(sample_data, id_col = "patient_id")
+head(with_id)
 
 }

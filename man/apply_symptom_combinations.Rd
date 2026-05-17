@@ -40,6 +40,8 @@ Must be between 1 and the length of each combination.}
 A dataframe with columns:
 
 \itemize{
+  \item Any carry-through columns from \code{data} (e.g. an ID column added
+    via \code{\link{rename_ptsd_columns}}), prepended in original order.
   \item \code{PTSD_orig}: Logical. Full DSM-5 diagnosis computed on this data.
   \item One column per combination (logical): Simplified diagnosis for each
     combination. Column names follow the \code{symptom_X_Y_Z} pattern.
