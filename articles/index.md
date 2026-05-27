@@ -10,6 +10,8 @@ Core workflows for new users
   Analysis](https://tobiasrspiller.github.io/PTSDdiag/articles/internal_analysis.md):
 - [Joining diagnoses back to demographics with
   id_col](https://tobiasrspiller.github.io/PTSDdiag/articles/id_column_workflow.md):
+- [Multi-scenario optimization
+  analysis](https://tobiasrspiller.github.io/PTSDdiag/articles/multi_scenario_analysis.md):
 
 ### External Validation
 

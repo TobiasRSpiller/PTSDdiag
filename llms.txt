@@ -114,6 +114,23 @@ Functions for analyzing optimal symptom combinations
   : Find optimal hierarchical six-symptom combinations for PTSD
   diagnosis
 
+## Multi-Scenario Comparison
+
+Compare multiple optimization scenarios in one call and visualise the
+results
+
+- [`compare_optimizations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/compare_optimizations.md)
+  : Run multiple PTSD optimization scenarios in one call
+- [`print(`*`<ptsdiag_comparison>`*`)`](https://tobiasrspiller.github.io/PTSDdiag/reference/print.ptsdiag_comparison.md)
+  : Print method for ptsdiag_comparison objects
+- [`summarize_top_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/summarize_top_combinations.md)
+  : Build a tidy comparison table of top combinations across scenarios
+- [`symptom_frequency()`](https://tobiasrspiller.github.io/PTSDdiag/reference/symptom_frequency.md)
+  : Per-symptom inclusion counts across optimization scenarios
+- [`plot_symptom_frequency()`](https://tobiasrspiller.github.io/PTSDdiag/reference/plot_symptom_frequency.md)
+  : Heatmap of PCL-5 symptom selection frequency across optimization
+  scenarios
+
 ## Import/Export
 
 Functions for sharing symptom combinations across research groups
@@ -170,6 +187,8 @@ Core workflows for new users
   Analysis](https://tobiasrspiller.github.io/PTSDdiag/articles/internal_analysis.md):
 - [Joining diagnoses back to demographics with
   id_col](https://tobiasrspiller.github.io/PTSDdiag/articles/id_column_workflow.md):
+- [Multi-scenario optimization
+  analysis](https://tobiasrspiller.github.io/PTSDdiag/articles/multi_scenario_analysis.md):
 
 ### External Validation
 

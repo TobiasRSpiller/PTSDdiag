@@ -7,6 +7,7 @@
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/articles/id_column_workflow.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/articles/index.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/articles/internal_analysis.html</loc></url>
+<url><loc>https://tobiasrspiller.github.io/PTSDdiag/articles/multi_scenario_analysis.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/articles/quickstart.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/authors.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/index.html</loc></url>
@@ -17,6 +18,7 @@
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/binarize_data.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/calculate_ptsd_total.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/compare_diagnostic_systems.html</loc></url>
+<url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/compare_optimizations.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/create_caps5_diagnosis.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/create_icd11_diagnosis.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/create_ptsd_diagnosis_binarized.html</loc></url>
@@ -27,6 +29,8 @@
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/index.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations_clusters.html</loc></url>
+<url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/plot_symptom_frequency.html</loc></url>
+<url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/print.ptsdiag_comparison.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/read_combinations.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/rename_caps5_columns.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/rename_ptsd_columns.html</loc></url>
@@ -34,6 +38,8 @@
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/simulated_ptsd_genpop.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/summarize_ptsd.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/summarize_ptsd_changes.html</loc></url>
+<url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/summarize_top_combinations.html</loc></url>
+<url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/symptom_frequency.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/write_combinations.html</loc></url>
 </urlset>
 

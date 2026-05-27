@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,6 +21,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Quick Start</a></li>
     <li><a class="dropdown-item" href="../articles/internal_analysis.html">Full Internal Analysis</a></li>
     <li><a class="dropdown-item" href="../articles/id_column_workflow.html">Joining diagnoses to demographics</a></li>
+    <li><a class="dropdown-item" href="../articles/multi_scenario_analysis.html">Multi-scenario analysis</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/external_validation_pcl5.html">External Validation (PCL-5)</a></li>
     <li><a class="dropdown-item" href="../articles/external_validation_caps5.html">External Validation (CAPS-5)</a></li>
@@ -40,6 +41,27 @@
       <small>Source: <a href="https://github.com/TobiasRSpiller/PTSDdiag/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.0" id="ptsddiag-030">PTSDdiag 0.3.0<a class="anchor" aria-label="anchor" href="#ptsddiag-030"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-3-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-3-0"></a></h3>
+<ul><li>
+<code><a href="../reference/compare_optimizations.html">compare_optimizations()</a></code> runs multiple symptom-optimization scenarios on the same dataset in a single call and returns a <code>ptsdiag_comparison</code> S3 object. Default scenarios reproduce the three approaches compared in the PTSDdiag preprint (4/6 hierarchical, 4/6 non-hierarchical, 3/6 non-hierarchical). Users can supply their own named list of scenarios with arbitrary <code>n_symptoms</code> / <code>n_required</code> / <code>hierarchical</code> combinations.</li>
+<li>Fixed (non-optimised) criteria such as ICD-11 can be added to the same comparison either via the <code>include_icd11 = TRUE</code> convenience flag or via <code>scenarios</code> entries of <code>type = "fixed"</code>, including user-supplied logical diagnosis vectors. They appear as additional rows in the comparison table and as rows of 0/1 cells in the heatmap.</li>
+<li>
+<code><a href="../reference/summarize_top_combinations.html">summarize_top_combinations()</a></code> produces a tidy manuscript-ready table (Approach / Rank / Combination / TP / FN / FP / TN / Sensitivity / Specificity / PPV / NPV) from a <code>ptsdiag_comparison</code>. Optional <code>as_percent = TRUE</code> returns percentages for direct manuscript use.</li>
+<li>
+<code><a href="../reference/symptom_frequency.html">symptom_frequency()</a></code> returns the long-format Symptom × Approach × Count / RelFreq dataframe (source of the preprint’s Supplementary Table S4), optionally appending an OVERALL pooled row.</li>
+<li>
+<code><a href="../reference/plot_symptom_frequency.html">plot_symptom_frequency()</a></code> draws the symptom-selection heatmap (Figure 1 of the preprint) as a <code>ggplot</code> object, with the OVERALL row in its own facet for visual separation. <code>ggplot2</code> is now in Suggests.</li>
+<li>
+<code>id_col</code> carry-through (introduced in 0.2.7) propagates automatically through every scenario in <code><a href="../reference/compare_optimizations.html">compare_optimizations()</a></code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-0-3-0">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-3-0"></a></h3>
+<ul><li>New vignette <code>multi-scenario-analysis</code> replicates the preprint’s end-to-end derivation workflow in roughly twenty lines of code.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.7" id="ptsddiag-027">PTSDdiag 0.2.7<a class="anchor" aria-label="anchor" href="#ptsddiag-027"></a></h2>
 <div class="section level3">

@@ -17,13 +17,13 @@ Source:
 [`DESCRIPTION`](https://github.com/TobiasRSpiller/PTSDdiag/blob/main/DESCRIPTION)
 
 Weidmann L, Spiller T, Schüepp F (2026). *PTSDdiag: Optimize PTSD
-Diagnostic Criteria*. R package version 0.2.7,
+Diagnostic Criteria*. R package version 0.3.0,
 <https://tobiasrspiller.github.io/PTSDdiag/>.
 
     @Manual{,
       title = {PTSDdiag: Optimize PTSD Diagnostic Criteria},
       author = {Laura Weidmann and Tobias R. Spiller and Flavio A. Schüepp},
       year = {2026},
-      note = {R package version 0.2.7},
+      note = {R package version 0.3.0},
       url = {https://tobiasrspiller.github.io/PTSDdiag/},
     }

@@ -1,5 +1,44 @@
 # Changelog
 
+## PTSDdiag 0.3.0
+
+### New features
+
+- [`compare_optimizations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/compare_optimizations.md)
+  runs multiple symptom-optimization scenarios on the same dataset in a
+  single call and returns a `ptsdiag_comparison` S3 object. Default
+  scenarios reproduce the three approaches compared in the PTSDdiag
+  preprint (4/6 hierarchical, 4/6 non-hierarchical, 3/6
+  non-hierarchical). Users can supply their own named list of scenarios
+  with arbitrary `n_symptoms` / `n_required` / `hierarchical`
+  combinations.
+- Fixed (non-optimised) criteria such as ICD-11 can be added to the same
+  comparison either via the `include_icd11 = TRUE` convenience flag or
+  via `scenarios` entries of `type = "fixed"`, including user-supplied
+  logical diagnosis vectors. They appear as additional rows in the
+  comparison table and as rows of 0/1 cells in the heatmap.
+- [`summarize_top_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/summarize_top_combinations.md)
+  produces a tidy manuscript-ready table (Approach / Rank / Combination
+  / TP / FN / FP / TN / Sensitivity / Specificity / PPV / NPV) from a
+  `ptsdiag_comparison`. Optional `as_percent = TRUE` returns percentages
+  for direct manuscript use.
+- [`symptom_frequency()`](https://tobiasrspiller.github.io/PTSDdiag/reference/symptom_frequency.md)
+  returns the long-format Symptom × Approach × Count / RelFreq dataframe
+  (source of the preprint’s Supplementary Table S4), optionally
+  appending an OVERALL pooled row.
+- [`plot_symptom_frequency()`](https://tobiasrspiller.github.io/PTSDdiag/reference/plot_symptom_frequency.md)
+  draws the symptom-selection heatmap (Figure 1 of the preprint) as a
+  `ggplot` object, with the OVERALL row in its own facet for visual
+  separation. `ggplot2` is now in Suggests.
+- `id_col` carry-through (introduced in 0.2.7) propagates automatically
+  through every scenario in
+  [`compare_optimizations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/compare_optimizations.md).
+
+### Documentation
+
+- New vignette `multi-scenario-analysis` replicates the preprint’s
+  end-to-end derivation workflow in roughly twenty lines of code.
+
 ## PTSDdiag 0.2.7
 
 ### New features

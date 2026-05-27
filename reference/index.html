@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,6 +21,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Quick Start</a></li>
     <li><a class="dropdown-item" href="../articles/internal_analysis.html">Full Internal Analysis</a></li>
     <li><a class="dropdown-item" href="../articles/id_column_workflow.html">Joining diagnoses to demographics</a></li>
+    <li><a class="dropdown-item" href="../articles/multi_scenario_analysis.html">Multi-scenario analysis</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/external_validation_pcl5.html">External Validation (PCL-5)</a></li>
     <li><a class="dropdown-item" href="../articles/external_validation_caps5.html">External Validation (CAPS-5)</a></li>
@@ -143,6 +144,50 @@
 
         </dt>
         <dd>Find optimal hierarchical six-symptom combinations for PTSD diagnosis</dd>
+      </dl></div><div class="section level2">
+      <h2 id="multi-scenario-comparison">Multi-Scenario Comparison<a class="anchor" aria-label="anchor" href="#multi-scenario-comparison"></a></h2>
+
+      <div class="section-desc"><p>Compare multiple optimization scenarios in one call and visualise the results</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="compare_optimizations.html">compare_optimizations()</a></code>
+
+        </dt>
+        <dd>Run multiple PTSD optimization scenarios in one call</dd>
+
+        <dt>
+
+          <code><a href="print.ptsdiag_comparison.html">print(<i>&lt;ptsdiag_comparison&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for ptsdiag_comparison objects</dd>
+
+        <dt>
+
+          <code><a href="summarize_top_combinations.html">summarize_top_combinations()</a></code>
+
+        </dt>
+        <dd>Build a tidy comparison table of top combinations across scenarios</dd>
+
+        <dt>
+
+          <code><a href="symptom_frequency.html">symptom_frequency()</a></code>
+
+        </dt>
+        <dd>Per-symptom inclusion counts across optimization scenarios</dd>
+
+        <dt>
+
+          <code><a href="plot_symptom_frequency.html">plot_symptom_frequency()</a></code>
+
+        </dt>
+        <dd>Heatmap of PCL-5 symptom selection frequency across optimization scenarios</dd>
       </dl></div><div class="section level2">
       <h2 id="import-export">Import/Export<a class="anchor" aria-label="anchor" href="#import-export"></a></h2>
 

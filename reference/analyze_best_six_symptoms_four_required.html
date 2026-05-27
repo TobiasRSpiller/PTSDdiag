@@ -15,7 +15,7 @@ where any four symptoms must be present, regardless of their cluster membership.
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,6 +29,7 @@ where any four symptoms must be present, regardless of their cluster membership.
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Quick Start</a></li>
     <li><a class="dropdown-item" href="../articles/internal_analysis.html">Full Internal Analysis</a></li>
     <li><a class="dropdown-item" href="../articles/id_column_workflow.html">Joining diagnoses to demographics</a></li>
+    <li><a class="dropdown-item" href="../articles/multi_scenario_analysis.html">Multi-scenario analysis</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/external_validation_pcl5.html">External Validation (PCL-5)</a></li>
     <li><a class="dropdown-item" href="../articles/external_validation_caps5.html">External Validation (CAPS-5)</a></li>
@@ -138,8 +139,8 @@ plain data.frame.</p></dd>
 <span class="r-in"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">analyze_best_six_symptoms_four_required</span><span class="op">(</span><span class="va">ptsd_data</span>, score_by <span class="op">=</span> <span class="st">"false_cases"</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`analyze_best_six_symptoms_four_required()` was deprecated in PTSDdiag 0.2.1.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Please use `optimize_combinations()` instead.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■                        </span>  23% | ETA:  3s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■          </span>  69% | ETA:  1s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■                        </span>  24% | ETA:  3s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■        </span>  77% | ETA:  1s</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ </span> 100% | ETA:  0s</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 1, 2, 3, 6, 11, 16 (866 additional tied)</span>
 <span class="r-in"><span></span></span>

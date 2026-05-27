@@ -6,8 +6,9 @@ articles:
   external_validation_pcl5: external_validation_pcl5.html
   id_column_workflow: id_column_workflow.html
   internal_analysis: internal_analysis.html
+  multi_scenario_analysis: multi_scenario_analysis.html
   quickstart: quickstart.html
-last_built: 2026-05-17T16:02Z
+last_built: 2026-05-27T18:38Z
 urls:
   reference: https://tobiasrspiller.github.io/PTSDdiag/reference
   article: https://tobiasrspiller.github.io/PTSDdiag/articles
