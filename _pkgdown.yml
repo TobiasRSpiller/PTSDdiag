@@ -112,6 +112,7 @@ reference:
     desc: Compare multiple optimization scenarios in one call and visualise the results
     contents:
     - compare_optimizations
+    - print.ptsdiag_comparison
     - summarize_top_combinations
     - symptom_frequency
     - plot_symptom_frequency
