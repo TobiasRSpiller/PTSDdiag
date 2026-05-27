@@ -1,0 +1,130 @@
+---
+title: "Multi-scenario optimization analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Multi-scenario optimization analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  fig.width = 7,
+  fig.height = 4
+)
+```
+
+## Goal
+
+This vignette replicates the multi-scenario derivation workflow used in the
+PTSDdiag preprint in roughly twenty lines of code. Three optimization
+scenarios are compared on the same sample — 4-of-6 hierarchical, 4-of-6
+non-hierarchical, and 3-of-6 non-hierarchical — and the results are summarised
+as a manuscript-ready table plus a symptom-selection heatmap that helps
+identify "core" symptoms recurring across the data-driven combinations.
+
+```{r setup, message = FALSE}
+library(PTSDdiag)
+```
+
+## Estimate all scenarios with one call
+
+`compare_optimizations()` runs every scenario for you. By default it uses the
+three preprint scenarios. Set `include_icd11 = TRUE` to add ICD-11 as a
+benchmark fixed criterion in the same comparison.
+
+```{r estimate, message = FALSE}
+ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:500, ])
+
+comp <- compare_optimizations(
+  ptsd_data,
+  n_top         = 10,
+  include_icd11 = TRUE,
+  show_progress = FALSE
+)
+print(comp)
+```
+
+## Manuscript Table 2
+
+`summarize_top_combinations()` extracts the per-combination performance
+metrics for each scenario in one tidy data frame. Set `as_percent = TRUE` to
+present Sensitivity / Specificity / PPV / NPV as percentages, and `top_n` to
+limit the per-scenario rows shown in the manuscript table (the preprint uses
+the top 5).
+
+```{r table-2}
+tbl <- summarize_top_combinations(comp, top_n = 5, as_percent = TRUE)
+head(tbl, 12)
+```
+
+Pipe the result into your favourite presentation table package, e.g.
+
+```r
+flextable::flextable(tbl) |> flextable::theme_vanilla()
+```
+
+## Figure 1 — symptom-selection heatmap
+
+`plot_symptom_frequency()` returns a `ggplot` object. The OVERALL row pools
+across the optimization scenarios so you can see which symptoms recur most.
+Fixed criteria such as ICD-11 appear with 100% inclusion on their fixed
+symptoms and 0% elsewhere.
+
+```{r figure-1, fig.alt = "Heatmap of PCL-5 symptom selection frequency across optimization scenarios"}
+plot_symptom_frequency(comp, type = "relative")
+```
+
+You can extend the plot with the usual `+` operator:
+
+```r
+plot_symptom_frequency(comp) +
+  ggplot2::ggtitle("My title") +
+  ggplot2::theme(text = ggplot2::element_text(size = 12))
+```
+
+## Supplementary Table S4 — raw counts per symptom
+
+```{r table-s4}
+freq <- symptom_frequency(comp)
+head(freq, 12)
+```
+
+Pivot to a wide table per scenario in one line:
+
+```{r table-s4-wide}
+if (requireNamespace("tidyr", quietly = TRUE)) {
+  tidyr::pivot_wider(freq[freq$Approach != "OVERALL", ],
+                     names_from  = Approach,
+                     values_from = Count) |>
+    head()
+}
+```
+
+## Customising scenarios
+
+`scenarios` is a named list of configurations. You can vary
+`n_symptoms`, `n_required`, and `hierarchical` freely — including
+`n_symptoms = 5` or `7` — and mix in fixed criteria via `type = "fixed"`.
+
+```{r custom-scenarios, eval = FALSE}
+my_scenarios <- list(
+  "5/7 Hierarchical"      = list(n_symptoms = 7, n_required = 5, hierarchical = TRUE),
+  "4/6 Hierarchical"      = list(n_symptoms = 6, n_required = 4, hierarchical = TRUE),
+  "4/6 Non-hierarchical"  = list(n_symptoms = 6, n_required = 4, hierarchical = FALSE),
+  "ICD-11"                = list(type = "fixed", criterion = "icd11")
+)
+compare_optimizations(ptsd_data, scenarios = my_scenarios, n_top = 10)
+```
+
+## Joining diagnoses back to demographics
+
+`compare_optimizations()` honours the `id_col` carry-through: if you supply
+participant identifiers via `rename_ptsd_columns(..., id_col = "patient_id")`,
+they are prepended to every scenario's per-row `diagnosis_comparison`. You
+can then `dplyr::left_join()` to your original dataframe and analyse
+demographics by diagnostic status. See the
+[Joining diagnoses to demographics](id_column_workflow.html) vignette for the
+full pattern.

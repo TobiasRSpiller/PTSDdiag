@@ -36,6 +36,8 @@ navbar:
         href: articles/internal_analysis.html
       - text: "Joining diagnoses to demographics"
         href: articles/id_column_workflow.html
+      - text: "Multi-scenario analysis"
+        href: articles/multi_scenario_analysis.html
       - text: "---"
       - text: "External Validation (PCL-5)"
         href: articles/external_validation_pcl5.html
@@ -75,6 +77,7 @@ articles:
   - quickstart
   - internal_analysis
   - id_column_workflow
+  - multi_scenario_analysis
 - title: "External Validation"
   desc: "Test optimised criteria on independent datasets"
   contents:
@@ -104,6 +107,15 @@ reference:
     - apply_symptom_combinations
     - analyze_best_six_symptoms_four_required
     - analyze_best_six_symptoms_four_required_clusters
+
+  - title: Multi-Scenario Comparison
+    desc: Compare multiple optimization scenarios in one call and visualise the results
+    contents:
+    - compare_optimizations
+    - print.ptsdiag_comparison
+    - summarize_top_combinations
+    - symptom_frequency
+    - plot_symptom_frequency
 
   - title: Import/Export
     desc: Functions for sharing symptom combinations across research groups
