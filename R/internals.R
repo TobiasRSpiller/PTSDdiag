@@ -503,3 +503,170 @@
 
   list(without = result_without, with = result_with)
 }
+
+
+# ---------------------------------------------------------------------------
+# Multi-scenario comparison helpers
+# ---------------------------------------------------------------------------
+
+#' Default scenarios for compare_optimizations()
+#'
+#' Mirrors the three optimization approaches compared in the PTSDdiag preprint
+#' (4/6 hierarchical, 4/6 non-hierarchical, 3/6 non-hierarchical).
+#' @noRd
+.default_scenarios <- function() {
+  list(
+    "4/6 Hierarchical"     = list(type = "optimize", n_symptoms = 6,
+                                  n_required = 4, hierarchical = TRUE),
+    "4/6 Non-hierarchical" = list(type = "optimize", n_symptoms = 6,
+                                  n_required = 4, hierarchical = FALSE),
+    "3/6 Non-hierarchical" = list(type = "optimize", n_symptoms = 6,
+                                  n_required = 3, hierarchical = FALSE)
+  )
+}
+
+#' Known fixed criteria for compare_optimizations()
+#'
+#' Returns a named list mapping criterion identifiers to their fixed symptom
+#' index vectors and a producer function returning a logical vector of
+#' diagnoses for the supplied data frame.
+#' @noRd
+.fixed_criterion_registry <- function() {
+  list(
+    icd11 = list(
+      label    = "ICD-11",
+      column   = "PTSD_icd11",
+      symptoms = c(1, 2, 3, 6, 7, 16, 17),
+      producer = function(data) create_icd11_diagnosis(data)$PTSD_icd11
+    ),
+    caps5 = list(
+      label    = "CAPS-5",
+      column   = "PTSD_caps5",
+      symptoms = 1:20,
+      producer = function(data) create_caps5_diagnosis(data)$PTSD_caps5
+    )
+  )
+}
+
+#' Validate the scenarios list passed to compare_optimizations()
+#'
+#' Each entry must be a list with a known \code{type} (\code{"optimize"} or
+#' \code{"fixed"}). \code{"optimize"} entries are checked via the existing
+#' parameter validators. \code{"fixed"} entries must carry \code{criterion}.
+#'
+#' @param scenarios A named list of scenario configurations.
+#' @param n_rows Number of rows in the input data (used to validate
+#'   user-supplied diagnosis vectors).
+#' @noRd
+.validate_scenarios <- function(scenarios, n_rows) {
+  if (!is.list(scenarios) || length(scenarios) < 1) {
+    cli::cli_abort(c(
+      "{.arg scenarios} must be a non-empty named list.",
+      "i" = "Example: {.code list(\"4/6 Hier\" = list(n_symptoms = 6, n_required = 4, hierarchical = TRUE))}."
+    ))
+  }
+  if (is.null(names(scenarios)) || any(!nzchar(names(scenarios)))) {
+    cli::cli_abort("Every scenario in {.arg scenarios} must be named.")
+  }
+  if (anyDuplicated(names(scenarios))) {
+    dups <- unique(names(scenarios)[duplicated(names(scenarios))])
+    cli::cli_abort("Duplicate scenario name{?s}: {.val {dups}}.")
+  }
+
+  registry <- .fixed_criterion_registry()
+
+  for (label in names(scenarios)) {
+    sc <- scenarios[[label]]
+    if (!is.list(sc)) {
+      cli::cli_abort("Scenario {.val {label}} must be a list.")
+    }
+    type <- if (is.null(sc$type)) "optimize" else sc$type
+    if (!type %in% c("optimize", "fixed")) {
+      cli::cli_abort(c(
+        "Scenario {.val {label}} has unknown {.field type}: {.val {type}}.",
+        "i" = "Use {.val optimize} or {.val fixed}."
+      ))
+    }
+
+    if (type == "optimize") {
+      for (field in c("n_symptoms", "n_required", "hierarchical")) {
+        if (is.null(sc[[field]])) {
+          cli::cli_abort(
+            "Optimize scenario {.val {label}} is missing {.field {field}}."
+          )
+        }
+      }
+      .validate_n_symptoms(sc$n_symptoms)
+      .validate_n_required(sc$n_required, sc$n_symptoms)
+      if (!is.logical(sc$hierarchical) || length(sc$hierarchical) != 1) {
+        cli::cli_abort(
+          "Scenario {.val {label}}: {.field hierarchical} must be a single logical."
+        )
+      }
+      if (isTRUE(sc$hierarchical)) {
+        cl <- if (is.null(sc$clusters)) .get_default_clusters() else sc$clusters
+        .validate_clusters(cl)
+        if (sc$n_symptoms < length(cl)) {
+          cli::cli_abort(c(
+            "Scenario {.val {label}}: {.field n_symptoms} ({sc$n_symptoms}) must \\
+            be at least the number of clusters ({length(cl)}).",
+            "i" = "Hierarchical optimization requires >= 1 symptom per cluster."
+          ))
+        }
+      }
+    } else {
+      # type == "fixed"
+      if (is.null(sc$criterion)) {
+        cli::cli_abort(
+          "Fixed scenario {.val {label}} is missing {.field criterion}."
+        )
+      }
+      crit <- sc$criterion
+      if (is.character(crit) && length(crit) == 1) {
+        if (!crit %in% names(registry)) {
+          cli::cli_abort(c(
+            "Scenario {.val {label}}: unknown {.field criterion} {.val {crit}}.",
+            "i" = "Known criteria: {.or {.val {names(registry)}}}."
+          ))
+        }
+      } else if (is.logical(crit)) {
+        if (length(crit) != n_rows) {
+          cli::cli_abort(c(
+            "Scenario {.val {label}}: logical {.field criterion} has length \\
+            {length(crit)} but {.arg data} has {n_rows} row{?s}.",
+            "x" = "Lengths must match."
+          ))
+        }
+        if (anyNA(crit)) {
+          cli::cli_abort(
+            "Scenario {.val {label}}: {.field criterion} contains {.val NA}."
+          )
+        }
+        if (is.null(sc$symptoms)) {
+          cli::cli_abort(c(
+            "Scenario {.val {label}}: when {.field criterion} is a vector you \\
+            must also supply {.field symptoms} = the integer indices of items \\
+            counted as 'included' for the heatmap.",
+            "i" = "Example: {.code list(type = \"fixed\", criterion = my_dx, symptoms = c(1, 6, 8, 15))}."
+          ))
+        }
+        if (!is.numeric(sc$symptoms) || any(sc$symptoms != floor(sc$symptoms)) ||
+            any(sc$symptoms < 1 | sc$symptoms > 20) ||
+            anyDuplicated(sc$symptoms)) {
+          cli::cli_abort(
+            "Scenario {.val {label}}: {.field symptoms} must be unique integers \\
+            between 1 and 20."
+          )
+        }
+      } else {
+        cli::cli_abort(c(
+          "Scenario {.val {label}}: {.field criterion} must be a character \\
+          string (one of {.or {.val {names(registry)}}}) or a logical vector.",
+          "x" = "Got {.cls {class(crit)}}."
+        ))
+      }
+    }
+  }
+
+  invisible(TRUE)
+}
