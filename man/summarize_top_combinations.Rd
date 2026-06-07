@@ -13,14 +13,15 @@ summarize_top_combinations(comparison, top_n = NULL, as_percent = FALSE)
 include. Fixed scenarios always contribute exactly one row. Default
 \code{NULL} returns all stored combinations.}
 
-\item{as_percent}{Logical. If \code{TRUE}, Sensitivity/Specificity/PPV/NPV
-are returned as percentages (0-100); otherwise as fractions (0-1).
-Default \code{FALSE}.}
+\item{as_percent}{Logical. If \code{TRUE},
+Sensitivity/Specificity/PPV/NPV/Accuracy are returned as percentages
+(0-100); otherwise as fractions (0-1). Default \code{FALSE}.}
 }
 \value{
 A data.frame with columns: \code{Approach}, \code{Rank},
   \code{Combination}, \code{TP}, \code{FN}, \code{FP}, \code{TN},
-  \code{Sensitivity}, \code{Specificity}, \code{PPV}, \code{NPV}.
+  \code{Sensitivity}, \code{Specificity}, \code{PPV}, \code{NPV},
+  \code{Accuracy}.
 }
 \description{
 Produces a manuscript-ready table summarising the diagnostic performance of
@@ -28,7 +29,7 @@ each top combination (or fixed criterion) in a
 \code{\link{compare_optimizations}} result. The output matches the layout
 of the PTSDdiag preprint's Table 2: one row per combination, with
 Approach / Rank / Combination / TP / FN / FP / TN / Sensitivity /
-Specificity / PPV / NPV.
+Specificity / PPV / NPV / Accuracy.
 }
 \details{
 For each scenario, the per-row \code{diagnosis_comparison} dataframe is
@@ -36,9 +37,11 @@ summarised via \code{\link{summarize_ptsd_changes}}. The self-comparison
 \code{PTSD_orig} row is dropped, the remaining rows are renamed, and the
 scenario label is prepended.
 
-Sensitivity, specificity, PPV and NPV are returned on the 0-1 fraction
-scale by default (matching \code{\link{compare_diagnostic_systems}});
+Sensitivity, specificity, PPV, NPV and accuracy are returned on the 0-1
+fraction scale by default (matching \code{\link{compare_diagnostic_systems}});
 set \code{as_percent = TRUE} to convert to 0-100 for manuscript display.
+Accuracy is \code{(TP + TN) / N}, the quantity minimised by
+\code{score_by = "accuracy"}.
 }
 \examples{
 \donttest{

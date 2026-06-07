@@ -50,5 +50,49 @@ simulated_ptsd_genpop <- cbind(
   simulated_ptsd_genpop
 )
 
+# ---------------------------------------------------------------------------
+# Paired CAPS-5 ratings (C1-C20)
+#
+# Simulate clinician-administered CAPS-5 severity ratings (0-4) for the SAME
+# participants, correlated with the PCL-5 items so the PCL-5 and CAPS-5 TOTAL
+# scores correlate ~0.8 (the value typically reported empirically). Because the
+# bundled PCL-5 items are independent, the per-item latent correlation roughly
+# equals the realized total-score correlation, so we set rho ~ 0.8 per item and
+# verify the realized total correlation below.
+#
+# Method (latent Gaussian copula + marginal matching): for each item, build a
+# latent normal from the PCL-5 item, mix in independent noise at the target
+# correlation, then assign 0-4 CAPS scores by sorted latent so the CAPS item
+# reproduces the PCL-5 item's score distribution.
+#
+# Note: the genpop PCL-5 items are positively inter-correlated (mixture of
+# PTSD-like and non-PTSD profiles), so the summed totals are dominated by that
+# shared structure and the total-score correlation is markedly higher than the
+# per-item latent correlation. rho is therefore tuned (~0.55) so the realized
+# total-score correlation lands near 0.8.
+rho <- 0.55  # per-item latent correlation; tuned so total-score r ~ 0.8
+
+pcl_items <- paste0("S", 1:20)
+caps_mat  <- matrix(0L, nrow = n, ncol = 20)
+for (j in seq_len(20)) {
+  s     <- simulated_ptsd_genpop[[pcl_items[j]]]
+  z     <- qnorm((rank(s, ties.method = "average") - 0.5) / n)  # latent from PCL
+  latent <- rho * z + sqrt(1 - rho^2) * rnorm(n)                # correlated latent
+  # Reproduce the PCL item's marginal: assign the same score counts, ordered by latent
+  caps_sorted <- s[order(s)]                 # the exact multiset of PCL scores
+  caps_j      <- integer(n)
+  caps_j[order(latent)] <- caps_sorted       # rank-match latent -> scores
+  caps_mat[, j] <- caps_j
+}
+caps_df <- as.data.frame(caps_mat)
+names(caps_df) <- paste0("C", 1:20)
+
+simulated_ptsd_genpop <- cbind(simulated_ptsd_genpop, caps_df)
+
+# Verify realized total-score correlation
+realized <- cor(rowSums(simulated_ptsd_genpop[, pcl_items]),
+                rowSums(simulated_ptsd_genpop[, paste0("C", 1:20)]))
+message(sprintf("Realized PCL-5 vs CAPS-5 total-score correlation: %.3f", realized))
+
 # Save
 usethis::use_data(simulated_ptsd_genpop, overwrite = TRUE)

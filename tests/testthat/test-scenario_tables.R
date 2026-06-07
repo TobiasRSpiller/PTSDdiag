@@ -17,10 +17,12 @@ test_that("summarize_top_combinations returns the documented columns", {
   expect_equal(
     names(tbl),
     c("Approach", "Rank", "Combination", "TP", "FN", "FP", "TN",
-      "Sensitivity", "Specificity", "PPV", "NPV")
+      "Sensitivity", "Specificity", "PPV", "NPV", "Accuracy")
   )
   expect_false(any(tbl$Combination == "PTSD_orig"))
   expect_true(all(tbl$TP + tbl$FN + tbl$FP + tbl$TN == comp$n_rows))
+  # Accuracy equals (TP + TN) / N
+  expect_equal(tbl$Accuracy, (tbl$TP + tbl$TN) / comp$n_rows)
 })
 
 test_that("summarize_top_combinations metrics are in [0, 1] by default and [0, 100] with as_percent", {
@@ -30,8 +32,11 @@ test_that("summarize_top_combinations metrics are in [0, 1] by default and [0, 1
 
   expect_true(all(frac$Sensitivity >= 0 & frac$Sensitivity <= 1, na.rm = TRUE))
   expect_true(all(pct$Sensitivity  >= 0 & pct$Sensitivity  <= 100, na.rm = TRUE))
+  expect_true(all(frac$Accuracy    >= 0 & frac$Accuracy    <= 1, na.rm = TRUE))
+  expect_true(all(pct$Accuracy     >= 0 & pct$Accuracy     <= 100, na.rm = TRUE))
   # Conversion is consistent
   expect_equal(pct$Sensitivity, frac$Sensitivity * 100)
+  expect_equal(pct$Accuracy,    frac$Accuracy * 100)
 })
 
 test_that("summarize_top_combinations top_n caps optimize scenarios but keeps fixed at 1 row", {

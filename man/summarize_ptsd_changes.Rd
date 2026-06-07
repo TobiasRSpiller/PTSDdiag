@@ -35,6 +35,8 @@ A dataframe containing the following columns for each diagnostic criterion:
   \item  false_cases: Sum of newly diagnosed (false positive) and newly non-diagnosed
     (false negative)
   \item  sensitivity, specificity, ppv, npv: Standard diagnostic accuracy metrics
+  \item  accuracy: Proportion of cases classified the same as the baseline
+    criterion ((true positives + true negatives) / total)
 }
 }
 \description{

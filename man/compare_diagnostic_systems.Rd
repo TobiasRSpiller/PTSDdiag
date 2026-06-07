@@ -66,6 +66,8 @@ A \code{data.frame} with one row per diagnostic system and the
   \item \code{n_false_positive}: Cases over-diagnosed vs. reference
   \item \code{pct_false_positive}: Percentage of total sample, 2 dp
   \item \code{n_misclassified}: Total misclassified cases
+  \item \code{accuracy}: Proportion classified the same as the reference
+    ((total - misclassified) / total), 4 dp
 }
 }
 \description{

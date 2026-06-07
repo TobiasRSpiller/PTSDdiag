@@ -7,36 +7,66 @@
 #' \code{\link{simulated_ptsd}} (~94%), making it suitable for external
 #' validation of diagnostic criteria derived from clinical samples. Like
 #' \code{simulated_ptsd}, it ships with three demographic columns
-#' (\code{patient_id}, \code{age}, \code{sex}).
+#' (\code{patient_id}, \code{age}, \code{sex}). It also ships paired
+#' clinician-administered CAPS-5 severity ratings (\code{C1}--\code{C20}) for
+#' the same participants, simulated to correlate with the PCL-5 items so that
+#' the PCL-5 and CAPS-5 total scores correlate about 0.8 (the level usually
+#' reported empirically). This supports the paired-instrument workflow in the
+#' CAPS-5 vignette without inventing data inline.
 #'
-#' @format A data frame with 1,200 rows and 23 columns:
+#' @format A data frame with 1,200 rows and 43 columns:
 #'
 #' \describe{
 #'   \item{patient_id}{Character. Synthetic participant identifier
 #'     (\code{"G0001"}--\code{"G1200"}).}
 #'   \item{age}{Integer. Age in years (truncated normal, range 18--80).}
 #'   \item{sex}{Factor. \code{"female"} / \code{"male"}.}
-#'   \item{S1}{Intrusive memories}
-#'   \item{S2}{Nightmares}
-#'   \item{S3}{Flashbacks}
-#'   \item{S4}{Emotional reactivity to reminders}
-#'   \item{S5}{Physical reactions to reminders}
-#'   \item{S6}{Avoiding memories/thoughts/feelings}
-#'   \item{S7}{Avoiding external reminders}
-#'   \item{S8}{Amnesia}
-#'   \item{S9}{Strong negative beliefs}
-#'   \item{S10}{Distorted blame}
-#'   \item{S11}{Negative trauma-related emotions}
-#'   \item{S12}{Decreased interest in activities}
-#'   \item{S13}{Detachment or estrangement}
-#'   \item{S14}{Trouble experiencing positive emotions}
-#'   \item{S15}{Irritability/aggression}
-#'   \item{S16}{Risk-taking behavior}
-#'   \item{S17}{Hypervigilance}
-#'   \item{S18}{Heightened startle reaction}
-#'   \item{S19}{Difficulty concentrating}
-#'   \item{S20}{Sleep problems}
+#'   \item{S1}{PCL-5: Intrusive memories}
+#'   \item{S2}{PCL-5: Nightmares}
+#'   \item{S3}{PCL-5: Flashbacks}
+#'   \item{S4}{PCL-5: Emotional reactivity to reminders}
+#'   \item{S5}{PCL-5: Physical reactions to reminders}
+#'   \item{S6}{PCL-5: Avoiding memories/thoughts/feelings}
+#'   \item{S7}{PCL-5: Avoiding external reminders}
+#'   \item{S8}{PCL-5: Amnesia}
+#'   \item{S9}{PCL-5: Strong negative beliefs}
+#'   \item{S10}{PCL-5: Distorted blame}
+#'   \item{S11}{PCL-5: Negative trauma-related emotions}
+#'   \item{S12}{PCL-5: Decreased interest in activities}
+#'   \item{S13}{PCL-5: Detachment or estrangement}
+#'   \item{S14}{PCL-5: Trouble experiencing positive emotions}
+#'   \item{S15}{PCL-5: Irritability/aggression}
+#'   \item{S16}{PCL-5: Risk-taking behavior}
+#'   \item{S17}{PCL-5: Hypervigilance}
+#'   \item{S18}{PCL-5: Heightened startle reaction}
+#'   \item{S19}{PCL-5: Difficulty concentrating}
+#'   \item{S20}{PCL-5: Sleep problems}
+#'   \item{C1}{CAPS-5: Intrusive memories}
+#'   \item{C2}{CAPS-5: Nightmares}
+#'   \item{C3}{CAPS-5: Flashbacks}
+#'   \item{C4}{CAPS-5: Emotional reactivity to reminders}
+#'   \item{C5}{CAPS-5: Physical reactions to reminders}
+#'   \item{C6}{CAPS-5: Avoiding memories/thoughts/feelings}
+#'   \item{C7}{CAPS-5: Avoiding external reminders}
+#'   \item{C8}{CAPS-5: Amnesia}
+#'   \item{C9}{CAPS-5: Strong negative beliefs}
+#'   \item{C10}{CAPS-5: Distorted blame}
+#'   \item{C11}{CAPS-5: Negative trauma-related emotions}
+#'   \item{C12}{CAPS-5: Decreased interest in activities}
+#'   \item{C13}{CAPS-5: Detachment or estrangement}
+#'   \item{C14}{CAPS-5: Trouble experiencing positive emotions}
+#'   \item{C15}{CAPS-5: Irritability/aggression}
+#'   \item{C16}{CAPS-5: Risk-taking behavior}
+#'   \item{C17}{CAPS-5: Hypervigilance}
+#'   \item{C18}{CAPS-5: Heightened startle reaction}
+#'   \item{C19}{CAPS-5: Difficulty concentrating}
+#'   \item{C20}{CAPS-5: Sleep problems}
 #' }
+#'
+#' The CAPS-5 items (\code{C1}--\code{C20}) are paired clinician-administered
+#' severity ratings for the same participants and the same symptoms as the
+#' PCL-5 items, simulated to correlate with them at a total-score r of about
+#' 0.8.
 #'
 #' @details
 #' The symptoms are rated on a 5-point scale:

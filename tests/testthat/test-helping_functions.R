@@ -138,7 +138,8 @@ test_that("create_readable_summary works correctly", {
     sensitivity = c(1, 0.8),
     specificity = c(1, 0.9),
     ppv = c(1, 0.89),
-    npv = c(1, 0.82)
+    npv = c(1, 0.82),
+    accuracy = c(1, 0.85)
   )
 
   results <- create_readable_summary(test_stats)
@@ -147,12 +148,23 @@ test_that("create_readable_summary works correctly", {
   expected_columns <- c("Scenario", "Total Diagnosed", "Total Non-Diagnosed",
                         "True Positive", "True Negative", "Newly Diagnosed",
                         "Newly Non-Diagnosed", "True Cases", "False Cases",
-                        "Sensitivity", "Specificity", "PPV", "NPV")
+                        "Sensitivity", "Specificity", "PPV", "NPV", "Accuracy")
   expect_equal(colnames(results), expected_columns)
 
   # Test formatting
   expect_equal(results$`Total Diagnosed`[1], "50 (50%)")
   expect_equal(results$Sensitivity[2], 0.8)
+  expect_equal(results$Accuracy[2], 0.85)
+})
+
+test_that("summarize_ptsd_changes computes accuracy as (TP + TN) / N", {
+  data <- data.frame(
+    PTSD_orig = c(TRUE, TRUE, FALSE, FALSE),
+    PTSD_alt  = c(TRUE, FALSE, FALSE, FALSE)  # 1 TP, 1 FN, 0 FP, 2 TN -> 3/4
+  )
+  stats <- summarize_ptsd_changes(data)
+  expect_equal(stats$accuracy[stats$column == "PTSD_alt"], 0.75)
+  expect_equal(stats$accuracy[stats$column == "PTSD_orig"], 1)
 })
 
 test_that("summarize_ptsd_changes works correctly", {

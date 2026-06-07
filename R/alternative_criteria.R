@@ -250,6 +250,8 @@ create_caps5_diagnosis <- function(data) {
 #'   \item \code{n_false_positive}: Cases over-diagnosed vs. reference
 #'   \item \code{pct_false_positive}: Percentage of total sample, 2 dp
 #'   \item \code{n_misclassified}: Total misclassified cases
+#'   \item \code{accuracy}: Proportion classified the same as the reference
+#'     ((total - misclassified) / total), 4 dp
 #' }
 #'
 #' @seealso
@@ -465,6 +467,7 @@ compare_diagnostic_systems <- function(data, ..., icd11 = TRUE,
     n_false_positive   = raw$newly_diagnosed,
     pct_false_positive = round(raw$newly_diagnosed    / n_total * 100,   2),
     n_misclassified    = raw$false_cases,
+    accuracy           = round((n_total - raw$false_cases) / n_total,   4),
     stringsAsFactors   = FALSE
   )
 }

@@ -22,28 +22,24 @@ This vignette compares a PCL-5 symptom definition against the CAPS-5 diagnosis, 
 
 The PCL-5 is completed by the patient; the CAPS-5 is administered by a clinician. Both rate the same 20 DSM-5-TR symptoms on the same 0 to 4 scale, so when both are available for the same participants the CAPS-5 diagnosis is the closest available reference to a clinical ground truth. That makes it the natural standard against which to judge a self-report definition.
 
-## Requirements for the input data
+## The bundled paired data
 
-The CAPS-5 input must be the 20 items in their standard order, scored 0 to 4, with no missing values, plus any identifier columns you name in `id_col`; the full contract is in the [Getting started](getting-started.html) vignette. One **additional requirement** applies here: when comparing two instruments, the PCL-5 and CAPS-5 data frames must describe the same participants in the same row order.
+The general-population dataset `simulated_ptsd_genpop` ships both instruments for the same participants: the PCL-5 items `S1`–`S20` and paired CAPS-5 severity ratings `C1`–`C20`, simulated so the two total scores correlate about 0.8 (the level usually reported empirically). Because both come from one data frame, the PCL-5 and CAPS-5 views describe the same people in the same row order, which is exactly what a paired-instrument comparison requires.
 
-## Standardizing both instruments
-
-We standardize the PCL-5 data as usual and create a CAPS-5 data frame in the same form with `rename_caps5_columns()`. The CAPS-5 ratings below are simulated independently of the PCL-5 scores, purely for illustration. Because they are random rather than clinician-rated, the agreement reported in the next section reflects chance, and the tables should be read as illustrations of the output format rather than as a real instrument comparison. We use a 500-row subset of the bundled data to keep the vignette fast.
+To analyse one instrument we standardise its 20 columns and park everything else, including the other instrument's columns, in `id_col`, so `rename_*` sees exactly 20 item columns. We use a 500-row subset for speed.
 
 ```{r setup, message = FALSE}
 library(PTSDdiag)
 
-data("simulated_ptsd")
-pcl5 <- simulated_ptsd[1:500, ]
-ptsd <- rename_ptsd_columns(pcl5,
-                            id_col = c("patient_id", "age", "sex"))
+data("simulated_ptsd_genpop")
+gp   <- simulated_ptsd_genpop[1:500, ]
+demo <- c("patient_id", "age", "sex")
 
-set.seed(42)
-caps5_raw <- as.data.frame(matrix(
-  sample(0:4, 20 * nrow(pcl5), replace = TRUE),
-  ncol = 20
-))
-caps5 <- rename_caps5_columns(caps5_raw)
+# PCL-5 view: rename S1..S20; carry the CAPS-5 columns through untouched
+ptsd  <- rename_ptsd_columns(gp,  id_col = c(demo, paste0("C", 1:20)))
+
+# CAPS-5 view: rename C1..C20; carry the PCL-5 columns through untouched
+caps5 <- rename_caps5_columns(gp, id_col = c(demo, paste0("S", 1:20)))
 ```
 
 ## Computing the CAPS-5 diagnosis
@@ -52,13 +48,12 @@ caps5 <- rename_caps5_columns(caps5_raw)
 
 ```{r caps5-dx}
 caps5_dx <- create_caps5_diagnosis(caps5)
-head(caps5_dx)
 mean(caps5_dx$PTSD_caps5) * 100
 ```
 
 ## Comparing the PCL-5 and CAPS-5 diagnoses
 
-`compare_diagnostic_systems()` builds one summary table that scores each diagnostic system against a chosen reference. Setting `reference = "caps5"` makes the CAPS-5 the standard, so the PCL-5 diagnosis and ICD-11 are evaluated against it. Each row reports sensitivity, specificity, PPV, and NPV against the reference, together with the counts of false positives, false negatives, and total misclassifications. 
+`compare_diagnostic_systems()` builds one summary table that scores each diagnostic system against a chosen reference. Setting `reference = "caps5"` makes the CAPS-5 the standard, so the PCL-5 diagnosis and ICD-11 are evaluated against it. Each row reports sensitivity, specificity, PPV, NPV, and accuracy against the reference, together with the counts of false positives, false negatives, and total misclassifications.
 
 ```{r compare}
 compare_diagnostic_systems(
@@ -68,6 +63,8 @@ compare_diagnostic_systems(
   reference  = "caps5"
 )
 ```
+
+Because the two instruments are correlated here rather than random, the self-report PCL-5 diagnosis agrees substantially with the clinician CAPS-5 reference. Sensitivity is the share of CAPS-5-positive participants the PCL-5 rule also calls positive, and accuracy is the overall share classified the same way.
 
 ## Optimizing against the CAPS-5 diagnosis
 
@@ -91,7 +88,7 @@ summarize_top_combinations(comp, top_n = 3, as_percent = TRUE)
 
 ## Interpreting agreement and disagreement
 
-When the PCL-5 and CAPS-5 diagnoses agree closely, a simplified PCL-5 definition that reproduces the full PCL-5 diagnosis also reproduces the clinician diagnosis, and the choice of reference is immaterial. When they diverge, the choice of reference matters, and reporting performance against both is desirable.
+When the PCL-5 and CAPS-5 diagnoses agree closely, as they do in this paired sample, a simplified PCL-5 definition that reproduces the full PCL-5 diagnosis also largely reproduces the clinician diagnosis, so the choice of reference matters little. When the instruments diverge, the choice of reference matters, and reporting performance against both is the honest course; the fixed-criterion mechanism above makes that choice explicit.
 
 ## See also
 

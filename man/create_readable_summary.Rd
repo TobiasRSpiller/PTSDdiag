@@ -29,7 +29,7 @@ A formatted data.frame (or a \code{\link[DT]{datatable}} widget
   \item  Newly Non-Diagnosed: Count of new negative diagnoses (false negative)
   \item  True Cases: Total correctly classified cases
   \item  False Cases: Total misclassified cases
-  \item  Sensitivity, Specificity, PPV, NPV: Diagnostic accuracy metrics (4 decimals)
+  \item  Sensitivity, Specificity, PPV, NPV, Accuracy: Diagnostic accuracy metrics (4 decimals)
 }
 }
 \description{

@@ -575,6 +575,41 @@
   )
 }
 
+#' Validate a definitions list passed to evaluate_definitions()
+#'
+#' @param definitions A named list; each element must have `symptoms` (a list
+#'   of integer vectors), `n_required`, and `hierarchical`.
+#' @param n_total Number of symptoms (default 20), for index range checks.
+#' @noRd
+.validate_definitions <- function(definitions, n_rows = NULL, n_total = 20) {
+  if (!is.list(definitions) || length(definitions) < 1) {
+    cli::cli_abort("{.arg definitions} must be a non-empty named list.")
+  }
+  if (is.null(names(definitions)) || any(!nzchar(names(definitions)))) {
+    cli::cli_abort("Every entry in {.arg definitions} must be named.")
+  }
+  for (label in names(definitions)) {
+    d <- definitions[[label]]
+    if (!is.list(d) || is.null(d$symptoms) || is.null(d$n_required) ||
+        is.null(d$hierarchical)) {
+      cli::cli_abort(c(
+        "Definition {.val {label}} must contain {.field symptoms}, \\
+        {.field n_required}, and {.field hierarchical}.",
+        "i" = "Build it with {.fn extract_definitions}."
+      ))
+    }
+    if (!is.list(d$symptoms) || length(d$symptoms) < 1) {
+      cli::cli_abort("Definition {.val {label}}: {.field symptoms} must be a non-empty list of integer vectors.")
+    }
+    .validate_combinations_input(d$symptoms, n_total = n_total)
+    .validate_n_required(d$n_required, length(d$symptoms[[1]]))
+    if (!is.logical(d$hierarchical) || length(d$hierarchical) != 1) {
+      cli::cli_abort("Definition {.val {label}}: {.field hierarchical} must be a single logical.")
+    }
+  }
+  invisible(TRUE)
+}
+
 #' Validate the scenarios list passed to compare_optimizations()
 #'
 #' Each entry must be a list with a known \code{type} (\code{"optimize"} or

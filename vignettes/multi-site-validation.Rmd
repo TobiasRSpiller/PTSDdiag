@@ -58,23 +58,7 @@ The symptoms whose tiles are dark across the rules are the core symptoms the der
 
 ## Sharing the definitions without sharing data
 
-Rather than commit to a single winner, the site carries forward the top five combinations from each of the three rules, fifteen candidate definitions in all. This is closer to real practice, where a collaboration weighs several promising definitions rather than betting on one. `extract_definitions()` pulls them straight from the comparison object: it keeps the top `n` combinations of each rule and records, for each, how many symptoms must be present and whether all four clusters are required. The researcher chooses only how many to carry. (Like the evaluation helper below, this function is planned as an exported part of PTSDdiag and is defined behind the scenes here.)
-
-```{r extract-fn, echo = FALSE}
-# Defined inline for now; planned as an exported PTSDdiag function.
-extract_definitions <- function(comparison, n = 5) {
-  cfg      <- comparison$config
-  optimize <- cfg$label[cfg$type == "optimize"]
-  defs <- lapply(optimize, function(label) {
-    row    <- cfg[cfg$label == label, ]
-    combos <- comparison$scenarios[[label]]$best_symptoms
-    list(symptoms     = combos[seq_len(min(n, length(combos)))],
-         n_required   = row$n_required,
-         hierarchical = isTRUE(row$hierarchical))
-  })
-  stats::setNames(defs, optimize)
-}
-```
+Rather than commit to a single winner, the site carries forward the top five combinations from each of the three rules, fifteen candidate definitions in all. This is closer to real practice, where a collaboration weighs several promising definitions rather than betting on one. `extract_definitions()` pulls them straight from the comparison object: it keeps the top `n` combinations of each rule and reads, for each, how many symptoms must be present and whether all four clusters are required, so the researcher chooses only how many to carry.
 
 ```{r definitions}
 definitions <- extract_definitions(comp_vet, n = 5)
@@ -87,35 +71,7 @@ This object is everything the other site needs, and it holds nothing but symptom
 
 ## Evaluating every definition in a sample
 
-Alongside the fifteen derived definitions we include ICD-11 as a fixed published benchmark. ICD-11 is the same rule everywhere, so each site computes it locally and nothing about it is shared. We use a small helper, `evaluate_definitions()`, that applies each shared definition with its own rule, adds ICD-11, and scores all of them against the sample's full DSM-5-TR diagnosis. Because it needs only the definitions and a data frame, the identical call runs at either site. The helper will be added to PTSDdiag as an exported function in a future release; here it is defined behind the scenes so the workflow reads cleanly.
-
-```{r helper, echo = FALSE}
-# Defined inline for now; planned as an exported PTSDdiag function.
-evaluate_definitions <- function(data, definitions, include_icd11 = TRUE) {
-  clusters <- list(B = 1:5, C = 6:7, D = 8:14, E = 15:20)
-
-  comparison <- data.frame(
-    PTSD_orig = create_ptsd_diagnosis_binarized(data)$PTSD_orig,
-    check.names = FALSE
-  )
-  for (rule in names(definitions)) {
-    d  <- definitions[[rule]]
-    cl <- if (isTRUE(d$hierarchical)) clusters else NULL
-    applied <- apply_symptom_combinations(data, d$symptoms,
-                                          n_required = d$n_required, clusters = cl)
-    for (cc in grep("^symptom_[0-9]+(_[0-9]+)+$", names(applied), value = TRUE)) {
-      label <- paste0(rule, " (", gsub("_", ", ", sub("^symptom_", "", cc)), ")")
-      comparison[[label]] <- applied[[cc]]
-    }
-  }
-  if (isTRUE(include_icd11)) {
-    comparison[["ICD-11"]] <- create_icd11_diagnosis(data)$PTSD_icd11
-  }
-
-  summarize_ptsd_changes(comparison) %>%
-    create_readable_summary()
-}
-```
+Alongside the fifteen derived definitions we include ICD-11 as a fixed published benchmark. ICD-11 is the same rule everywhere, so each site computes it locally and nothing about it is shared. `evaluate_definitions()` applies each shared definition with its own rule, adds ICD-11, and scores all of them against the sample's full DSM-5-TR diagnosis. Because it needs only the definitions and a data frame, the identical call runs at either site.
 
 ## Performance in the derivation sample
 
@@ -133,8 +89,13 @@ The general-population site receives only the definitions printed above. It runs
 
 ```{r perf-validation}
 data("simulated_ptsd_genpop")
-genpop <- rename_ptsd_columns(simulated_ptsd_genpop,
-                              id_col = c("patient_id", "age", "sex"))
+
+# simulated_ptsd_genpop also carries paired CAPS-5 columns (C1..C20); here we
+# use only the PCL-5 items, so we select those before standardising.
+genpop <- rename_ptsd_columns(
+  simulated_ptsd_genpop[, c("patient_id", "age", "sex", paste0("S", 1:20))],
+  id_col = c("patient_id", "age", "sex")
+)
 
 evaluate_definitions(genpop, definitions, include_icd11 = TRUE)
 ```
