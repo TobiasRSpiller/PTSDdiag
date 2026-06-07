@@ -1,5 +1,57 @@
 # Changelog
 
+## PTSDdiag 0.3.2
+
+### New features
+
+- [`extract_definitions()`](https://tobiasrspiller.github.io/PTSDdiag/reference/extract_definitions.md)
+  and
+  [`evaluate_definitions()`](https://tobiasrspiller.github.io/PTSDdiag/reference/evaluate_definitions.md)
+  are now exported.
+  [`extract_definitions()`](https://tobiasrspiller.github.io/PTSDdiag/reference/extract_definitions.md)
+  pulls the top-n combinations of each optimized scenario out of a
+  [`compare_optimizations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/compare_optimizations.md)
+  result (reading each rule from the object) as a portable, shareable
+  object;
+  [`evaluate_definitions()`](https://tobiasrspiller.github.io/PTSDdiag/reference/evaluate_definitions.md)
+  applies such a set of mixed-rule definitions (plus ICD-11) to any
+  sample and returns a performance table. Together they support
+  multi-site workflows where only symptom-index definitions, not patient
+  data, are shared.
+- An `Accuracy` column ((TP + TN) / N) is now reported by
+  [`create_readable_summary()`](https://tobiasrspiller.github.io/PTSDdiag/reference/create_readable_summary.md)
+  (so `res$summary`, the holdout/cross-validation summaries, and the
+  multi-site tables show it),
+  [`summarize_top_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/summarize_top_combinations.md),
+  and
+  [`compare_diagnostic_systems()`](https://tobiasrspiller.github.io/PTSDdiag/reference/compare_diagnostic_systems.md).
+  This makes the reported metric match the quantity
+  `score_by = "accuracy"` optimizes.
+
+### Behavior changes
+
+- [`holdout_validation()`](https://tobiasrspiller.github.io/PTSDdiag/reference/holdout_validation.md)
+  and
+  [`cross_validation()`](https://tobiasrspiller.github.io/PTSDdiag/reference/cross_validation.md)
+  now default to `score_by = "accuracy"` (was `"sensitivity"`), matching
+  [`optimize_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations.md)
+  and
+  [`compare_optimizations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/compare_optimizations.md).
+
+### Data
+
+- `simulated_ptsd_genpop` now also ships paired clinician-administered
+  CAPS-5 ratings (`C1`–`C20`) for the same participants, simulated to
+  correlate with the PCL-5 items at a total-score r of about 0.8. The
+  dataset now has 43 columns (demographics + 20 PCL-5 + 20 CAPS-5); the
+  PCL-5 items and demographics are unchanged.
+
+### Documentation
+
+- The CAPS-5 workflow vignette now uses the bundled paired data instead
+  of random CAPS-5 ratings, so the instrument agreement it shows is
+  realistic.
+
 ## PTSDdiag 0.3.1
 
 ### Breaking changes

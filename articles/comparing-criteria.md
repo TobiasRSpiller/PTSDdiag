@@ -82,10 +82,10 @@ shown.
 
 Each row carries the approach label, the rank within that approach, the
 symptom combination, the four cell counts against the full diagnosis
-(TP, FN, FP, TN), and the four derived rates (sensitivity, specificity,
-PPV, and NPV). Overall accuracy is not a separate column; it equals
-(TP + TN) divided by the sample size, and it is the quantity that
-`score_by = "accuracy"` minimized the errors of.
+(TP, FN, FP, TN), and the derived rates: sensitivity, specificity, PPV,
+NPV, and accuracy. Accuracy is (TP + TN) divided by the sample size, the
+quantity that `score_by = "accuracy"` optimized for, so it is the
+natural headline number when these definitions are compared.
 
 ``` r
 
@@ -104,19 +104,19 @@ head(tbl, 12)
 #> 10     4/6 Hierarchical   10 symptom_4_6_7_11_18_20 409 56  0 35    87.95699
 #> 11 4/6 Non-hierarchical    1  symptom_1_3_6_7_11_15 460  5  8 27    98.92473
 #> 12 4/6 Non-hierarchical    2  symptom_3_5_6_7_11_15 457  8  6 29    98.27957
-#>    Specificity       PPV      NPV
-#> 1    100.00000 100.00000 39.32584
-#> 2     97.14286  99.75728 38.63636
-#> 3    100.00000 100.00000 38.88889
-#> 4    100.00000 100.00000 38.46154
-#> 5     97.14286  99.75669 38.20225
-#> 6    100.00000 100.00000 38.46154
-#> 7     97.14286  99.75669 38.20225
-#> 8     97.14286  99.75669 38.20225
-#> 9    100.00000 100.00000 38.46154
-#> 10   100.00000 100.00000 38.46154
-#> 11    77.14286  98.29060 84.37500
-#> 12    82.85714  98.70410 78.37838
+#>    Specificity       PPV      NPV Accuracy
+#> 1    100.00000 100.00000 39.32584     89.2
+#> 2     97.14286  99.75728 38.63636     89.0
+#> 3    100.00000 100.00000 38.88889     89.0
+#> 4    100.00000 100.00000 38.46154     88.8
+#> 5     97.14286  99.75669 38.20225     88.8
+#> 6    100.00000 100.00000 38.46154     88.8
+#> 7     97.14286  99.75669 38.20225     88.8
+#> 8     97.14286  99.75669 38.20225     88.8
+#> 9    100.00000 100.00000 38.46154     88.8
+#> 10   100.00000 100.00000 38.46154     88.8
+#> 11    77.14286  98.29060 84.37500     97.4
+#> 12    82.85714  98.70410 78.37838     97.2
 ```
 
 ## Core symptoms across definitions

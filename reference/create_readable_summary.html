@@ -9,7 +9,7 @@ with proper labels and formatting of percentages and metrics."><meta property="o
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -81,7 +81,7 @@ plain data.frame. The <span class="pkg">DT</span> package must be installed when
 <li><p>Newly Non-Diagnosed: Count of new negative diagnoses (false negative)</p></li>
 <li><p>True Cases: Total correctly classified cases</p></li>
 <li><p>False Cases: Total misclassified cases</p></li>
-<li><p>Sensitivity, Specificity, PPV, NPV: Diagnostic accuracy metrics (4 decimals)</p></li>
+<li><p>Sensitivity, Specificity, PPV, NPV, Accuracy: Diagnostic accuracy metrics (4 decimals)</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -110,9 +110,9 @@ plain data.frame. The <span class="pkg">DT</span> package must be installed when
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Newly Diagnosed Newly Non-Diagnosed True Cases False Cases Sensitivity</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1               0                   0        100           0      1.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2              29                  20         51          49      0.5918</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Specificity PPV    NPV</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      1.0000 1.0 1.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      0.4314 0.5 0.5238</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Specificity PPV    NPV Accuracy</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      1.0000 1.0 1.0000     1.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      0.4314 0.5 0.5238     0.51</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

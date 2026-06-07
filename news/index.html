@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,29 @@
       <small>Source: <a href="https://github.com/TobiasRSpiller/PTSDdiag/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.2" id="ptsddiag-032">PTSDdiag 0.3.2<a class="anchor" aria-label="anchor" href="#ptsddiag-032"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-3-2">New features<a class="anchor" aria-label="anchor" href="#new-features-0-3-2"></a></h3>
+<ul><li>
+<code><a href="../reference/extract_definitions.html">extract_definitions()</a></code> and <code><a href="../reference/evaluate_definitions.html">evaluate_definitions()</a></code> are now exported. <code><a href="../reference/extract_definitions.html">extract_definitions()</a></code> pulls the top-n combinations of each optimized scenario out of a <code><a href="../reference/compare_optimizations.html">compare_optimizations()</a></code> result (reading each rule from the object) as a portable, shareable object; <code><a href="../reference/evaluate_definitions.html">evaluate_definitions()</a></code> applies such a set of mixed-rule definitions (plus ICD-11) to any sample and returns a performance table. Together they support multi-site workflows where only symptom-index definitions, not patient data, are shared.</li>
+<li>An <code>Accuracy</code> column ((TP + TN) / N) is now reported by <code><a href="../reference/create_readable_summary.html">create_readable_summary()</a></code> (so <code>res$summary</code>, the holdout/cross-validation summaries, and the multi-site tables show it), <code><a href="../reference/summarize_top_combinations.html">summarize_top_combinations()</a></code>, and <code><a href="../reference/compare_diagnostic_systems.html">compare_diagnostic_systems()</a></code>. This makes the reported metric match the quantity <code>score_by = "accuracy"</code> optimizes.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="behavior-changes-0-3-2">Behavior changes<a class="anchor" aria-label="anchor" href="#behavior-changes-0-3-2"></a></h3>
+<ul><li>
+<code><a href="../reference/holdout_validation.html">holdout_validation()</a></code> and <code><a href="../reference/cross_validation.html">cross_validation()</a></code> now default to <code>score_by = "accuracy"</code> (was <code>"sensitivity"</code>), matching <code><a href="../reference/optimize_combinations.html">optimize_combinations()</a></code> and <code><a href="../reference/compare_optimizations.html">compare_optimizations()</a></code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="data-0-3-2">Data<a class="anchor" aria-label="anchor" href="#data-0-3-2"></a></h3>
+<ul><li>
+<code>simulated_ptsd_genpop</code> now also ships paired clinician-administered CAPS-5 ratings (<code>C1</code>–<code>C20</code>) for the same participants, simulated to correlate with the PCL-5 items at a total-score r of about 0.8. The dataset now has 43 columns (demographics + 20 PCL-5 + 20 CAPS-5); the PCL-5 items and demographics are unchanged.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-0-3-2">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-3-2"></a></h3>
+<ul><li>The CAPS-5 workflow vignette now uses the bundled paired data instead of random CAPS-5 ratings, so the instrument agreement it shows is realistic.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.1" id="ptsddiag-031">PTSDdiag 0.3.1<a class="anchor" aria-label="anchor" href="#ptsddiag-031"></a></h2>
 <div class="section level3">

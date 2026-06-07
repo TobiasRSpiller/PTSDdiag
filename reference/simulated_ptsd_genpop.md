@@ -7,7 +7,12 @@ has a lower PTSD prevalence (~21
 [`simulated_ptsd`](https://tobiasrspiller.github.io/PTSDdiag/reference/simulated_ptsd.md)
 (~94 validation of diagnostic criteria derived from clinical samples.
 Like `simulated_ptsd`, it ships with three demographic columns
-(`patient_id`, `age`, `sex`).
+(`patient_id`, `age`, `sex`). It also ships paired
+clinician-administered CAPS-5 severity ratings (`C1`–`C20`) for the same
+participants, simulated to correlate with the PCL-5 items so that the
+PCL-5 and CAPS-5 total scores correlate about 0.8 (the level usually
+reported empirically). This supports the paired-instrument workflow in
+the CAPS-5 vignette without inventing data inline.
 
 ## Usage
 
@@ -17,7 +22,7 @@ simulated_ptsd_genpop
 
 ## Format
 
-A data frame with 1,200 rows and 23 columns:
+A data frame with 1,200 rows and 43 columns:
 
 - patient_id:
 
@@ -33,83 +38,167 @@ A data frame with 1,200 rows and 23 columns:
 
 - S1:
 
-  Intrusive memories
+  PCL-5: Intrusive memories
 
 - S2:
 
-  Nightmares
+  PCL-5: Nightmares
 
 - S3:
 
-  Flashbacks
+  PCL-5: Flashbacks
 
 - S4:
 
-  Emotional reactivity to reminders
+  PCL-5: Emotional reactivity to reminders
 
 - S5:
 
-  Physical reactions to reminders
+  PCL-5: Physical reactions to reminders
 
 - S6:
 
-  Avoiding memories/thoughts/feelings
+  PCL-5: Avoiding memories/thoughts/feelings
 
 - S7:
 
-  Avoiding external reminders
+  PCL-5: Avoiding external reminders
 
 - S8:
 
-  Amnesia
+  PCL-5: Amnesia
 
 - S9:
 
-  Strong negative beliefs
+  PCL-5: Strong negative beliefs
 
 - S10:
 
-  Distorted blame
+  PCL-5: Distorted blame
 
 - S11:
 
-  Negative trauma-related emotions
+  PCL-5: Negative trauma-related emotions
 
 - S12:
 
-  Decreased interest in activities
+  PCL-5: Decreased interest in activities
 
 - S13:
 
-  Detachment or estrangement
+  PCL-5: Detachment or estrangement
 
 - S14:
 
-  Trouble experiencing positive emotions
+  PCL-5: Trouble experiencing positive emotions
 
 - S15:
 
-  Irritability/aggression
+  PCL-5: Irritability/aggression
 
 - S16:
 
-  Risk-taking behavior
+  PCL-5: Risk-taking behavior
 
 - S17:
 
-  Hypervigilance
+  PCL-5: Hypervigilance
 
 - S18:
 
-  Heightened startle reaction
+  PCL-5: Heightened startle reaction
 
 - S19:
 
-  Difficulty concentrating
+  PCL-5: Difficulty concentrating
 
 - S20:
 
-  Sleep problems
+  PCL-5: Sleep problems
+
+- C1:
+
+  CAPS-5: Intrusive memories
+
+- C2:
+
+  CAPS-5: Nightmares
+
+- C3:
+
+  CAPS-5: Flashbacks
+
+- C4:
+
+  CAPS-5: Emotional reactivity to reminders
+
+- C5:
+
+  CAPS-5: Physical reactions to reminders
+
+- C6:
+
+  CAPS-5: Avoiding memories/thoughts/feelings
+
+- C7:
+
+  CAPS-5: Avoiding external reminders
+
+- C8:
+
+  CAPS-5: Amnesia
+
+- C9:
+
+  CAPS-5: Strong negative beliefs
+
+- C10:
+
+  CAPS-5: Distorted blame
+
+- C11:
+
+  CAPS-5: Negative trauma-related emotions
+
+- C12:
+
+  CAPS-5: Decreased interest in activities
+
+- C13:
+
+  CAPS-5: Detachment or estrangement
+
+- C14:
+
+  CAPS-5: Trouble experiencing positive emotions
+
+- C15:
+
+  CAPS-5: Irritability/aggression
+
+- C16:
+
+  CAPS-5: Risk-taking behavior
+
+- C17:
+
+  CAPS-5: Hypervigilance
+
+- C18:
+
+  CAPS-5: Heightened startle reaction
+
+- C19:
+
+  CAPS-5: Difficulty concentrating
+
+- C20:
+
+  CAPS-5: Sleep problems
+
+The CAPS-5 items (`C1`–`C20`) are paired clinician-administered severity
+ratings for the same participants and the same symptoms as the PCL-5
+items, simulated to correlate with them at a total-score r of about 0.8.
 
 ## Source
 

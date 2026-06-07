@@ -144,10 +144,10 @@ create_readable_summary(metrics)
 #> 1             9               0                   0         20           0
 #> 2             8               1                   3         16           4
 #> 3             7               2                   4         14           6
-#>   Sensitivity Specificity    PPV    NPV
-#> 1      1.0000      1.0000 1.0000 1.0000
-#> 2      0.7273      0.8889 0.8889 0.7273
-#> 3      0.6364      0.7778 0.7778 0.6364
+#>   Sensitivity Specificity    PPV    NPV Accuracy
+#> 1      1.0000      1.0000 1.0000 1.0000      1.0
+#> 2      0.7273      0.8889 0.8889 0.7273      0.8
+#> 3      0.6364      0.7778 0.7778 0.6364      0.7
 
 # Apply with hierarchical checking
 pcl5_clusters <- list(B = 1:5, C = 6:7, D = 8:14, E = 15:20)
@@ -170,8 +170,8 @@ summarize_ptsd_changes(hier_comparison)
 #> PTSD_orig                        1   1 1.0000000                55
 #> symptom_1_6_8_10_15_19           1   1 0.4736842                 5
 #> symptom_2_7_9_11_16_20           1   1 0.5294118                15
-#>                        non_diagnosed_percent
-#> PTSD_orig                                 45
-#> symptom_1_6_8_10_15_19                    95
-#> symptom_2_7_9_11_16_20                    85
+#>                        non_diagnosed_percent accuracy
+#> PTSD_orig                                 45      1.0
+#> symptom_1_6_8_10_15_19                    95      0.5
+#> symptom_2_7_9_11_16_20                    85      0.6
 ```

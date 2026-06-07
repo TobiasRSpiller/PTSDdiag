@@ -6,14 +6,24 @@ PTSD prevalence (~21
 simulated_ptsd (~94
 validation of diagnostic criteria derived from clinical samples. Like
 simulated_ptsd, it ships with three demographic columns
-(patient_id, age, sex)."><meta property="og:description" content="A dataset containing simulated responses from 1,200 individuals in a general
+(patient_id, age, sex). It also ships paired
+clinician-administered CAPS-5 severity ratings (C1–C20) for
+the same participants, simulated to correlate with the PCL-5 items so that
+the PCL-5 and CAPS-5 total scores correlate about 0.8 (the level usually
+reported empirically). This supports the paired-instrument workflow in the
+CAPS-5 vignette without inventing data inline."><meta property="og:description" content="A dataset containing simulated responses from 1,200 individuals in a general
 population sample on the PCL-5 (PTSD Checklist for DSM-5). Each individual
 rated 20 PTSD symptoms on a scale from 0 to 4. This dataset has a lower
 PTSD prevalence (~21
 simulated_ptsd (~94
 validation of diagnostic criteria derived from clinical samples. Like
 simulated_ptsd, it ships with three demographic columns
-(patient_id, age, sex)."><meta property="og:image" content="https://tobiasrspiller.github.io/PTSDdiag/reference/figures/logo.png"><meta name="twitter:card" content="summary"><meta name="twitter:creator" content="@TobiasSpiller"><meta name="twitter:site" content="@TobiasSpiller"></head><body>
+(patient_id, age, sex). It also ships paired
+clinician-administered CAPS-5 severity ratings (C1–C20) for
+the same participants, simulated to correlate with the PCL-5 items so that
+the PCL-5 and CAPS-5 total scores correlate about 0.8 (the level usually
+reported empirically). This supports the paired-instrument workflow in the
+CAPS-5 vignette without inventing data inline."><meta property="og:image" content="https://tobiasrspiller.github.io/PTSDdiag/reference/figures/logo.png"><meta name="twitter:card" content="summary"><meta name="twitter:creator" content="@TobiasSpiller"><meta name="twitter:site" content="@TobiasSpiller"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -21,7 +31,7 @@ simulated_ptsd, it ships with three demographic columns
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,7 +72,12 @@ PTSD prevalence (~21<!-- %) compared to the clinical veteran sample in -->
 <code><a href="simulated_ptsd.html">simulated_ptsd</a></code> (~94<!-- %), making it suitable for external -->
 validation of diagnostic criteria derived from clinical samples. Like
 <code>simulated_ptsd</code>, it ships with three demographic columns
-(<code>patient_id</code>, <code>age</code>, <code>sex</code>).</p>
+(<code>patient_id</code>, <code>age</code>, <code>sex</code>). It also ships paired
+clinician-administered CAPS-5 severity ratings (<code>C1</code>–<code>C20</code>) for
+the same participants, simulated to correlate with the PCL-5 items so that
+the PCL-5 and CAPS-5 total scores correlate about 0.8 (the level usually
+reported empirically). This supports the paired-instrument workflow in the
+CAPS-5 vignette without inventing data inline.</p>
     </div>
 
     <div class="section level2">
@@ -72,7 +87,7 @@ validation of diagnostic criteria derived from clinical samples. Like
 
     <div class="section level2">
     <h2 id="format">Format<a class="anchor" aria-label="anchor" href="#format"></a></h2>
-    <p>A data frame with 1,200 rows and 23 columns:</p>
+    <p>A data frame with 1,200 rows and 43 columns:</p>
 <dl><dt>patient_id</dt>
 <dd><p>Character. Synthetic participant identifier
     (<code>"G0001"</code>–<code>"G1200"</code>).</p></dd>
@@ -84,67 +99,131 @@ validation of diagnostic criteria derived from clinical samples. Like
 <dd><p>Factor. <code>"female"</code> / <code>"male"</code>.</p></dd>
 
   <dt>S1</dt>
-<dd><p>Intrusive memories</p></dd>
+<dd><p>PCL-5: Intrusive memories</p></dd>
 
   <dt>S2</dt>
-<dd><p>Nightmares</p></dd>
+<dd><p>PCL-5: Nightmares</p></dd>
 
   <dt>S3</dt>
-<dd><p>Flashbacks</p></dd>
+<dd><p>PCL-5: Flashbacks</p></dd>
 
   <dt>S4</dt>
-<dd><p>Emotional reactivity to reminders</p></dd>
+<dd><p>PCL-5: Emotional reactivity to reminders</p></dd>
 
   <dt>S5</dt>
-<dd><p>Physical reactions to reminders</p></dd>
+<dd><p>PCL-5: Physical reactions to reminders</p></dd>
 
   <dt>S6</dt>
-<dd><p>Avoiding memories/thoughts/feelings</p></dd>
+<dd><p>PCL-5: Avoiding memories/thoughts/feelings</p></dd>
 
   <dt>S7</dt>
-<dd><p>Avoiding external reminders</p></dd>
+<dd><p>PCL-5: Avoiding external reminders</p></dd>
 
   <dt>S8</dt>
-<dd><p>Amnesia</p></dd>
+<dd><p>PCL-5: Amnesia</p></dd>
 
   <dt>S9</dt>
-<dd><p>Strong negative beliefs</p></dd>
+<dd><p>PCL-5: Strong negative beliefs</p></dd>
 
   <dt>S10</dt>
-<dd><p>Distorted blame</p></dd>
+<dd><p>PCL-5: Distorted blame</p></dd>
 
   <dt>S11</dt>
-<dd><p>Negative trauma-related emotions</p></dd>
+<dd><p>PCL-5: Negative trauma-related emotions</p></dd>
 
   <dt>S12</dt>
-<dd><p>Decreased interest in activities</p></dd>
+<dd><p>PCL-5: Decreased interest in activities</p></dd>
 
   <dt>S13</dt>
-<dd><p>Detachment or estrangement</p></dd>
+<dd><p>PCL-5: Detachment or estrangement</p></dd>
 
   <dt>S14</dt>
-<dd><p>Trouble experiencing positive emotions</p></dd>
+<dd><p>PCL-5: Trouble experiencing positive emotions</p></dd>
 
   <dt>S15</dt>
-<dd><p>Irritability/aggression</p></dd>
+<dd><p>PCL-5: Irritability/aggression</p></dd>
 
   <dt>S16</dt>
-<dd><p>Risk-taking behavior</p></dd>
+<dd><p>PCL-5: Risk-taking behavior</p></dd>
 
   <dt>S17</dt>
-<dd><p>Hypervigilance</p></dd>
+<dd><p>PCL-5: Hypervigilance</p></dd>
 
   <dt>S18</dt>
-<dd><p>Heightened startle reaction</p></dd>
+<dd><p>PCL-5: Heightened startle reaction</p></dd>
 
   <dt>S19</dt>
-<dd><p>Difficulty concentrating</p></dd>
+<dd><p>PCL-5: Difficulty concentrating</p></dd>
 
   <dt>S20</dt>
-<dd><p>Sleep problems</p></dd>
+<dd><p>PCL-5: Sleep problems</p></dd>
+
+  <dt>C1</dt>
+<dd><p>CAPS-5: Intrusive memories</p></dd>
+
+  <dt>C2</dt>
+<dd><p>CAPS-5: Nightmares</p></dd>
+
+  <dt>C3</dt>
+<dd><p>CAPS-5: Flashbacks</p></dd>
+
+  <dt>C4</dt>
+<dd><p>CAPS-5: Emotional reactivity to reminders</p></dd>
+
+  <dt>C5</dt>
+<dd><p>CAPS-5: Physical reactions to reminders</p></dd>
+
+  <dt>C6</dt>
+<dd><p>CAPS-5: Avoiding memories/thoughts/feelings</p></dd>
+
+  <dt>C7</dt>
+<dd><p>CAPS-5: Avoiding external reminders</p></dd>
+
+  <dt>C8</dt>
+<dd><p>CAPS-5: Amnesia</p></dd>
+
+  <dt>C9</dt>
+<dd><p>CAPS-5: Strong negative beliefs</p></dd>
+
+  <dt>C10</dt>
+<dd><p>CAPS-5: Distorted blame</p></dd>
+
+  <dt>C11</dt>
+<dd><p>CAPS-5: Negative trauma-related emotions</p></dd>
+
+  <dt>C12</dt>
+<dd><p>CAPS-5: Decreased interest in activities</p></dd>
+
+  <dt>C13</dt>
+<dd><p>CAPS-5: Detachment or estrangement</p></dd>
+
+  <dt>C14</dt>
+<dd><p>CAPS-5: Trouble experiencing positive emotions</p></dd>
+
+  <dt>C15</dt>
+<dd><p>CAPS-5: Irritability/aggression</p></dd>
+
+  <dt>C16</dt>
+<dd><p>CAPS-5: Risk-taking behavior</p></dd>
+
+  <dt>C17</dt>
+<dd><p>CAPS-5: Hypervigilance</p></dd>
+
+  <dt>C18</dt>
+<dd><p>CAPS-5: Heightened startle reaction</p></dd>
+
+  <dt>C19</dt>
+<dd><p>CAPS-5: Difficulty concentrating</p></dd>
+
+  <dt>C20</dt>
+<dd><p>CAPS-5: Sleep problems</p></dd>
 
 
-</dl></div>
+</dl><p>The CAPS-5 items (<code>C1</code>–<code>C20</code>) are paired clinician-administered
+severity ratings for the same participants and the same symptoms as the
+PCL-5 items, simulated to correlate with them at a total-score r of about
+0.8.</p>
+    </div>
     <div class="section level2">
     <h2 id="source">Source<a class="anchor" aria-label="anchor" href="#source"></a></h2>
     <p>Simulated data for demonstration purposes</p>

@@ -140,7 +140,8 @@ names(ptsd_data) <- paste0("symptom_", 1:20)
 # Find best 6-symptom combinations requiring 4 present (classic defaults)
 results <- optimize_combinations(ptsd_data, n_symptoms = 6, n_required = 4,
              score_by = "accuracy")
-#> Evaluating combinations ■■■■■■■■■■■■■■■■■■                56% | ETA:  2s
+#> Evaluating combinations ■■■■■■■■■■                        30% | ETA:  3s
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■   99% | ETA:  0s
 #> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
 #> ℹ Evaluated 38760 combinations. Best: 1, 2, 4, 9, 13, 14 (417 additional tied)
 
@@ -177,10 +178,10 @@ results$summary
 #> 2            10             0               0                   0         10
 #> 3            10             0               0                   0         10
 #> 4            10             0               0                   0         10
-#>   False Cases Sensitivity Specificity PPV NPV
-#> 1           0           1          NA   1  NA
-#> 2           0           1          NA   1  NA
-#> 3           0           1          NA   1  NA
-#> 4           0           1          NA   1  NA
+#>   False Cases Sensitivity Specificity PPV NPV Accuracy
+#> 1           0           1          NA   1  NA        1
+#> 2           0           1          NA   1  NA        1
+#> 3           0           1          NA   1  NA        1
+#> 4           0           1          NA   1  NA        1
 # }
 ```

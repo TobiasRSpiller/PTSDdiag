@@ -13,7 +13,7 @@ and DSM-5-TR in one kable-ready output."><meta property="og:image" content="http
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -132,6 +132,8 @@ is issued if the length does not match.</p></dd>
 <li><p><code>n_false_positive</code>: Cases over-diagnosed vs. reference</p></li>
 <li><p><code>pct_false_positive</code>: Percentage of total sample, 2 dp</p></li>
 <li><p><code>n_misclassified</code>: Total misclassified cases</p></li>
+<li><p><code>accuracy</code>: Proportion classified the same as the reference
+    ((total - misclassified) / total), 4 dp</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -183,9 +185,9 @@ from optimized symptom combinations.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n_false_negative pct_false_negative n_false_positive pct_false_positive</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1                0               0.00                0               0.00</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2              103               2.06               34               0.68</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   n_misclassified</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2             137</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   n_misclassified accuracy</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1               0   1.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2             137   0.9726</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Add two pre-specified combinations</span></span></span>
@@ -202,12 +204,12 @@ from optimized symptom combinations.</p>
 <span class="r-in"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">tbl2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |system   | n_diagnosed| pct_diagnosed| sensitivity| specificity|    ppv|    npv| n_false_negative| pct_false_negative| n_false_positive| pct_false_positive| n_misclassified|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |:--------|-----------:|-------------:|-----------:|-----------:|------:|------:|----------------:|------------------:|----------------:|------------------:|---------------:|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |DSM-5-TR |        4710|         94.20|      1.0000|      1.0000| 1.0000| 1.0000|                0|               0.00|                0|               0.00|               0|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |ICD-11   |        4641|         92.82|      0.9781|      0.8828| 0.9927| 0.7131|              103|               2.06|               34|               0.68|             137|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |Combo A  |        4669|         93.38|      0.9635|      0.5483| 0.9719| 0.4804|              172|               3.44|              131|               2.62|             303|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |Combo B  |        4646|         92.92|      0.9618|      0.6000| 0.9750| 0.4915|              180|               3.60|              116|               2.32|             296|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |system   | n_diagnosed| pct_diagnosed| sensitivity| specificity|    ppv|    npv| n_false_negative| pct_false_negative| n_false_positive| pct_false_positive| n_misclassified| accuracy|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |:--------|-----------:|-------------:|-----------:|-----------:|------:|------:|----------------:|------------------:|----------------:|------------------:|---------------:|--------:|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |DSM-5-TR |        4710|         94.20|      1.0000|      1.0000| 1.0000| 1.0000|                0|               0.00|                0|               0.00|               0|   1.0000|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |ICD-11   |        4641|         92.82|      0.9781|      0.8828| 0.9927| 0.7131|              103|               2.06|               34|               0.68|             137|   0.9726|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |Combo A  |        4669|         93.38|      0.9635|      0.5483| 0.9719| 0.4804|              172|               3.44|              131|               2.62|             303|   0.9394|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |Combo B  |        4646|         92.92|      0.9618|      0.6000| 0.9750| 0.4915|              180|               3.60|              116|               2.32|             296|   0.9408|</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># With CAPS-5 as gold standard reference</span></span></span>
 <span class="r-in"><span><span class="va">caps5_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">4</span>, <span class="fl">20</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">simulated_ptsd</span><span class="op">)</span>,</span></span>
@@ -222,13 +224,13 @@ from optimized symptom combinations.</p>
 <span class="r-in"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">tbl3</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |system                 | n_diagnosed| pct_diagnosed| sensitivity| specificity|    ppv|    npv| n_false_negative| pct_false_negative| n_false_positive| pct_false_positive| n_misclassified|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |:----------------------|-----------:|-------------:|-----------:|-----------:|------:|------:|----------------:|------------------:|----------------:|------------------:|---------------:|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |DSM-5-TR (CAPS-5)      |        3902|         78.04|      1.0000|      1.0000| 1.0000| 1.0000|                0|               0.00|                0|               0.00|               0|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |DSM-5-TR (PCL-5)       |        4710|         94.20|      0.9421|      0.0583| 0.7805| 0.2207|              226|               4.52|             1034|              20.68|            1260|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |ICD-11 (PCL-5)         |        4641|         92.82|      0.9290|      0.0747| 0.7811| 0.2284|              277|               5.54|             1016|              20.32|            1293|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |symptom_1_6_8_10_15_19 |        4669|         93.38|      0.9346|      0.0692| 0.7811| 0.2296|              255|               5.10|             1022|              20.44|            1277|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |symptom_2_7_9_11_16_20 |        4646|         92.92|      0.9311|      0.0774| 0.7820| 0.2401|              269|               5.38|             1013|              20.26|            1282|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |system                 | n_diagnosed| pct_diagnosed| sensitivity| specificity|    ppv|    npv| n_false_negative| pct_false_negative| n_false_positive| pct_false_positive| n_misclassified| accuracy|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |:----------------------|-----------:|-------------:|-----------:|-----------:|------:|------:|----------------:|------------------:|----------------:|------------------:|---------------:|--------:|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |DSM-5-TR (CAPS-5)      |        3902|         78.04|      1.0000|      1.0000| 1.0000| 1.0000|                0|               0.00|                0|               0.00|               0|   1.0000|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |DSM-5-TR (PCL-5)       |        4710|         94.20|      0.9421|      0.0583| 0.7805| 0.2207|              226|               4.52|             1034|              20.68|            1260|   0.7480|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |ICD-11 (PCL-5)         |        4641|         92.82|      0.9290|      0.0747| 0.7811| 0.2284|              277|               5.54|             1016|              20.32|            1293|   0.7414|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |symptom_1_6_8_10_15_19 |        4669|         93.38|      0.9346|      0.0692| 0.7811| 0.2296|              255|               5.10|             1022|              20.44|            1277|   0.7446|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |symptom_2_7_9_11_16_20 |        4646|         92.92|      0.9311|      0.0774| 0.7820| 0.2401|              269|               5.38|             1013|              20.26|            1282|   0.7436|</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

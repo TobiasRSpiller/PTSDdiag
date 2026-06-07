@@ -81,6 +81,11 @@ ho$without_clusters$summary
 #> 2                   0         73           2      1.0000       0.750 0.9710 1.0
 #> 3                   0         71           4      1.0000       0.500 0.9437 1.0
 #> 4                   2         68           7      0.9701       0.375 0.9286 0.6
+#>   Accuracy
+#> 1   1.0000
+#> 2   0.9733
+#> 3   0.9467
+#> 4   0.9067
 ```
 
 `score_by = "sensitivity"` minimizes false negatives, the conservative
@@ -131,28 +136,41 @@ cv$without_clusters$summary_by_fold
 #> 10            73             3               4                   3         76
 #> 11            75             3               4                   1         78
 #> 12            74             3               4                   2         77
-#>    False Cases Sensitivity Specificity    PPV    NPV combination_id rank
-#> 1            0      1.0000      1.0000 1.0000 1.0000           <NA>   NA
-#> 2            2      0.9872      0.8333 0.9872 0.8333   1_3_6_7_9_13    1
-#> 3            2      0.9872      0.8333 0.9872 0.8333  1_3_6_7_11_13    2
-#> 4            2      1.0000      0.6667 0.9750 1.0000  1_5_6_7_12_20    3
-#> 5            0      1.0000      1.0000 1.0000 1.0000           <NA>   NA
-#> 6            2      0.9872      0.8000 0.9872 0.8000  1_3_5_6_12_15    1
-#> 7            3      0.9744      0.8000 0.9870 0.6667 1_3_5_12_15_17    2
-#> 8            2      0.9872      0.8000 0.9872 0.8000 1_3_6_11_12_15    3
-#> 9            0      1.0000      1.0000 1.0000 1.0000           <NA>   NA
-#> 10           7      0.9605      0.4286 0.9481 0.5000  1_3_6_8_11_20    1
-#> 11           5      0.9868      0.4286 0.9494 0.7500 1_3_6_11_12_20    2
-#> 12           6      0.9737      0.4286 0.9487 0.6000 1_3_6_11_15_20    3
+#>    False Cases Sensitivity Specificity    PPV    NPV Accuracy combination_id
+#> 1            0      1.0000      1.0000 1.0000 1.0000   1.0000           <NA>
+#> 2            2      0.9872      0.8333 0.9872 0.8333   0.9762   1_3_6_7_9_13
+#> 3            2      0.9872      0.8333 0.9872 0.8333   0.9762  1_3_6_7_11_13
+#> 4            2      1.0000      0.6667 0.9750 1.0000   0.9762  1_5_6_7_12_20
+#> 5            0      1.0000      1.0000 1.0000 1.0000   1.0000           <NA>
+#> 6            2      0.9872      0.8000 0.9872 0.8000   0.9759  1_3_5_6_12_15
+#> 7            3      0.9744      0.8000 0.9870 0.6667   0.9639 1_3_5_12_15_17
+#> 8            2      0.9872      0.8000 0.9872 0.8000   0.9759 1_3_6_11_12_15
+#> 9            0      1.0000      1.0000 1.0000 1.0000   1.0000           <NA>
+#> 10           7      0.9605      0.4286 0.9481 0.5000   0.9157  1_3_6_8_11_20
+#> 11           5      0.9868      0.4286 0.9494 0.7500   0.9398 1_3_6_11_12_20
+#> 12           6      0.9737      0.4286 0.9487 0.6000   0.9277 1_3_6_11_15_20
+#>    rank
+#> 1    NA
+#> 2     1
+#> 3     2
+#> 4     3
+#> 5    NA
+#> 6     1
+#> 7     2
+#> 8     3
+#> 9    NA
+#> 10    1
+#> 11    2
+#> 12    3
 cv$without_clusters$combinations_summary  # NULL if no combination repeats
-#> # A tibble: 1 × 15
+#> # A tibble: 1 × 16
 #>   Scenario  combination_id Splits_Appeared Total_Diagnosed Total_Non_Diagnosed
 #>   <chr>     <chr>                    <int> <chr>           <chr>              
 #> 1 PTSD_orig NA                           3 77.33 (92.8%)   6 (7.2%)           
-#> # ℹ 10 more variables: True_Positive <dbl>, True_Negative <dbl>,
+#> # ℹ 11 more variables: True_Positive <dbl>, True_Negative <dbl>,
 #> #   Newly_Diagnosed <dbl>, Newly_Non_Diagnosed <dbl>, True_Cases <dbl>,
 #> #   False_Cases <dbl>, Sensitivity <dbl>, Specificity <dbl>, PPV <dbl>,
-#> #   NPV <dbl>
+#> #   NPV <dbl>, Accuracy <dbl>
 ```
 
 ## External validation in a second cohort
@@ -190,10 +208,14 @@ write_combinations(deriv$best_symptoms, tmp,
                    score_by = "accuracy",
                    description = "Six-symptom, four-required definition")
 
-# A second analyst reads the file and applies it to the community sample
+# A second analyst reads the file and applies it to the community sample.
+# simulated_ptsd_genpop also carries paired CAPS-5 columns (C1..C20); here we
+# use only the PCL-5 items, so we select those before standardising.
 spec   <- read_combinations(tmp)
-genpop <- rename_ptsd_columns(simulated_ptsd_genpop[1:250, ],
-                              id_col = c("patient_id", "age", "sex"))
+genpop <- rename_ptsd_columns(
+  simulated_ptsd_genpop[1:250, c("patient_id", "age", "sex", paste0("S", 1:20))],
+  id_col = c("patient_id", "age", "sex")
+)
 
 applied <- apply_symptom_combinations(genpop, spec$combinations,
                                       n_required = spec$n_required)
@@ -213,13 +235,13 @@ summarize_ptsd_changes(applied) %>%
 #> 4           195               3                   8        239          11
 #> 5           193               5                  12        233          17
 #> 6           193               5                  11        234          16
-#>   Sensitivity Specificity    PPV    NPV
-#> 1      1.0000      1.0000 1.0000 1.0000
-#> 2      0.8077      0.9848 0.9333 0.9512
-#> 3      0.7885      0.9798 0.9111 0.9463
-#> 4      0.8462      0.9848 0.9362 0.9606
-#> 5      0.7692      0.9747 0.8889 0.9415
-#> 6      0.7885      0.9747 0.8913 0.9461
+#>   Sensitivity Specificity    PPV    NPV Accuracy
+#> 1      1.0000      1.0000 1.0000 1.0000    1.000
+#> 2      0.8077      0.9848 0.9333 0.9512    0.948
+#> 3      0.7885      0.9798 0.9111 0.9463    0.940
+#> 4      0.8462      0.9848 0.9362 0.9606    0.956
+#> 5      0.7692      0.9747 0.8889 0.9415    0.932
+#> 6      0.7885      0.9747 0.8913 0.9461    0.936
 ```
 
 Compare this table with the derivation performance. Sensitivity and

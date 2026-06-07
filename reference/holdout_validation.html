@@ -9,7 +9,7 @@ Trains the model on a portion of the data and evaluates performance on the held-
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,7 +52,7 @@ Trains the model on a portion of the data and evaluates performance on the held-
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">holdout_validation</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
 <span>  train_ratio <span class="op">=</span> <span class="fl">0.7</span>,</span>
-<span>  score_by <span class="op">=</span> <span class="st">"sensitivity"</span>,</span>
+<span>  score_by <span class="op">=</span> <span class="st">"accuracy"</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">123</span>,</span>
 <span>  n_symptoms <span class="op">=</span> <span class="fl">6</span>,</span>
 <span>  n_required <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -82,9 +82,9 @@ diagnoses can be joined back to the original dataframe.</p></dd>
 
 <dt id="arg-score-by">score_by<a class="anchor" aria-label="anchor" href="#arg-score-by"></a></dt>
 <dd><p>Character string specifying optimization criterion:</p><ul><li><p>"accuracy": Minimize total misclassifications (FP + FN, i.e.
-    maximise overall accuracy).</p></li>
+    maximise overall accuracy). Default.</p></li>
 <li><p>"sensitivity": Minimize false negatives only (i.e. maximise
-    sensitivity relative to the full DSM-5-TR diagnosis). Default.</p></li>
+    sensitivity relative to the full DSM-5-TR diagnosis).</p></li>
 </ul></dd>
 
 
@@ -154,14 +154,14 @@ plain data.frames. The <span class="pkg">DT</span> package must be installed whe
 <span class="r-in"><span><span class="co"># Perform holdout validation</span></span></span>
 <span class="r-in"><span><span class="va">validation_results</span> <span class="op">&lt;-</span> <span class="fu">holdout_validation</span><span class="op">(</span><span class="va">sample_data</span>, train_ratio <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Training on 140 observations, testing on 60</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■                        </span>  25% | ETA:  3s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■                 </span>  48% | ETA:  2s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■                         </span>  21% | ETA:  4s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■                   </span>  40% | ETA:  3s</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ </span> 100% | ETA:  0s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 2, 6, 7, 9, 15, 16 (1 additional tied)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 2, 6, 7, 8, 15, 16 (2 additional tied)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Generated 13685 valid cluster-constrained combinations</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■                          </span>  16% | ETA:  5s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■                    </span>  37% | ETA:  4s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■■■     </span>  86% | ETA:  1s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■                        </span>  24% | ETA:  5s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■         </span>  74% | ETA:  2s</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ </span> 100% | ETA:  0s</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 13685 combinations. Best: 1, 5, 7, 9, 16, 17 (1 additional tied)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Holdout validation complete</span>
@@ -170,24 +170,24 @@ plain data.frames. The <span class="pkg">DT</span> package must be installed whe
 <span class="r-in"><span><span class="va">validation_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 Scenario combination_id rank Total Diagnosed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1              PTSD_orig           &lt;NA&gt;   NA     52 (86.67%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  symptom_2_6_7_9_15_16  2_6_7_9_15_16    1     32 (53.33%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 symptom_6_7_9_14_15_16 6_7_9_14_15_16    2     34 (56.67%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  symptom_2_6_7_8_15_16  2_6_7_8_15_16    3        36 (60%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  symptom_2_6_7_8_15_16  2_6_7_8_15_16    1        36 (60%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  symptom_6_7_8_9_15_16  6_7_8_9_15_16    2        39 (65%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 symptom_6_7_8_11_15_18 6_7_8_11_15_18    3     35 (58.33%)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Total Non-Diagnosed True Positive True Negative Newly Diagnosed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1          8 (13.33%)            52             8               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2         28 (46.67%)            31             7               1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3         26 (43.33%)            34             8               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4            24 (40%)            35             7               1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2            24 (40%)            35             7               1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3            21 (35%)            38             7               1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4         25 (41.67%)            35             8               0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1                   0         60           0      1.0000       1.000 1.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                  21         38          22      0.5962       0.875 0.9688</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3                  18         42          18      0.6538       1.000 1.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4                  17         42          18      0.6731       0.875 0.9722</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      NPV</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.2500</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.3077</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 0.2917</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                  17         42          18      0.6731       0.875 0.9722</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                  14         45          15      0.7308       0.875 0.9744</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                  17         43          17      0.6731       1.000 1.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      NPV Accuracy</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1.0000   1.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.2917   0.7000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.3333   0.7500</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 0.3200   0.7167</span>
 <span class="r-in"><span><span class="va">validation_results</span><span class="op">$</span><span class="va">with_clusters</span><span class="op">$</span><span class="va">summary</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                Scenario combination_id rank Total Diagnosed Total Non-Diagnosed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1             PTSD_orig           &lt;NA&gt;   NA     52 (86.67%)          8 (13.33%)</span>
@@ -199,11 +199,11 @@ plain data.frames. The <span class="pkg">DT</span> package must be installed whe
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2            12             8               0                  40         20</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3            12             8               0                  40         20</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4            18             8               0                  34         26</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   False Cases Sensitivity Specificity PPV    NPV</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1           0      1.0000           1   1 1.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          40      0.2308           1   1 0.1667</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3          40      0.2308           1   1 0.1667</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4          34      0.3462           1   1 0.1905</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   False Cases Sensitivity Specificity PPV    NPV Accuracy</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           0      1.0000           1   1 1.0000   1.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          40      0.2308           1   1 0.1667   0.3333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3          40      0.2308           1   1 0.1667   0.3333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4          34      0.3462           1   1 0.1905   0.4333</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

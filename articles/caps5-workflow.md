@@ -13,43 +13,34 @@ diagnosis is the closest available reference to a clinical ground truth.
 That makes it the natural standard against which to judge a self-report
 definition.
 
-## Requirements for the input data
+## The bundled paired data
 
-The CAPS-5 input must be the 20 items in their standard order, scored 0
-to 4, with no missing values, plus any identifier columns you name in
-`id_col`; the full contract is in the [Getting
-started](https://tobiasrspiller.github.io/PTSDdiag/articles/getting-started.md)
-vignette. One **additional requirement** applies here: when comparing
-two instruments, the PCL-5 and CAPS-5 data frames must describe the same
-participants in the same row order.
+The general-population dataset `simulated_ptsd_genpop` ships both
+instruments for the same participants: the PCL-5 items `S1`–`S20` and
+paired CAPS-5 severity ratings `C1`–`C20`, simulated so the two total
+scores correlate about 0.8 (the level usually reported empirically).
+Because both come from one data frame, the PCL-5 and CAPS-5 views
+describe the same people in the same row order, which is exactly what a
+paired-instrument comparison requires.
 
-## Standardizing both instruments
-
-We standardize the PCL-5 data as usual and create a CAPS-5 data frame in
-the same form with
-[`rename_caps5_columns()`](https://tobiasrspiller.github.io/PTSDdiag/reference/rename_caps5_columns.md).
-The CAPS-5 ratings below are simulated independently of the PCL-5
-scores, purely for illustration. Because they are random rather than
-clinician-rated, the agreement reported in the next section reflects
-chance, and the tables should be read as illustrations of the output
-format rather than as a real instrument comparison. We use a 500-row
-subset of the bundled data to keep the vignette fast.
+To analyse one instrument we standardise its 20 columns and park
+everything else, including the other instrument’s columns, in `id_col`,
+so `rename_*` sees exactly 20 item columns. We use a 500-row subset for
+speed.
 
 ``` r
 
 library(PTSDdiag)
 
-data("simulated_ptsd")
-pcl5 <- simulated_ptsd[1:500, ]
-ptsd <- rename_ptsd_columns(pcl5,
-                            id_col = c("patient_id", "age", "sex"))
+data("simulated_ptsd_genpop")
+gp   <- simulated_ptsd_genpop[1:500, ]
+demo <- c("patient_id", "age", "sex")
 
-set.seed(42)
-caps5_raw <- as.data.frame(matrix(
-  sample(0:4, 20 * nrow(pcl5), replace = TRUE),
-  ncol = 20
-))
-caps5 <- rename_caps5_columns(caps5_raw)
+# PCL-5 view: rename S1..S20; carry the CAPS-5 columns through untouched
+ptsd  <- rename_ptsd_columns(gp,  id_col = c(demo, paste0("C", 1:20)))
+
+# CAPS-5 view: rename C1..C20; carry the PCL-5 columns through untouched
+caps5 <- rename_caps5_columns(gp, id_col = c(demo, paste0("S", 1:20)))
 ```
 
 ## Computing the CAPS-5 diagnosis
@@ -62,16 +53,8 @@ PCL-5 diagnosis. It returns a single logical column, `PTSD_caps5`.
 ``` r
 
 caps5_dx <- create_caps5_diagnosis(caps5)
-head(caps5_dx)
-#>   PTSD_caps5
-#> 1      FALSE
-#> 2      FALSE
-#> 3       TRUE
-#> 4      FALSE
-#> 5       TRUE
-#> 6       TRUE
 mean(caps5_dx$PTSD_caps5) * 100
-#> [1] 78.6
+#> [1] 20.4
 ```
 
 ## Comparing the PCL-5 and CAPS-5 diagnoses
@@ -80,9 +63,9 @@ mean(caps5_dx$PTSD_caps5) * 100
 builds one summary table that scores each diagnostic system against a
 chosen reference. Setting `reference = "caps5"` makes the CAPS-5 the
 standard, so the PCL-5 diagnosis and ICD-11 are evaluated against it.
-Each row reports sensitivity, specificity, PPV, and NPV against the
-reference, together with the counts of false positives, false negatives,
-and total misclassifications.
+Each row reports sensitivity, specificity, PPV, NPV, and accuracy
+against the reference, together with the counts of false positives,
+false negatives, and total misclassifications.
 
 ``` r
 
@@ -93,18 +76,24 @@ compare_diagnostic_systems(
   reference  = "caps5"
 )
 #>              system n_diagnosed pct_diagnosed sensitivity specificity    ppv
-#> 1 DSM-5-TR (CAPS-5)         393          78.6      1.0000      1.0000 1.0000
-#> 2  DSM-5-TR (PCL-5)         465          93.0      0.9262      0.0561 0.7828
-#> 3    ICD-11 (PCL-5)         460          92.0      0.9135      0.0561 0.7804
+#> 1 DSM-5-TR (CAPS-5)         102          20.4      1.0000      1.0000 1.0000
+#> 2  DSM-5-TR (PCL-5)         105          21.0      0.6176      0.8945 0.6000
+#> 3    ICD-11 (PCL-5)         104          20.8      0.5686      0.8844 0.5577
 #>      npv n_false_negative pct_false_negative n_false_positive
 #> 1 1.0000                0                0.0                0
-#> 2 0.1714               29                5.8              101
-#> 3 0.1500               34                6.8              101
-#>   pct_false_positive n_misclassified
-#> 1                0.0               0
-#> 2               20.2             130
-#> 3               20.2             135
+#> 2 0.9013               39                7.8               42
+#> 3 0.8889               44                8.8               46
+#>   pct_false_positive n_misclassified accuracy
+#> 1                0.0               0    1.000
+#> 2                8.4              81    0.838
+#> 3                9.2              90    0.820
 ```
+
+Because the two instruments are correlated here rather than random, the
+self-report PCL-5 diagnosis agrees substantially with the clinician
+CAPS-5 reference. Sensitivity is the share of CAPS-5-positive
+participants the PCL-5 rule also calls positive, and accuracy is the
+overall share classified the same way.
 
 ## Optimizing against the CAPS-5 diagnosis
 
@@ -132,34 +121,36 @@ comp <- compare_optimizations(
   show_progress = FALSE
 )
 #> ℹ Generated 13685 valid cluster-constrained combinations
-#> ℹ Evaluated 13685 combinations. Best: 1, 6, 7, 11, 16, 17
-#> ℹ Evaluated 38760 combinations. Best: 1, 3, 6, 7, 11, 15
+#> ℹ Evaluated 13685 combinations. Best: 2, 6, 7, 10, 13, 18 (5 additional tied)
+#> ℹ Evaluated 38760 combinations. Best: 7, 10, 11, 13, 15, 18 (1 additional tied)
 summarize_top_combinations(comp, top_n = 3, as_percent = TRUE)
-#>               Approach Rank             Combination  TP  FN FP TN Sensitivity
-#> 1     4/6 Hierarchical    1  symptom_1_6_7_11_16_17 411  54  0 35    88.38710
-#> 2     4/6 Hierarchical    2  symptom_1_6_7_11_16_19 411  54  1 34    88.38710
-#> 3     4/6 Hierarchical    3  symptom_4_6_7_11_16_19 410  55  0 35    88.17204
-#> 4 4/6 Non-hierarchical    1   symptom_1_3_6_7_11_15 460   5  8 27    98.92473
-#> 5 4/6 Non-hierarchical    2   symptom_3_5_6_7_11_15 457   8  6 29    98.27957
-#> 6 4/6 Non-hierarchical    3  symptom_5_6_7_11_15_16 456   9  5 30    98.06452
-#> 7   CAPS-5 (reference)    1 PTSD_CAPS.5..reference. 364 101 29  6    78.27957
-#>   Specificity       PPV       NPV
-#> 1   100.00000 100.00000 39.325843
-#> 2    97.14286  99.75728 38.636364
-#> 3   100.00000 100.00000 38.888889
-#> 4    77.14286  98.29060 84.375000
-#> 5    82.85714  98.70410 78.378378
-#> 6    85.71429  98.91540 76.923077
-#> 7    17.14286  92.62087  5.607477
+#>               Approach Rank              Combination TP FN FP  TN Sensitivity
+#> 1     4/6 Hierarchical    1   symptom_2_6_7_10_13_18 74 31  1 394    70.47619
+#> 2     4/6 Hierarchical    2   symptom_3_4_6_10_13_18 73 32  0 395    69.52381
+#> 3     4/6 Hierarchical    3   symptom_1_4_6_11_13_18 73 32  0 395    69.52381
+#> 4 4/6 Non-hierarchical    1 symptom_7_10_11_13_15_18 91 14  5 390    86.66667
+#> 5 4/6 Non-hierarchical    2 symptom_7_10_11_15_18_19 91 14  5 390    86.66667
+#> 6 4/6 Non-hierarchical    3  symptom_3_7_10_15_18_19 91 14  6 389    86.66667
+#> 7   CAPS-5 (reference)    1  PTSD_CAPS.5..reference. 63 42 39 356    60.00000
+#>   Specificity       PPV      NPV Accuracy
+#> 1    99.74684  98.66667 92.70588     93.6
+#> 2   100.00000 100.00000 92.50585     93.6
+#> 3   100.00000 100.00000 92.50585     93.6
+#> 4    98.73418  94.79167 96.53465     96.2
+#> 5    98.73418  94.79167 96.53465     96.2
+#> 6    98.48101  93.81443 96.52605     96.0
+#> 7    90.12658  61.76471 89.44724     83.8
 ```
 
 ## Interpreting agreement and disagreement
 
-When the PCL-5 and CAPS-5 diagnoses agree closely, a simplified PCL-5
-definition that reproduces the full PCL-5 diagnosis also reproduces the
-clinician diagnosis, and the choice of reference is immaterial. When
-they diverge, the choice of reference matters, and reporting performance
-against both is desirable.
+When the PCL-5 and CAPS-5 diagnoses agree closely, as they do in this
+paired sample, a simplified PCL-5 definition that reproduces the full
+PCL-5 diagnosis also largely reproduces the clinician diagnosis, so the
+choice of reference matters little. When the instruments diverge, the
+choice of reference matters, and reporting performance against both is
+the honest course; the fixed-criterion mechanism above makes that choice
+explicit.
 
 ## See also
 

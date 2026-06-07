@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,40 +85,32 @@ That makes it the natural standard against which to judge a self-report
 definition.</p>
 </div>
 <div class="section level2">
-<h2 id="requirements-for-the-input-data">Requirements for the input data<a class="anchor" aria-label="anchor" href="#requirements-for-the-input-data"></a>
+<h2 id="the-bundled-paired-data">The bundled paired data<a class="anchor" aria-label="anchor" href="#the-bundled-paired-data"></a>
 </h2>
-<p>The CAPS-5 input must be the 20 items in their standard order, scored
-0 to 4, with no missing values, plus any identifier columns you name in
-<code>id_col</code>; the full contract is in the <a href="getting-started.html">Getting started</a> vignette. One
-<strong>additional requirement</strong> applies here: when comparing two
-instruments, the PCL-5 and CAPS-5 data frames must describe the same
-participants in the same row order.</p>
-</div>
-<div class="section level2">
-<h2 id="standardizing-both-instruments">Standardizing both instruments<a class="anchor" aria-label="anchor" href="#standardizing-both-instruments"></a>
-</h2>
-<p>We standardize the PCL-5 data as usual and create a CAPS-5 data frame
-in the same form with <code><a href="../reference/rename_caps5_columns.html">rename_caps5_columns()</a></code>. The CAPS-5
-ratings below are simulated independently of the PCL-5 scores, purely
-for illustration. Because they are random rather than clinician-rated,
-the agreement reported in the next section reflects chance, and the
-tables should be read as illustrations of the output format rather than
-as a real instrument comparison. We use a 500-row subset of the bundled
-data to keep the vignette fast.</p>
+<p>The general-population dataset <code>simulated_ptsd_genpop</code>
+ships both instruments for the same participants: the PCL-5 items
+<code>S1</code>–<code>S20</code> and paired CAPS-5 severity ratings
+<code>C1</code>–<code>C20</code>, simulated so the two total scores
+correlate about 0.8 (the level usually reported empirically). Because
+both come from one data frame, the PCL-5 and CAPS-5 views describe the
+same people in the same row order, which is exactly what a
+paired-instrument comparison requires.</p>
+<p>To analyse one instrument we standardise its 20 columns and park
+everything else, including the other instrument’s columns, in
+<code>id_col</code>, so <code>rename_*</code> sees exactly 20 item
+columns. We use a 500-row subset for speed.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tobiasrspiller.github.io/PTSDdiag/">PTSDdiag</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"simulated_ptsd"</span><span class="op">)</span></span>
-<span><span class="va">pcl5</span> <span class="op">&lt;-</span> <span class="va">simulated_ptsd</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">500</span>, <span class="op">]</span></span>
-<span><span class="va">ptsd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rename_ptsd_columns.html">rename_ptsd_columns</a></span><span class="op">(</span><span class="va">pcl5</span>,</span>
-<span>                            id_col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"patient_id"</span>, <span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"simulated_ptsd_genpop"</span><span class="op">)</span></span>
+<span><span class="va">gp</span>   <span class="op">&lt;-</span> <span class="va">simulated_ptsd_genpop</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">500</span>, <span class="op">]</span></span>
+<span><span class="va">demo</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"patient_id"</span>, <span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
-<span><span class="va">caps5_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">4</span>, <span class="fl">20</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pcl5</span><span class="op">)</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
-<span>  ncol <span class="op">=</span> <span class="fl">20</span></span>
-<span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">caps5</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rename_caps5_columns.html">rename_caps5_columns</a></span><span class="op">(</span><span class="va">caps5_raw</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># PCL-5 view: rename S1..S20; carry the CAPS-5 columns through untouched</span></span>
+<span><span class="va">ptsd</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rename_ptsd_columns.html">rename_ptsd_columns</a></span><span class="op">(</span><span class="va">gp</span>,  id_col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">demo</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"C"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># CAPS-5 view: rename C1..C20; carry the PCL-5 columns through untouched</span></span>
+<span><span class="va">caps5</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rename_caps5_columns.html">rename_caps5_columns</a></span><span class="op">(</span><span class="va">gp</span>, id_col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">demo</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"S"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="computing-the-caps-5-diagnosis">Computing the CAPS-5 diagnosis<a class="anchor" aria-label="anchor" href="#computing-the-caps-5-diagnosis"></a>
@@ -129,16 +121,8 @@ presence threshold of 2 or higher as the PCL-5 diagnosis. It returns a
 single logical column, <code>PTSD_caps5</code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">caps5_dx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_caps5_diagnosis.html">create_caps5_diagnosis</a></span><span class="op">(</span><span class="va">caps5</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">caps5_dx</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   PTSD_caps5</span></span>
-<span><span class="co">#&gt; 1      FALSE</span></span>
-<span><span class="co">#&gt; 2      FALSE</span></span>
-<span><span class="co">#&gt; 3       TRUE</span></span>
-<span><span class="co">#&gt; 4      FALSE</span></span>
-<span><span class="co">#&gt; 5       TRUE</span></span>
-<span><span class="co">#&gt; 6       TRUE</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">caps5_dx</span><span class="op">$</span><span class="va">PTSD_caps5</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
-<span><span class="co">#&gt; [1] 78.6</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 20.4</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="comparing-the-pcl-5-and-caps-5-diagnoses">Comparing the PCL-5 and CAPS-5 diagnoses<a class="anchor" aria-label="anchor" href="#comparing-the-pcl-5-and-caps-5-diagnoses"></a>
@@ -147,8 +131,8 @@ single logical column, <code>PTSD_caps5</code>.</p>
 that scores each diagnostic system against a chosen reference. Setting
 <code>reference = "caps5"</code> makes the CAPS-5 the standard, so the
 PCL-5 diagnosis and ICD-11 are evaluated against it. Each row reports
-sensitivity, specificity, PPV, and NPV against the reference, together
-with the counts of false positives, false negatives, and total
+sensitivity, specificity, PPV, NPV, and accuracy against the reference,
+together with the counts of false positives, false negatives, and total
 misclassifications.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/compare_diagnostic_systems.html">compare_diagnostic_systems</a></span><span class="op">(</span></span>
@@ -158,17 +142,22 @@ misclassifications.</p>
 <span>  reference  <span class="op">=</span> <span class="st">"caps5"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt;              system n_diagnosed pct_diagnosed sensitivity specificity    ppv</span></span>
-<span><span class="co">#&gt; 1 DSM-5-TR (CAPS-5)         393          78.6      1.0000      1.0000 1.0000</span></span>
-<span><span class="co">#&gt; 2  DSM-5-TR (PCL-5)         465          93.0      0.9262      0.0561 0.7828</span></span>
-<span><span class="co">#&gt; 3    ICD-11 (PCL-5)         460          92.0      0.9135      0.0561 0.7804</span></span>
+<span><span class="co">#&gt; 1 DSM-5-TR (CAPS-5)         102          20.4      1.0000      1.0000 1.0000</span></span>
+<span><span class="co">#&gt; 2  DSM-5-TR (PCL-5)         105          21.0      0.6176      0.8945 0.6000</span></span>
+<span><span class="co">#&gt; 3    ICD-11 (PCL-5)         104          20.8      0.5686      0.8844 0.5577</span></span>
 <span><span class="co">#&gt;      npv n_false_negative pct_false_negative n_false_positive</span></span>
 <span><span class="co">#&gt; 1 1.0000                0                0.0                0</span></span>
-<span><span class="co">#&gt; 2 0.1714               29                5.8              101</span></span>
-<span><span class="co">#&gt; 3 0.1500               34                6.8              101</span></span>
-<span><span class="co">#&gt;   pct_false_positive n_misclassified</span></span>
-<span><span class="co">#&gt; 1                0.0               0</span></span>
-<span><span class="co">#&gt; 2               20.2             130</span></span>
-<span><span class="co">#&gt; 3               20.2             135</span></span></code></pre></div>
+<span><span class="co">#&gt; 2 0.9013               39                7.8               42</span></span>
+<span><span class="co">#&gt; 3 0.8889               44                8.8               46</span></span>
+<span><span class="co">#&gt;   pct_false_positive n_misclassified accuracy</span></span>
+<span><span class="co">#&gt; 1                0.0               0    1.000</span></span>
+<span><span class="co">#&gt; 2                8.4              81    0.838</span></span>
+<span><span class="co">#&gt; 3                9.2              90    0.820</span></span></code></pre></div>
+<p>Because the two instruments are correlated here rather than random,
+the self-report PCL-5 diagnosis agrees substantially with the clinician
+CAPS-5 reference. Sensitivity is the share of CAPS-5-positive
+participants the PCL-5 rule also calls positive, and accuracy is the
+overall share classified the same way.</p>
 </div>
 <div class="section level2">
 <h2 id="optimizing-against-the-caps-5-diagnosis">Optimizing against the CAPS-5 diagnosis<a class="anchor" aria-label="anchor" href="#optimizing-against-the-caps-5-diagnosis"></a>
@@ -193,34 +182,36 @@ vignette.</p>
 <span>  show_progress <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generated 13685 valid cluster-constrained combinations</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Evaluated 13685 combinations. Best: 1, 6, 7, 11, 16, 17</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 1, 3, 6, 7, 11, 15</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Evaluated 13685 combinations. Best: 2, 6, 7, 10, 13, 18 (5 additional tied)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 7, 10, 11, 13, 15, 18 (1 additional tied)</span></span>
 <span><span class="fu"><a href="../reference/summarize_top_combinations.html">summarize_top_combinations</a></span><span class="op">(</span><span class="va">comp</span>, top_n <span class="op">=</span> <span class="fl">3</span>, as_percent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt;               Approach Rank             Combination  TP  FN FP TN Sensitivity</span></span>
-<span><span class="co">#&gt; 1     4/6 Hierarchical    1  symptom_1_6_7_11_16_17 411  54  0 35    88.38710</span></span>
-<span><span class="co">#&gt; 2     4/6 Hierarchical    2  symptom_1_6_7_11_16_19 411  54  1 34    88.38710</span></span>
-<span><span class="co">#&gt; 3     4/6 Hierarchical    3  symptom_4_6_7_11_16_19 410  55  0 35    88.17204</span></span>
-<span><span class="co">#&gt; 4 4/6 Non-hierarchical    1   symptom_1_3_6_7_11_15 460   5  8 27    98.92473</span></span>
-<span><span class="co">#&gt; 5 4/6 Non-hierarchical    2   symptom_3_5_6_7_11_15 457   8  6 29    98.27957</span></span>
-<span><span class="co">#&gt; 6 4/6 Non-hierarchical    3  symptom_5_6_7_11_15_16 456   9  5 30    98.06452</span></span>
-<span><span class="co">#&gt; 7   CAPS-5 (reference)    1 PTSD_CAPS.5..reference. 364 101 29  6    78.27957</span></span>
-<span><span class="co">#&gt;   Specificity       PPV       NPV</span></span>
-<span><span class="co">#&gt; 1   100.00000 100.00000 39.325843</span></span>
-<span><span class="co">#&gt; 2    97.14286  99.75728 38.636364</span></span>
-<span><span class="co">#&gt; 3   100.00000 100.00000 38.888889</span></span>
-<span><span class="co">#&gt; 4    77.14286  98.29060 84.375000</span></span>
-<span><span class="co">#&gt; 5    82.85714  98.70410 78.378378</span></span>
-<span><span class="co">#&gt; 6    85.71429  98.91540 76.923077</span></span>
-<span><span class="co">#&gt; 7    17.14286  92.62087  5.607477</span></span></code></pre></div>
+<span><span class="co">#&gt;               Approach Rank              Combination TP FN FP  TN Sensitivity</span></span>
+<span><span class="co">#&gt; 1     4/6 Hierarchical    1   symptom_2_6_7_10_13_18 74 31  1 394    70.47619</span></span>
+<span><span class="co">#&gt; 2     4/6 Hierarchical    2   symptom_3_4_6_10_13_18 73 32  0 395    69.52381</span></span>
+<span><span class="co">#&gt; 3     4/6 Hierarchical    3   symptom_1_4_6_11_13_18 73 32  0 395    69.52381</span></span>
+<span><span class="co">#&gt; 4 4/6 Non-hierarchical    1 symptom_7_10_11_13_15_18 91 14  5 390    86.66667</span></span>
+<span><span class="co">#&gt; 5 4/6 Non-hierarchical    2 symptom_7_10_11_15_18_19 91 14  5 390    86.66667</span></span>
+<span><span class="co">#&gt; 6 4/6 Non-hierarchical    3  symptom_3_7_10_15_18_19 91 14  6 389    86.66667</span></span>
+<span><span class="co">#&gt; 7   CAPS-5 (reference)    1  PTSD_CAPS.5..reference. 63 42 39 356    60.00000</span></span>
+<span><span class="co">#&gt;   Specificity       PPV      NPV Accuracy</span></span>
+<span><span class="co">#&gt; 1    99.74684  98.66667 92.70588     93.6</span></span>
+<span><span class="co">#&gt; 2   100.00000 100.00000 92.50585     93.6</span></span>
+<span><span class="co">#&gt; 3   100.00000 100.00000 92.50585     93.6</span></span>
+<span><span class="co">#&gt; 4    98.73418  94.79167 96.53465     96.2</span></span>
+<span><span class="co">#&gt; 5    98.73418  94.79167 96.53465     96.2</span></span>
+<span><span class="co">#&gt; 6    98.48101  93.81443 96.52605     96.0</span></span>
+<span><span class="co">#&gt; 7    90.12658  61.76471 89.44724     83.8</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="interpreting-agreement-and-disagreement">Interpreting agreement and disagreement<a class="anchor" aria-label="anchor" href="#interpreting-agreement-and-disagreement"></a>
 </h2>
-<p>When the PCL-5 and CAPS-5 diagnoses agree closely, a simplified PCL-5
-definition that reproduces the full PCL-5 diagnosis also reproduces the
-clinician diagnosis, and the choice of reference is immaterial. When
-they diverge, the choice of reference matters, and reporting performance
-against both is desirable.</p>
+<p>When the PCL-5 and CAPS-5 diagnoses agree closely, as they do in this
+paired sample, a simplified PCL-5 definition that reproduces the full
+PCL-5 diagnosis also largely reproduces the clinician diagnosis, so the
+choice of reference matters little. When the instruments diverge, the
+choice of reference matters, and reporting performance against both is
+the honest course; the fixed-criterion mechanism above makes that choice
+explicit.</p>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>

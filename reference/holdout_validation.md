@@ -10,7 +10,7 @@ evaluates performance on the held-out test set.
 holdout_validation(
   data,
   train_ratio = 0.7,
-  score_by = "sensitivity",
+  score_by = "accuracy",
   seed = 123,
   n_symptoms = 6,
   n_required = 4,
@@ -42,10 +42,10 @@ holdout_validation(
   Character string specifying optimization criterion:
 
   - "accuracy": Minimize total misclassifications (FP + FN, i.e.
-    maximise overall accuracy).
+    maximise overall accuracy). Default.
 
   - "sensitivity": Minimize false negatives only (i.e. maximise
-    sensitivity relative to the full DSM-5-TR diagnosis). Default.
+    sensitivity relative to the full DSM-5-TR diagnosis).
 
 - seed:
 
@@ -131,14 +131,14 @@ colnames(sample_data) <- paste0("symptom_", 1:20)
 # Perform holdout validation
 validation_results <- holdout_validation(sample_data, train_ratio = 0.7)
 #> ℹ Training on 140 observations, testing on 60
-#> Evaluating combinations ■■■■■■■■                          25% | ETA:  3s
-#> Evaluating combinations ■■■■■■■■■■■■■■■                   48% | ETA:  2s
+#> Evaluating combinations ■■■■■■■                           21% | ETA:  4s
+#> Evaluating combinations ■■■■■■■■■■■■■                     40% | ETA:  3s
 #> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
-#> ℹ Evaluated 38760 combinations. Best: 2, 6, 7, 9, 15, 16 (1 additional tied)
+#> ℹ Evaluated 38760 combinations. Best: 2, 6, 7, 8, 15, 16 (2 additional tied)
 #> ℹ Generated 13685 valid cluster-constrained combinations
 #> Evaluating combinations ■■■■■■                            16% | ETA:  5s
-#> Evaluating combinations ■■■■■■■■■■■■                      37% | ETA:  4s
-#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■       86% | ETA:  1s
+#> Evaluating combinations ■■■■■■■■                          24% | ETA:  5s
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■           74% | ETA:  2s
 #> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
 #> ℹ Evaluated 13685 combinations. Best: 1, 5, 7, 9, 16, 17 (1 additional tied)
 #> ✔ Holdout validation complete
@@ -147,24 +147,24 @@ validation_results <- holdout_validation(sample_data, train_ratio = 0.7)
 validation_results$without_clusters$summary
 #>                 Scenario combination_id rank Total Diagnosed
 #> 1              PTSD_orig           <NA>   NA     52 (86.67%)
-#> 2  symptom_2_6_7_9_15_16  2_6_7_9_15_16    1     32 (53.33%)
-#> 3 symptom_6_7_9_14_15_16 6_7_9_14_15_16    2     34 (56.67%)
-#> 4  symptom_2_6_7_8_15_16  2_6_7_8_15_16    3        36 (60%)
+#> 2  symptom_2_6_7_8_15_16  2_6_7_8_15_16    1        36 (60%)
+#> 3  symptom_6_7_8_9_15_16  6_7_8_9_15_16    2        39 (65%)
+#> 4 symptom_6_7_8_11_15_18 6_7_8_11_15_18    3     35 (58.33%)
 #>   Total Non-Diagnosed True Positive True Negative Newly Diagnosed
 #> 1          8 (13.33%)            52             8               0
-#> 2         28 (46.67%)            31             7               1
-#> 3         26 (43.33%)            34             8               0
-#> 4            24 (40%)            35             7               1
+#> 2            24 (40%)            35             7               1
+#> 3            21 (35%)            38             7               1
+#> 4         25 (41.67%)            35             8               0
 #>   Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV
 #> 1                   0         60           0      1.0000       1.000 1.0000
-#> 2                  21         38          22      0.5962       0.875 0.9688
-#> 3                  18         42          18      0.6538       1.000 1.0000
-#> 4                  17         42          18      0.6731       0.875 0.9722
-#>      NPV
-#> 1 1.0000
-#> 2 0.2500
-#> 3 0.3077
-#> 4 0.2917
+#> 2                  17         42          18      0.6731       0.875 0.9722
+#> 3                  14         45          15      0.7308       0.875 0.9744
+#> 4                  17         43          17      0.6731       1.000 1.0000
+#>      NPV Accuracy
+#> 1 1.0000   1.0000
+#> 2 0.2917   0.7000
+#> 3 0.3333   0.7500
+#> 4 0.3200   0.7167
 validation_results$with_clusters$summary
 #>                Scenario combination_id rank Total Diagnosed Total Non-Diagnosed
 #> 1             PTSD_orig           <NA>   NA     52 (86.67%)          8 (13.33%)
@@ -176,10 +176,10 @@ validation_results$with_clusters$summary
 #> 2            12             8               0                  40         20
 #> 3            12             8               0                  40         20
 #> 4            18             8               0                  34         26
-#>   False Cases Sensitivity Specificity PPV    NPV
-#> 1           0      1.0000           1   1 1.0000
-#> 2          40      0.2308           1   1 0.1667
-#> 3          40      0.2308           1   1 0.1667
-#> 4          34      0.3462           1   1 0.1905
+#>   False Cases Sensitivity Specificity PPV    NPV Accuracy
+#> 1           0      1.0000           1   1 1.0000   1.0000
+#> 2          40      0.2308           1   1 0.1667   0.3333
+#> 3          40      0.2308           1   1 0.1667   0.3333
+#> 4          34      0.3462           1   1 0.1905   0.4333
 # }
 ```

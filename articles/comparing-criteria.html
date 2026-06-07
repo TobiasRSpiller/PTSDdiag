@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -156,10 +156,10 @@ one table with a single row per candidate definition. Setting
 <code>top_n</code> limits how many combinations per rule are shown.</p>
 <p>Each row carries the approach label, the rank within that approach,
 the symptom combination, the four cell counts against the full diagnosis
-(TP, FN, FP, TN), and the four derived rates (sensitivity, specificity,
-PPV, and NPV). Overall accuracy is not a separate column; it equals (TP
-+ TN) divided by the sample size, and it is the quantity that
-<code>score_by = "accuracy"</code> minimized the errors of.</p>
+(TP, FN, FP, TN), and the derived rates: sensitivity, specificity, PPV,
+NPV, and accuracy. Accuracy is (TP + TN) divided by the sample size, the
+quantity that <code>score_by = "accuracy"</code> optimized for, so it is
+the natural headline number when these definitions are compared.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarize_top_combinations.html">summarize_top_combinations</a></span><span class="op">(</span><span class="va">comp</span>, top_n <span class="op">=</span> <span class="fl">10</span>, as_percent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="fl">12</span><span class="op">)</span></span>
@@ -176,19 +176,19 @@ PPV, and NPV). Overall accuracy is not a separate column; it equals (TP
 <span><span class="co">#&gt; 10     4/6 Hierarchical   10 symptom_4_6_7_11_18_20 409 56  0 35    87.95699</span></span>
 <span><span class="co">#&gt; 11 4/6 Non-hierarchical    1  symptom_1_3_6_7_11_15 460  5  8 27    98.92473</span></span>
 <span><span class="co">#&gt; 12 4/6 Non-hierarchical    2  symptom_3_5_6_7_11_15 457  8  6 29    98.27957</span></span>
-<span><span class="co">#&gt;    Specificity       PPV      NPV</span></span>
-<span><span class="co">#&gt; 1    100.00000 100.00000 39.32584</span></span>
-<span><span class="co">#&gt; 2     97.14286  99.75728 38.63636</span></span>
-<span><span class="co">#&gt; 3    100.00000 100.00000 38.88889</span></span>
-<span><span class="co">#&gt; 4    100.00000 100.00000 38.46154</span></span>
-<span><span class="co">#&gt; 5     97.14286  99.75669 38.20225</span></span>
-<span><span class="co">#&gt; 6    100.00000 100.00000 38.46154</span></span>
-<span><span class="co">#&gt; 7     97.14286  99.75669 38.20225</span></span>
-<span><span class="co">#&gt; 8     97.14286  99.75669 38.20225</span></span>
-<span><span class="co">#&gt; 9    100.00000 100.00000 38.46154</span></span>
-<span><span class="co">#&gt; 10   100.00000 100.00000 38.46154</span></span>
-<span><span class="co">#&gt; 11    77.14286  98.29060 84.37500</span></span>
-<span><span class="co">#&gt; 12    82.85714  98.70410 78.37838</span></span></code></pre></div>
+<span><span class="co">#&gt;    Specificity       PPV      NPV Accuracy</span></span>
+<span><span class="co">#&gt; 1    100.00000 100.00000 39.32584     89.2</span></span>
+<span><span class="co">#&gt; 2     97.14286  99.75728 38.63636     89.0</span></span>
+<span><span class="co">#&gt; 3    100.00000 100.00000 38.88889     89.0</span></span>
+<span><span class="co">#&gt; 4    100.00000 100.00000 38.46154     88.8</span></span>
+<span><span class="co">#&gt; 5     97.14286  99.75669 38.20225     88.8</span></span>
+<span><span class="co">#&gt; 6    100.00000 100.00000 38.46154     88.8</span></span>
+<span><span class="co">#&gt; 7     97.14286  99.75669 38.20225     88.8</span></span>
+<span><span class="co">#&gt; 8     97.14286  99.75669 38.20225     88.8</span></span>
+<span><span class="co">#&gt; 9    100.00000 100.00000 38.46154     88.8</span></span>
+<span><span class="co">#&gt; 10   100.00000 100.00000 38.46154     88.8</span></span>
+<span><span class="co">#&gt; 11    77.14286  98.29060 84.37500     97.4</span></span>
+<span><span class="co">#&gt; 12    82.85714  98.70410 78.37838     97.2</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="core-symptoms-across-definitions">Core symptoms across definitions<a class="anchor" aria-label="anchor" href="#core-symptoms-across-definitions"></a>

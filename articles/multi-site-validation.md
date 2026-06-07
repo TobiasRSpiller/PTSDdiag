@@ -81,12 +81,12 @@ Rather than commit to a single winner, the site carries forward the top
 five combinations from each of the three rules, fifteen candidate
 definitions in all. This is closer to real practice, where a
 collaboration weighs several promising definitions rather than betting
-on one. `extract_definitions()` pulls them straight from the comparison
-object: it keeps the top `n` combinations of each rule and records, for
-each, how many symptoms must be present and whether all four clusters
-are required. The researcher chooses only how many to carry. (Like the
-evaluation helper below, this function is planned as an exported part of
-PTSDdiag and is defined behind the scenes here.)
+on one.
+[`extract_definitions()`](https://tobiasrspiller.github.io/PTSDdiag/reference/extract_definitions.md)
+pulls them straight from the comparison object: it keeps the top `n`
+combinations of each rule and reads, for each, how many symptoms must be
+present and whether all four clusters are required, so the researcher
+chooses only how many to carry.
 
 ``` r
 
@@ -158,13 +158,12 @@ vignette.
 
 Alongside the fifteen derived definitions we include ICD-11 as a fixed
 published benchmark. ICD-11 is the same rule everywhere, so each site
-computes it locally and nothing about it is shared. We use a small
-helper, `evaluate_definitions()`, that applies each shared definition
-with its own rule, adds ICD-11, and scores all of them against the
-sample’s full DSM-5-TR diagnosis. Because it needs only the definitions
-and a data frame, the identical call runs at either site. The helper
-will be added to PTSDdiag as an exported function in a future release;
-here it is defined behind the scenes so the workflow reads cleanly.
+computes it locally and nothing about it is shared.
+[`evaluate_definitions()`](https://tobiasrspiller.github.io/PTSDdiag/reference/evaluate_definitions.md)
+applies each shared definition with its own rule, adds ICD-11, and
+scores all of them against the sample’s full DSM-5-TR diagnosis. Because
+it needs only the definitions and a data frame, the identical call runs
+at either site.
 
 ## Performance in the derivation sample
 
@@ -228,24 +227,24 @@ evaluate_definitions(vet, definitions, include_icd11 = TRUE)
 #> 15                   1        482          18      0.9978      0.5143 0.9647
 #> 16                   1        482          18      0.9978      0.5143 0.9647
 #> 17                  10        485          15      0.9785      0.8571 0.9891
-#>       NPV
-#> 1  1.0000
-#> 2  0.3933
-#> 3  0.3864
-#> 4  0.3889
-#> 5  0.3846
-#> 6  0.3820
-#> 7  0.8438
-#> 8  0.7838
-#> 9  0.7692
-#> 10 0.7941
-#> 11 0.7778
-#> 12 0.8696
-#> 13 1.0000
-#> 14 0.9048
-#> 15 0.9474
-#> 16 0.9474
-#> 17 0.7500
+#>       NPV Accuracy
+#> 1  1.0000    1.000
+#> 2  0.3933    0.892
+#> 3  0.3864    0.890
+#> 4  0.3889    0.890
+#> 5  0.3846    0.888
+#> 6  0.3820    0.888
+#> 7  0.8438    0.974
+#> 8  0.7838    0.972
+#> 9  0.7692    0.972
+#> 10 0.7941    0.970
+#> 11 0.7778    0.970
+#> 12 0.8696    0.964
+#> 13 1.0000    0.964
+#> 14 0.9048    0.964
+#> 15 0.9474    0.964
+#> 16 0.9474    0.964
+#> 17 0.7500    0.970
 ```
 
 The first row is the full DSM-5-TR diagnosis itself, the reference.
@@ -261,8 +260,13 @@ sees these records, and this site never sees the veteran records.
 ``` r
 
 data("simulated_ptsd_genpop")
-genpop <- rename_ptsd_columns(simulated_ptsd_genpop,
-                              id_col = c("patient_id", "age", "sex"))
+
+# simulated_ptsd_genpop also carries paired CAPS-5 columns (C1..C20); here we
+# use only the PCL-5 items, so we select those before standardising.
+genpop <- rename_ptsd_columns(
+  simulated_ptsd_genpop[, c("patient_id", "age", "sex", paste0("S", 1:20))],
+  id_col = c("patient_id", "age", "sex")
+)
 
 evaluate_definitions(genpop, definitions, include_icd11 = TRUE)
 #>                                        Scenario Total Diagnosed
@@ -319,24 +323,24 @@ evaluate_definitions(genpop, definitions, include_icd11 = TRUE)
 #> 15                  19       1057         143      0.9246      0.8692 0.6527
 #> 16                  18       1085         115      0.9286      0.8977 0.7069
 #> 17                  34       1117          83      0.8651      0.9483 0.8165
-#>       NPV
-#> 1  1.0000
-#> 2  0.8958
-#> 3  0.8949
-#> 4  0.8925
-#> 5  0.8983
-#> 6  0.8983
-#> 7  0.9540
-#> 8  0.9491
-#> 9  0.9530
-#> 10 0.9502
-#> 11 0.9443
-#> 12 0.9684
-#> 13 0.9690
-#> 14 0.9733
-#> 15 0.9775
-#> 16 0.9793
-#> 17 0.9636
+#>       NPV Accuracy
+#> 1  1.0000   1.0000
+#> 2  0.8958   0.9067
+#> 3  0.8949   0.9050
+#> 4  0.8925   0.9033
+#> 5  0.8983   0.9083
+#> 6  0.8983   0.9083
+#> 7  0.9540   0.9508
+#> 8  0.9491   0.9450
+#> 9  0.9530   0.9492
+#> 10 0.9502   0.9483
+#> 11 0.9443   0.9408
+#> 12 0.9684   0.8767
+#> 13 0.9690   0.8900
+#> 14 0.9733   0.8883
+#> 15 0.9775   0.8808
+#> 16 0.9793   0.9042
+#> 17 0.9636   0.9308
 ```
 
 Both tables are built the same way, so they line up row for row with the

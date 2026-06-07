@@ -9,7 +9,7 @@ generalization performance and identify stable symptom combinations."><meta prop
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,7 +52,7 @@ generalization performance and identify stable symptom combinations.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">cross_validation</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
 <span>  k <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>  score_by <span class="op">=</span> <span class="st">"sensitivity"</span>,</span>
+<span>  score_by <span class="op">=</span> <span class="st">"accuracy"</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">123</span>,</span>
 <span>  n_symptoms <span class="op">=</span> <span class="fl">6</span>,</span>
 <span>  n_required <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -81,9 +81,9 @@ diagnoses can be joined back to the original dataframe.</p></dd>
 
 <dt id="arg-score-by">score_by<a class="anchor" aria-label="anchor" href="#arg-score-by"></a></dt>
 <dd><p>Character string specifying optimization criterion:</p><ul><li><p>"accuracy": Minimize total misclassifications (FP + FN, i.e.
-    maximise overall accuracy).</p></li>
+    maximise overall accuracy). Default.</p></li>
 <li><p>"sensitivity": Minimize false negatives only (i.e. maximise
-    sensitivity relative to the full DSM-5-TR diagnosis). Default.</p></li>
+    sensitivity relative to the full DSM-5-TR diagnosis).</p></li>
 </ul></dd>
 
 
@@ -163,16 +163,16 @@ parallel via <code><a href="https://future.apply.futureverse.org/reference/futur
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="co"># Perform 5-fold cross-validation</span></span></span>
 <span class="r-in"><span><span class="va">cv_results</span> <span class="op">&lt;-</span> <span class="fu">cross_validation</span><span class="op">(</span><span class="va">sample_data</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 6, 7, 9, 14, 15, 16</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 3, 6, 7, 8, 16, 19</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Generated 13685 valid cluster-constrained combinations</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 13685 combinations. Best: 3, 4, 7, 8, 15, 16 (3 additional tied)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 13685 combinations. Best: 4, 5, 7, 8, 15, 16</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 3, 6, 7, 8, 11, 16</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Generated 13685 valid cluster-constrained combinations</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 13685 combinations. Best: 3, 5, 6, 13, 15, 16</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 2, 6, 7, 8, 15, 16 (1 additional tied)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 2, 6, 7, 8, 15, 16</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Generated 13685 valid cluster-constrained combinations</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 13685 combinations. Best: 3, 4, 7, 8, 15, 16</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 3, 6, 7, 8, 11, 15 (3 additional tied)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 13685 combinations. Best: 3, 4, 7, 8, 15, 16 (1 additional tied)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 6, 7, 8, 9, 15, 16 (2 additional tied)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Generated 13685 valid cluster-constrained combinations</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 13685 combinations. Best: 4, 5, 7, 8, 15, 16</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 6, 7, 8, 9, 15, 16</span>
@@ -181,84 +181,103 @@ parallel via <code><a href="https://future.apply.futureverse.org/reference/futur
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># View summary for each fold</span></span></span>
 <span class="r-in"><span><span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary_by_fold</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      Split                Scenario Total Diagnosed Total Non-Diagnosed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  Split 1               PTSD_orig     31 (75.61%)         10 (24.39%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  Split 1  symptom_6_7_9_14_15_16      23 (56.1%)          18 (43.9%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  Split 1  symptom_3_6_7_11_13_17     21 (51.22%)         20 (48.78%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  Split 1 symptom_6_7_11_14_15_16     22 (53.66%)         19 (46.34%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  Split 2               PTSD_orig      31 (77.5%)           9 (22.5%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  Split 2   symptom_3_6_7_8_11_16        26 (65%)            14 (35%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  Split 2   symptom_2_6_7_9_15_16        24 (60%)            16 (40%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8  Split 2    symptom_3_6_7_8_9_11        24 (60%)            16 (40%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  Split 3               PTSD_orig      31 (77.5%)           9 (22.5%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Split 3   symptom_2_6_7_8_15_16        20 (50%)            20 (50%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11 Split 3   symptom_3_6_7_8_11_16        22 (55%)            18 (45%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 Split 3    symptom_3_6_7_8_9_11      23 (57.5%)          17 (42.5%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 Split 4               PTSD_orig      31 (77.5%)           9 (22.5%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Split 4   symptom_3_6_7_8_11_15        20 (50%)            20 (50%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Split 4   symptom_3_6_7_8_11_16      25 (62.5%)          15 (37.5%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Split 4  symptom_3_6_7_11_12_16      21 (52.5%)          19 (47.5%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17 Split 5               PTSD_orig     30 (76.92%)          9 (23.08%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18 Split 5   symptom_6_7_8_9_15_16     21 (53.85%)         18 (46.15%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19 Split 5  symptom_6_7_9_14_15_16     23 (58.97%)         16 (41.03%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20 Split 5   symptom_2_6_7_9_15_16     22 (56.41%)         17 (43.59%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      Split               Scenario Total Diagnosed Total Non-Diagnosed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  Split 1              PTSD_orig     31 (75.61%)         10 (24.39%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  Split 1  symptom_3_6_7_8_16_19     25 (60.98%)         16 (39.02%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  Split 1   symptom_3_6_7_8_9_11     28 (68.29%)         13 (31.71%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  Split 1  symptom_3_6_7_8_11_17     24 (58.54%)         17 (41.46%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  Split 2              PTSD_orig      31 (77.5%)           9 (22.5%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  Split 2  symptom_3_6_7_8_11_16        26 (65%)            14 (35%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  Split 2  symptom_2_6_7_8_12_16      19 (47.5%)          21 (52.5%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  Split 2 symptom_6_7_8_12_16_17        18 (45%)            22 (55%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  Split 3              PTSD_orig      31 (77.5%)           9 (22.5%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 Split 3  symptom_2_6_7_8_15_16        20 (50%)            20 (50%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 Split 3  symptom_3_6_7_8_15_16        20 (50%)            20 (50%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 Split 3  symptom_6_7_8_9_15_16      25 (62.5%)          15 (37.5%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 Split 4              PTSD_orig      31 (77.5%)           9 (22.5%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 Split 4  symptom_6_7_8_9_15_16        26 (65%)            14 (35%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 Split 4 symptom_6_7_8_11_15_18        24 (60%)            16 (40%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16 Split 4 symptom_6_7_8_11_16_18        22 (55%)            18 (45%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17 Split 5              PTSD_orig     30 (76.92%)          9 (23.08%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18 Split 5  symptom_6_7_8_9_15_16     21 (53.85%)         18 (46.15%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19 Split 5 symptom_6_7_8_11_15_18     22 (56.41%)         17 (43.59%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20 Split 5 symptom_6_7_8_15_16_17     23 (58.97%)         16 (41.03%)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    True Positive True Negative Newly Diagnosed Newly Non-Diagnosed True Cases</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1             31            10               0                   0         41</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2             22             9               1                   9         31</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3             19             8               2                  12         27</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4             20             8               2                  11         28</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2             21             6               4                  10         27</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3             24             6               4                   7         30</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4             22             8               2                   9         30</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 5             31             9               0                   0         40</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6             23             6               3                   8         29</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7             21             6               3                  10         27</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8             23             8               1                   8         31</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7             18             8               1                  13         26</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8             18             9               0                  13         27</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 9             31             9               0                   0         40</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 10            18             7               2                  13         25</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11            21             8               1                  10         29</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12            21             7               2                  10         28</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11            18             7               2                  13         25</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12            23             7               2                   8         30</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 13            31             9               0                   0         40</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14            19             8               1                  12         27</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15            24             8               1                   7         32</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16            19             7               2                  12         26</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14            24             7               2                   7         31</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15            22             7               2                   9         29</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16            20             7               2                  11         27</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 17            30             9               0                   0         39</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 18            20             8               1                  10         28</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19            21             7               2                   9         28</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20            20             7               2                  10         27</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    False Cases Sensitivity Specificity    PPV    NPV  combination_id rank</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1            0      1.0000      1.0000 1.0000 1.0000            &lt;NA&gt;   NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2           10      0.7097      0.9000 0.9565 0.5000  6_7_9_14_15_16    1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3           14      0.6129      0.8000 0.9048 0.4000  3_6_7_11_13_17    2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4           13      0.6452      0.8000 0.9091 0.4211 6_7_11_14_15_16    3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5            0      1.0000      1.0000 1.0000 1.0000            &lt;NA&gt;   NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6           11      0.7419      0.6667 0.8846 0.4286   3_6_7_8_11_16    1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7           13      0.6774      0.6667 0.8750 0.3750   2_6_7_9_15_16    2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8            9      0.7419      0.8889 0.9583 0.5000    3_6_7_8_9_11    3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9            0      1.0000      1.0000 1.0000 1.0000            &lt;NA&gt;   NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10          15      0.5806      0.7778 0.9000 0.3500   2_6_7_8_15_16    1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11          11      0.6774      0.8889 0.9545 0.4444   3_6_7_8_11_16    2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12          12      0.6774      0.7778 0.9130 0.4118    3_6_7_8_9_11    3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13           0      1.0000      1.0000 1.0000 1.0000            &lt;NA&gt;   NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14          13      0.6129      0.8889 0.9500 0.4000   3_6_7_8_11_15    1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15           8      0.7742      0.8889 0.9600 0.5333   3_6_7_8_11_16    2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16          14      0.6129      0.7778 0.9048 0.3684  3_6_7_11_12_16    3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17           0      1.0000      1.0000 1.0000 1.0000            &lt;NA&gt;   NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18          11      0.6667      0.8889 0.9524 0.4444   6_7_8_9_15_16    1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19          11      0.7000      0.7778 0.9130 0.4375  6_7_9_14_15_16    2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20          12      0.6667      0.7778 0.9091 0.4118   2_6_7_9_15_16    3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19            21             8               1                   9         29</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20            21             7               2                   9         28</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    False Cases Sensitivity Specificity    PPV    NPV Accuracy combination_id</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1            0      1.0000      1.0000 1.0000 1.0000   1.0000           &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           14      0.6774      0.6000 0.8400 0.3750   0.6585  3_6_7_8_16_19</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           11      0.7742      0.6000 0.8571 0.4615   0.7317   3_6_7_8_9_11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           11      0.7097      0.8000 0.9167 0.4706   0.7317  3_6_7_8_11_17</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5            0      1.0000      1.0000 1.0000 1.0000   1.0000           &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6           11      0.7419      0.6667 0.8846 0.4286   0.7250  3_6_7_8_11_16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7           14      0.5806      0.8889 0.9474 0.3810   0.6500  2_6_7_8_12_16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8           13      0.5806      1.0000 1.0000 0.4091   0.6750 6_7_8_12_16_17</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9            0      1.0000      1.0000 1.0000 1.0000   1.0000           &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10          15      0.5806      0.7778 0.9000 0.3500   0.6250  2_6_7_8_15_16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11          15      0.5806      0.7778 0.9000 0.3500   0.6250  3_6_7_8_15_16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12          10      0.7419      0.7778 0.9200 0.4667   0.7500  6_7_8_9_15_16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13           0      1.0000      1.0000 1.0000 1.0000   1.0000           &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14           9      0.7742      0.7778 0.9231 0.5000   0.7750  6_7_8_9_15_16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15          11      0.7097      0.7778 0.9167 0.4375   0.7250 6_7_8_11_15_18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16          13      0.6452      0.7778 0.9091 0.3889   0.6750 6_7_8_11_16_18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17           0      1.0000      1.0000 1.0000 1.0000   1.0000           &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18          11      0.6667      0.8889 0.9524 0.4444   0.7179  6_7_8_9_15_16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19          10      0.7000      0.8889 0.9545 0.4706   0.7436 6_7_8_11_15_18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20          11      0.7000      0.7778 0.9130 0.4375   0.7179 6_7_8_15_16_17</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    rank</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3     2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4     3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7     2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8     3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11    2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12    3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13   NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15    2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16    3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17   NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19    2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20    3</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># View combinations that appeared multiple times</span></span></span>
 <span class="r-in"><span><span class="va">cv_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">combinations_summary</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5 × 15</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 16</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Scenario    combination_id Splits_Appeared Total_Diagnosed Total_Non_Diagnosed</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> PTSD_orig   <span style="color: #BB0000;">NA</span>                           5 30.8 (77.01%)   9.2 (22.99%)       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> symptom_2_… 2_6_7_9_15_16                2 23 (58.2%)      16.5 (41.8%)       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> symptom_3_… 3_6_7_8_11_16                3 24.33 (60.83%)  15.67 (39.17%)     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> symptom_3_… 3_6_7_8_9_11                 2 23.5 (58.75%)   16.5 (41.25%)      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> symptom_6_… 6_7_9_14_15_16               2 23 (57.53%)     17 (42.47%)        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 10 more variables: True_Positive &lt;dbl&gt;, True_Negative &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> symptom_6_… 6_7_8_11_15_18               2 23 (58.2%)      16.5 (41.8%)       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> symptom_6_… 6_7_8_9_15_16                3 24 (60.45%)     15.67 (39.55%)     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 11 more variables: True_Positive &lt;dbl&gt;, True_Negative &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   Newly_Diagnosed &lt;dbl&gt;, Newly_Non_Diagnosed &lt;dbl&gt;, True_Cases &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   False_Cases &lt;dbl&gt;, Sensitivity &lt;dbl&gt;, Specificity &lt;dbl&gt;, PPV &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   NPV &lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   NPV &lt;dbl&gt;, Accuracy &lt;dbl&gt;</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

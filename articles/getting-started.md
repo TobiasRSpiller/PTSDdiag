@@ -200,13 +200,16 @@ of the rule itself, largely stable across samples. Positive and negative
 predictive values translate the rule to a particular setting: because
 they depend on how common PTSD is, the same six-symptom definition
 yields different predictive values in a specialty clinic than in a
-community survey. Reporting all four, alongside the underlying counts,
-is what lets a reader judge whether a simplified definition is adequate
-for their purpose.
+community survey. Accuracy, the overall share of participants classified
+the same way as the full criteria, is the single number
+`score_by = "accuracy"` optimized for. Reporting all of these, alongside
+the underlying counts, is what lets a reader judge whether a simplified
+definition is adequate for their purpose.
 
 [`optimize_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations.md)
 returns these metrics for the reference diagnosis and each top
-combination in `res$summary`. This is the diagnostic-performance table.
+combination in `res$summary`, including an `Accuracy` column. This is
+the diagnostic-performance table.
 
 ``` r
 
@@ -226,11 +229,11 @@ res$summary
 #> 2                 112       4808         192      0.9762      0.7241 0.9829
 #> 3                 109       4807         193      0.9769      0.7103 0.9821
 #> 4                 112       4805         195      0.9762      0.7138 0.9823
-#>      NPV
-#> 1 1.0000
-#> 2 0.6522
-#> 3 0.6540
-#> 4 0.6489
+#>      NPV Accuracy
+#> 1 1.0000   1.0000
+#> 2 0.6522   0.9616
+#> 3 0.6540   0.9614
+#> 4 0.6489   0.9610
 ```
 
 ## Where next

@@ -130,6 +130,10 @@ results
 - [`plot_symptom_frequency()`](https://tobiasrspiller.github.io/PTSDdiag/reference/plot_symptom_frequency.md)
   : Heatmap of PCL-5 symptom selection frequency across optimization
   scenarios
+- [`extract_definitions()`](https://tobiasrspiller.github.io/PTSDdiag/reference/extract_definitions.md)
+  : Extract portable symptom definitions from a comparison
+- [`evaluate_definitions()`](https://tobiasrspiller.github.io/PTSDdiag/reference/evaluate_definitions.md)
+  : Evaluate symptom definitions against a sample
 
 ## Import/Export
 

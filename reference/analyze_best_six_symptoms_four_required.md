@@ -116,8 +116,8 @@ names(ptsd_data) <- paste0("symptom_", 1:20)
 results <- analyze_best_six_symptoms_four_required(ptsd_data, score_by = "accuracy")
 #> Warning: `analyze_best_six_symptoms_four_required()` was deprecated in PTSDdiag 0.2.1.
 #> ℹ Please use `optimize_combinations()` instead.
-#> Evaluating combinations ■■■■■■■■                          23% | ETA:  3s
-#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■           74% | ETA:  1s
+#> Evaluating combinations ■■■■■■■                           20% | ETA:  4s
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■            71% | ETA:  1s
 #> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
 #> ℹ Evaluated 38760 combinations. Best: 1, 2, 3, 6, 11, 16 (866 additional tied)
 
@@ -159,10 +159,10 @@ results$summary
 #> 2             6             4               0                   0         10
 #> 3             6             4               0                   0         10
 #> 4             6             4               0                   0         10
-#>   False Cases Sensitivity Specificity PPV NPV
-#> 1           0           1           1   1   1
-#> 2           0           1           1   1   1
-#> 3           0           1           1   1   1
-#> 4           0           1           1   1   1
+#>   False Cases Sensitivity Specificity PPV NPV Accuracy
+#> 1           0           1           1   1   1        1
+#> 2           0           1           1   1   1        1
+#> 3           0           1           1   1   1        1
+#> 4           0           1           1   1   1        1
 # }
 ```

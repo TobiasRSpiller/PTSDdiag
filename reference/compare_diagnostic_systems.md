@@ -98,6 +98,9 @@ columns:
 
 - `n_misclassified`: Total misclassified cases
 
+- `accuracy`: Proportion classified the same as the reference ((total -
+  misclassified) / total), 4 dp
+
 ## Details
 
 The function:
@@ -162,9 +165,9 @@ tbl
 #>   n_false_negative pct_false_negative n_false_positive pct_false_positive
 #> 1                0               0.00                0               0.00
 #> 2              103               2.06               34               0.68
-#>   n_misclassified
-#> 1               0
-#> 2             137
+#>   n_misclassified accuracy
+#> 1               0   1.0000
+#> 2             137   0.9726
 
 # \donttest{
 # Add two pre-specified combinations
@@ -181,12 +184,12 @@ tbl2 <- compare_diagnostic_systems(
 knitr::kable(tbl2)
 #> 
 #> 
-#> |system   | n_diagnosed| pct_diagnosed| sensitivity| specificity|    ppv|    npv| n_false_negative| pct_false_negative| n_false_positive| pct_false_positive| n_misclassified|
-#> |:--------|-----------:|-------------:|-----------:|-----------:|------:|------:|----------------:|------------------:|----------------:|------------------:|---------------:|
-#> |DSM-5-TR |        4710|         94.20|      1.0000|      1.0000| 1.0000| 1.0000|                0|               0.00|                0|               0.00|               0|
-#> |ICD-11   |        4641|         92.82|      0.9781|      0.8828| 0.9927| 0.7131|              103|               2.06|               34|               0.68|             137|
-#> |Combo A  |        4669|         93.38|      0.9635|      0.5483| 0.9719| 0.4804|              172|               3.44|              131|               2.62|             303|
-#> |Combo B  |        4646|         92.92|      0.9618|      0.6000| 0.9750| 0.4915|              180|               3.60|              116|               2.32|             296|
+#> |system   | n_diagnosed| pct_diagnosed| sensitivity| specificity|    ppv|    npv| n_false_negative| pct_false_negative| n_false_positive| pct_false_positive| n_misclassified| accuracy|
+#> |:--------|-----------:|-------------:|-----------:|-----------:|------:|------:|----------------:|------------------:|----------------:|------------------:|---------------:|--------:|
+#> |DSM-5-TR |        4710|         94.20|      1.0000|      1.0000| 1.0000| 1.0000|                0|               0.00|                0|               0.00|               0|   1.0000|
+#> |ICD-11   |        4641|         92.82|      0.9781|      0.8828| 0.9927| 0.7131|              103|               2.06|               34|               0.68|             137|   0.9726|
+#> |Combo A  |        4669|         93.38|      0.9635|      0.5483| 0.9719| 0.4804|              172|               3.44|              131|               2.62|             303|   0.9394|
+#> |Combo B  |        4646|         92.92|      0.9618|      0.6000| 0.9750| 0.4915|              180|               3.60|              116|               2.32|             296|   0.9408|
 
 # With CAPS-5 as gold standard reference
 caps5_raw <- data.frame(matrix(sample(0:4, 20 * nrow(simulated_ptsd),
@@ -201,12 +204,12 @@ tbl3 <- compare_diagnostic_systems(
 knitr::kable(tbl3)
 #> 
 #> 
-#> |system                 | n_diagnosed| pct_diagnosed| sensitivity| specificity|    ppv|    npv| n_false_negative| pct_false_negative| n_false_positive| pct_false_positive| n_misclassified|
-#> |:----------------------|-----------:|-------------:|-----------:|-----------:|------:|------:|----------------:|------------------:|----------------:|------------------:|---------------:|
-#> |DSM-5-TR (CAPS-5)      |        3902|         78.04|      1.0000|      1.0000| 1.0000| 1.0000|                0|               0.00|                0|               0.00|               0|
-#> |DSM-5-TR (PCL-5)       |        4710|         94.20|      0.9421|      0.0583| 0.7805| 0.2207|              226|               4.52|             1034|              20.68|            1260|
-#> |ICD-11 (PCL-5)         |        4641|         92.82|      0.9290|      0.0747| 0.7811| 0.2284|              277|               5.54|             1016|              20.32|            1293|
-#> |symptom_1_6_8_10_15_19 |        4669|         93.38|      0.9346|      0.0692| 0.7811| 0.2296|              255|               5.10|             1022|              20.44|            1277|
-#> |symptom_2_7_9_11_16_20 |        4646|         92.92|      0.9311|      0.0774| 0.7820| 0.2401|              269|               5.38|             1013|              20.26|            1282|
+#> |system                 | n_diagnosed| pct_diagnosed| sensitivity| specificity|    ppv|    npv| n_false_negative| pct_false_negative| n_false_positive| pct_false_positive| n_misclassified| accuracy|
+#> |:----------------------|-----------:|-------------:|-----------:|-----------:|------:|------:|----------------:|------------------:|----------------:|------------------:|---------------:|--------:|
+#> |DSM-5-TR (CAPS-5)      |        3902|         78.04|      1.0000|      1.0000| 1.0000| 1.0000|                0|               0.00|                0|               0.00|               0|   1.0000|
+#> |DSM-5-TR (PCL-5)       |        4710|         94.20|      0.9421|      0.0583| 0.7805| 0.2207|              226|               4.52|             1034|              20.68|            1260|   0.7480|
+#> |ICD-11 (PCL-5)         |        4641|         92.82|      0.9290|      0.0747| 0.7811| 0.2284|              277|               5.54|             1016|              20.32|            1293|   0.7414|
+#> |symptom_1_6_8_10_15_19 |        4669|         93.38|      0.9346|      0.0692| 0.7811| 0.2296|              255|               5.10|             1022|              20.44|            1277|   0.7446|
+#> |symptom_2_7_9_11_16_20 |        4646|         92.92|      0.9311|      0.0774| 0.7820| 0.2401|              269|               5.38|             1013|              20.26|            1282|   0.7436|
 # }
 ```
