@@ -9,7 +9,7 @@ optimize_combinations_clusters(
   n_symptoms = 6,
   n_required = 4,
   n_top = 3,
-  score_by = "false_cases",
+  score_by = "accuracy",
   clusters,
   DT = FALSE,
   show_progress = TRUE
@@ -40,8 +40,10 @@ diagnosis (default: 4). Must be between 1 and \code{n_symptoms}.}
 \item{score_by}{Character string specifying optimization criterion:
 
 \itemize{
-  \item "false_cases": Minimize total misclassifications
-  \item "newly_nondiagnosed": Minimize false negatives only
+  \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
+    maximise overall accuracy). Default.
+  \item "sensitivity": Minimize false negatives only (i.e. maximise
+    sensitivity relative to the full DSM-5-TR diagnosis).
 }}
 
 \item{clusters}{A named list of integer vectors defining the cluster
@@ -120,7 +122,7 @@ names(ptsd_data) <- paste0("symptom_", 1:20)
 # Find best hierarchical combinations with PCL-5 clusters
 pcl5_clusters <- list(B = 1:5, C = 6:7, D = 8:14, E = 15:20)
 results <- optimize_combinations_clusters(ptsd_data, n_symptoms = 6,
-             n_required = 4, score_by = "false_cases", clusters = pcl5_clusters)
+             n_required = 4, score_by = "accuracy", clusters = pcl5_clusters)
 
 # Get symptom numbers
 results$best_symptoms

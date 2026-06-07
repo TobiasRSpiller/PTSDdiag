@@ -2,11 +2,18 @@
 #'
 #' A dataset containing simulated responses from 5,000 patients on the PCL-5
 #' (PTSD Checklist for DSM-5). Each patient rated 20 PTSD symptoms on a scale
-#' from 0 to 4.
+#' from 0 to 4. The dataset additionally ships with three demographic columns
+#' (\code{patient_id}, \code{age}, \code{sex}) so that the demographic
+#' carry-through workflow (\code{id_col}) can be demonstrated end-to-end on
+#' the bundled data.
 #'
-#' @format A data frame with 5,000 rows and 20 columns:
+#' @format A data frame with 5,000 rows and 23 columns:
 #'
 #' \describe{
+#'   \item{patient_id}{Character. Synthetic participant identifier
+#'     (\code{"P0001"}--\code{"P5000"}).}
+#'   \item{age}{Integer. Age in years (truncated normal, range 18--80).}
+#'   \item{sex}{Factor. \code{"female"} / \code{"male"}.}
 #'   \item{S1}{Intrusive memories}
 #'   \item{S2}{Nightmares}
 #'   \item{S3}{Flashbacks}

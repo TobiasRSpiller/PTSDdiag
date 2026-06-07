@@ -56,7 +56,8 @@ logic as the rest of the package (\code{\link{create_ptsd_diagnosis_binarized}})
 }
 \examples{
 # Apply ICD-11 criteria to the built-in simulated dataset
-ptsd_data <- rename_ptsd_columns(simulated_ptsd)
+ptsd_data <- rename_ptsd_columns(simulated_ptsd,
+                                  id_col = c("patient_id", "age", "sex"))
 icd11_result <- create_icd11_diagnosis(ptsd_data)
 head(icd11_result)
 

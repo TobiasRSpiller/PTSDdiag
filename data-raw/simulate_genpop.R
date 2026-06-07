@@ -31,5 +31,24 @@ names(simulated_ptsd_genpop) <- paste0("S", 1:20)
 simulated_ptsd_genpop <- simulated_ptsd_genpop[sample(nrow(simulated_ptsd_genpop)), ]
 rownames(simulated_ptsd_genpop) <- NULL
 
+# Demographic columns (community sample skew: ~55% female, slightly younger
+# than the clinical veterans dataset).
+n_gp <- nrow(simulated_ptsd_genpop)
+patient_id <- sprintf("G%04d", seq_len(n_gp))
+age <- pmin(80L, pmax(18L,
+                      as.integer(round(rnorm(n_gp, mean = 38, sd = 14)))))
+sex <- factor(
+  sample(c("female", "male"), n_gp, replace = TRUE, prob = c(0.55, 0.45)),
+  levels = c("female", "male")
+)
+
+simulated_ptsd_genpop <- cbind(
+  data.frame(patient_id = patient_id,
+             age        = age,
+             sex        = sex,
+             stringsAsFactors = FALSE),
+  simulated_ptsd_genpop
+)
+
 # Save
 usethis::use_data(simulated_ptsd_genpop, overwrite = TRUE)

@@ -148,9 +148,33 @@
 }
 
 #' Validate score_by parameter
+#'
+#' Accepts the epidemiological argument names introduced in v0.3.1
+#' (\code{"accuracy"} and \code{"sensitivity"}). When users pass the old
+#' (v <= 0.3.0) values \code{"false_cases"} or \code{"newly_nondiagnosed"},
+#' a migration-hint error is raised.
 #' @noRd
 .validate_score_by <- function(score_by) {
-  valid_scoring <- c("false_cases", "newly_nondiagnosed")
+  valid_scoring <- c("accuracy", "sensitivity")
+  legacy_map    <- c(false_cases = "accuracy",
+                     newly_nondiagnosed = "sensitivity")
+
+  if (length(score_by) != 1 || is.na(score_by) || !is.character(score_by)) {
+    cli::cli_abort(c(
+      "{.arg score_by} must be one of {.or {.val {valid_scoring}}}.",
+      "x" = "Got {.cls {class(score_by)}}."
+    ))
+  }
+
+  if (score_by %in% names(legacy_map)) {
+    cli::cli_abort(c(
+      "{.arg score_by} must be one of {.or {.val {valid_scoring}}}.",
+      "x" = "Got {.val {score_by}}.",
+      "i" = "In v0.3.1 these values were renamed for clarity. \\
+            Use {.val {legacy_map[[score_by]]}} instead of {.val {score_by}}."
+    ))
+  }
+
   if (!score_by %in% valid_scoring) {
     cli::cli_abort(c(
       "{.arg score_by} must be one of {.or {.val {valid_scoring}}}.",
@@ -331,7 +355,9 @@
 #' @param combinations List of integer vectors (symptom index combinations).
 #' @param binarized_data Binarized symptom data (matrix or data.frame).
 #' @param baseline_results Logical vector of baseline DSM-5 diagnoses.
-#' @param score_by Character: "false_cases" or "newly_nondiagnosed".
+#' @param score_by Character: "accuracy" (minimise FP + FN, equivalent to
+#'   pre-0.3.1 "false_cases") or "sensitivity" (minimise FN, equivalent to
+#'   pre-0.3.1 "newly_nondiagnosed").
 #' @param n_top Integer: how many top combinations to track.
 #' @param diagnose_fn Function(binarized_data, symptoms) -> logical vector.
 #' @return Named list with $top (list of n_top elements, each with
@@ -356,9 +382,10 @@
     newly_diagnosed <- sum(!baseline_results & current_diagnoses)
     newly_nondiagnosed <- sum(baseline_results & !current_diagnoses)
 
-    score <- if (score_by == "false_cases") {
+    score <- if (score_by == "accuracy") {
       -(newly_diagnosed + newly_nondiagnosed)
     } else {
+      # "sensitivity"
       -newly_nondiagnosed
     }
 

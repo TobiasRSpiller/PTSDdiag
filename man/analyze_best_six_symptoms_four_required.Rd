@@ -6,7 +6,7 @@
 \usage{
 analyze_best_six_symptoms_four_required(
   data,
-  score_by = "false_cases",
+  score_by = "accuracy",
   DT = FALSE
 )
 }
@@ -26,8 +26,10 @@ analyze_best_six_symptoms_four_required(
 \item{score_by}{Character string specifying optimization criterion:
 
 \itemize{
-  \item "false_cases": Minimize total misclassifications
-  \item "newly_nondiagnosed": Minimize false negatives only
+  \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
+    maximise overall accuracy). Default.
+  \item "sensitivity": Minimize false negatives only (i.e. maximise
+    sensitivity relative to the full DSM-5-TR diagnosis).
 }}
 
 \item{DT}{Logical. If \code{TRUE}, return the summary as an interactive
@@ -88,7 +90,7 @@ names(ptsd_data) <- paste0("symptom_", 1:20)
 
 \donttest{
 # Find best combinations minimizing false cases
-results <- analyze_best_six_symptoms_four_required(ptsd_data, score_by = "false_cases")
+results <- analyze_best_six_symptoms_four_required(ptsd_data, score_by = "accuracy")
 
 # Get symptom numbers
 results$best_symptoms

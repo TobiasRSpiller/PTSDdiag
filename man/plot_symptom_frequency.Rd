@@ -56,7 +56,8 @@ Requires the \pkg{ggplot2} package.
 }
 \examples{
 \donttest{
-ptsd_data <- rename_ptsd_columns(simulated_ptsd)
+ptsd_data <- rename_ptsd_columns(simulated_ptsd,
+                                  id_col = c("patient_id", "age", "sex"))
 comp <- compare_optimizations(ptsd_data, n_top = 5, show_progress = FALSE)
 plot_symptom_frequency(comp)
 }

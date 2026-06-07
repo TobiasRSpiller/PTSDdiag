@@ -43,9 +43,9 @@
 #'   first combination.
 #'
 #' @param score_by Character or \code{NULL}. The scoring criterion used during
-#'   optimization (\code{"false_cases"} or \code{"newly_nondiagnosed"}).
-#'   Stored as metadata for reproducibility. If \code{NULL} (default), omitted
-#'   from the file.
+#'   optimization (\code{"accuracy"} or \code{"sensitivity"}). Stored as
+#'   metadata for reproducibility. If \code{NULL} (default), omitted from
+#'   the file.
 #'
 #' @param description Character string. Optional free-text description of the
 #'   derivation context (e.g., sample characteristics, dataset name). Default
@@ -78,7 +78,7 @@
 #' # Write to a temporary file
 #' tmp <- tempfile(fileext = ".json")
 #' write_combinations(my_combos, tmp, n_required = 4,
-#'                    score_by = "false_cases",
+#'                    score_by = "accuracy",
 #'                    description = "Example non-hierarchical combinations")
 #'
 #' # Can also pass a full optimization result directly:
@@ -222,7 +222,7 @@ write_combinations <- function(combinations, file, n_required = 4,
 #' )
 #' tmp <- tempfile(fileext = ".json")
 #' write_combinations(my_combos, tmp, n_required = 4,
-#'                    score_by = "false_cases")
+#'                    score_by = "accuracy")
 #'
 #' # Read them back
 #' spec <- read_combinations(tmp)

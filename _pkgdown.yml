@@ -30,19 +30,16 @@ navbar:
     articles:
       text: Articles
       menu:
-      - text: "Quick Start"
-        href: articles/quickstart.html
-      - text: "Full Internal Analysis"
-        href: articles/internal_analysis.html
-      - text: "Joining diagnoses to demographics"
-        href: articles/id_column_workflow.html
-      - text: "Multi-scenario analysis"
-        href: articles/multi_scenario_analysis.html
-      - text: "---"
-      - text: "External Validation (PCL-5)"
-        href: articles/external_validation_pcl5.html
-      - text: "External Validation (CAPS-5)"
-        href: articles/external_validation_caps5.html
+      - text: "Getting started"
+        href: articles/getting-started.html
+      - text: "Comparing diagnostic criteria"
+        href: articles/comparing-criteria.html
+      - text: "Validating abbreviated symptom definitions"
+        href: articles/validation.html
+      - text: "Validating a shared definition across sites"
+        href: articles/multi-site-validation.html
+      - text: "CAPS-5 workflow"
+        href: articles/caps5-workflow.html
     news:
       text: News
       href: news/index.html
@@ -57,32 +54,26 @@ home:
     Identify optimal subsets of PCL-5 items that maintain diagnostic
     accuracy while reducing assessment burden.
   links:
-  - text: Quick Start
-    href: articles/quickstart.html
-  - text: Full Internal Analysis
-    href: articles/internal_analysis.html
-  - text: External Validation (PCL-5)
-    href: articles/external_validation_pcl5.html
-  - text: External Validation (CAPS-5)
-    href: articles/external_validation_caps5.html
+  - text: Getting started
+    href: articles/getting-started.html
+  - text: Comparing diagnostic criteria
+    href: articles/comparing-criteria.html
+  - text: Validating abbreviated symptom definitions
+    href: articles/validation.html
+  - text: CAPS-5 workflow
+    href: articles/caps5-workflow.html
   - text: Function Reference
     href: reference/index.html
-  - text: Publication
-    href: https://doi.org/10.31219/osf.io/6rk72_v1
 
 articles:
-- title: "Getting Started"
-  desc: "Core workflows for new users"
+- title: "Workflows"
+  desc: "End-to-end workflows for new users and methodological extensions"
   contents:
-  - quickstart
-  - internal_analysis
-  - id_column_workflow
-  - multi_scenario_analysis
-- title: "External Validation"
-  desc: "Test optimised criteria on independent datasets"
-  contents:
-  - external_validation_pcl5
-  - external_validation_caps5
+  - getting-started
+  - comparing-criteria
+  - validation
+  - multi-site-validation
+  - caps5-workflow
 
 reference:
   - title: Data Preparation

@@ -1,0 +1,100 @@
+---
+title: "CAPS-5 workflow"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{CAPS-5 workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  fig.width  = 7,
+  fig.height = 4
+)
+```
+
+This vignette compares a PCL-5 symptom definition against the CAPS-5 diagnosis, and shows how to optimize a definition against the CAPS-5 diagnosis directly.
+
+## Why use the CAPS-5
+
+The PCL-5 is completed by the patient; the CAPS-5 is administered by a clinician. Both rate the same 20 DSM-5-TR symptoms on the same 0 to 4 scale, so when both are available for the same participants the CAPS-5 diagnosis is the closest available reference to a clinical ground truth. That makes it the natural standard against which to judge a self-report definition.
+
+## Requirements for the input data
+
+The CAPS-5 input must be the 20 items in their standard order, scored 0 to 4, with no missing values, plus any identifier columns you name in `id_col`; the full contract is in the [Getting started](getting-started.html) vignette. One **additional requirement** applies here: when comparing two instruments, the PCL-5 and CAPS-5 data frames must describe the same participants in the same row order.
+
+## Standardizing both instruments
+
+We standardize the PCL-5 data as usual and create a CAPS-5 data frame in the same form with `rename_caps5_columns()`. The CAPS-5 ratings below are simulated independently of the PCL-5 scores, purely for illustration. Because they are random rather than clinician-rated, the agreement reported in the next section reflects chance, and the tables should be read as illustrations of the output format rather than as a real instrument comparison. We use a 500-row subset of the bundled data to keep the vignette fast.
+
+```{r setup, message = FALSE}
+library(PTSDdiag)
+
+data("simulated_ptsd")
+pcl5 <- simulated_ptsd[1:500, ]
+ptsd <- rename_ptsd_columns(pcl5,
+                            id_col = c("patient_id", "age", "sex"))
+
+set.seed(42)
+caps5_raw <- as.data.frame(matrix(
+  sample(0:4, 20 * nrow(pcl5), replace = TRUE),
+  ncol = 20
+))
+caps5 <- rename_caps5_columns(caps5_raw)
+```
+
+## Computing the CAPS-5 diagnosis
+
+`create_caps5_diagnosis()` applies the DSM-5-TR algorithm to the CAPS-5 severity scores, using the same clusters and the same presence threshold of 2 or higher as the PCL-5 diagnosis. It returns a single logical column, `PTSD_caps5`.
+
+```{r caps5-dx}
+caps5_dx <- create_caps5_diagnosis(caps5)
+head(caps5_dx)
+mean(caps5_dx$PTSD_caps5) * 100
+```
+
+## Comparing the PCL-5 and CAPS-5 diagnoses
+
+`compare_diagnostic_systems()` builds one summary table that scores each diagnostic system against a chosen reference. Setting `reference = "caps5"` makes the CAPS-5 the standard, so the PCL-5 diagnosis and ICD-11 are evaluated against it. Each row reports sensitivity, specificity, PPV, and NPV against the reference, together with the counts of false positives, false negatives, and total misclassifications. 
+
+```{r compare}
+compare_diagnostic_systems(
+  ptsd,
+  caps5_data = caps5,
+  icd11      = TRUE,
+  reference  = "caps5"
+)
+```
+
+## Optimizing against the CAPS-5 diagnosis
+
+To make the CAPS-5 the optimization target rather than a row in a comparison, pass the clinician diagnosis to `compare_optimizations()` as a fixed criterion. The optimized PCL-5 definitions are then reported alongside it, and the symptom-frequency tools apply as in the [Comparing diagnostic criteria](comparing-criteria.html) vignette.
+
+```{r caps5-as-fixed}
+comp <- compare_optimizations(
+  ptsd,
+  scenarios = list(
+    "4/6 Hierarchical"     = list(n_symptoms = 6, n_required = 4, hierarchical = TRUE),
+    "4/6 Non-hierarchical" = list(n_symptoms = 6, n_required = 4, hierarchical = FALSE),
+    "CAPS-5 (reference)"   = list(type = "fixed", criterion = caps5_dx$PTSD_caps5,
+                                  symptoms = 1:20)
+  ),
+  n_top         = 5,
+  score_by      = "accuracy",
+  show_progress = FALSE
+)
+summarize_top_combinations(comp, top_n = 3, as_percent = TRUE)
+```
+
+## Interpreting agreement and disagreement
+
+When the PCL-5 and CAPS-5 diagnoses agree closely, a simplified PCL-5 definition that reproduces the full PCL-5 diagnosis also reproduces the clinician diagnosis, and the choice of reference is immaterial. When they diverge, the choice of reference matters, and reporting performance against both is desirable.
+
+## See also
+
+- [Getting started](getting-started.html) for the single-cohort derivation workflow.
+- [Comparing diagnostic criteria](comparing-criteria.html) for multi-rule comparison and the symptom-frequency heatmap.
+- [Validating abbreviated symptom definitions](validation.html) for internal and external validation.

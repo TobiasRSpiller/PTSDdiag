@@ -1,0 +1,113 @@
+---
+title: "Validating abbreviated symptom definitions"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Validating abbreviated symptom definitions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  fig.width  = 7,
+  fig.height = 4
+)
+```
+
+A symptom definition is only useful if it holds up beyond the sample it was derived in. This vignette tests that, first by internal validation on a single dataset and then by external validation in an independent cohort.
+
+## Why validation matters
+
+The optimization fits the data it is given, so a definition that reproduces the full diagnosis almost perfectly in one sample may owe part of that fit to noise specific to that sample. Two questions separate a real result from an artefact of fitting. Does the same rule perform comparably on cases that were not used to derive it? And does it transport to a cohort with a different case mix? The first is answered by internal validation, holding out part of the sample or rotating through folds. The second is answered by external validation, deriving the rule in one cohort and applying it unchanged in another. Predictive values make the second question pressing: because they depend on how common PTSD is, a rule moved from a high-prevalence clinic to a low-prevalence community sample will behave differently even if its sensitivity and specificity are stable.
+
+## Requirements for the input data
+
+The input must be the 20 PCL-5 items in their standard order, scored 0 to 4, with no missing values, plus any identifier columns you name in `id_col`. The full contract is described in the [Getting started](getting-started.html) vignette.
+
+## Internal validation
+
+`holdout_validation()` partitions the sample into a training set and a test set, derives the top combinations on the training set, and reports their performance on the held-out test set. We optimize by sensitivity here, which directs the search to minimize missed cases. To keep the vignette fast we work with a 250-row subset of the bundled data.
+
+```{r holdout, message = FALSE}
+library(PTSDdiag)
+library(dplyr)
+
+data("simulated_ptsd")
+ptsd <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+                            id_col = c("patient_id", "age", "sex"))
+
+ho <- holdout_validation(
+  ptsd,
+  train_ratio = 0.7,
+  n_symptoms  = 6,
+  n_required  = 4,
+  n_top       = 3,
+  score_by    = "sensitivity",
+  seed        = 42
+)
+ho$without_clusters$best_combinations
+ho$without_clusters$summary
+```
+
+`score_by = "sensitivity"` minimizes false negatives, the conservative choice when missing a true case is the costlier error; `score_by = "accuracy"` would  minimize total misclassification. The `seed` argument makes the split reproducible.
+
+`cross_validation()` extends the same logic to k folds, deriving on k minus one folds and testing on the remaining one, then pooling the results. Combinations that recur across folds are reported in `combinations_summary`.
+
+```{r cv, message = FALSE}
+cv <- cross_validation(
+  ptsd,
+  k          = 3,
+  n_symptoms = 6,
+  n_required = 4,
+  n_top      = 3,
+  score_by   = "sensitivity",
+  seed       = 42
+)
+cv$without_clusters$summary_by_fold
+cv$without_clusters$combinations_summary  # NULL if no combination repeats
+```
+
+## External validation in a second cohort
+
+To test generalizability of the definitions with based on fewer symptoms, one needs to test the derived defintions in a second, independent dataset. The package ships a second simulated dataset, `simulated_ptsd_genpop`, whose PTSD prevalence is about 21%, well below the 94% of the inlcuded clinical sample. Deriving in the clinical sample and validating in the community sample therefore probes exactly the prevalence shift described above. We again use a 250-row subset of each for speed.
+
+The combinations are derived once, written to a small JSON file, and read back before being applied. The export step is what makes the rule portable across sites and analysts, without a need for data sharing or manual transcription.
+
+```{r external, message = FALSE}
+data("simulated_ptsd_genpop")
+
+# Derive in the clinical sample
+deriv <- optimize_combinations(ptsd, 
+                               n_symptoms = 6, 
+                               n_required = 4,
+                               n_top = 5, 
+                               score_by = "accuracy",
+                               show_progress = FALSE)
+
+# Export for reuse
+tmp <- tempfile(fileext = ".json")
+write_combinations(deriv$best_symptoms, tmp, 
+                   n_required = 4,
+                   score_by = "accuracy",
+                   description = "Six-symptom, four-required definition")
+
+# A second analyst reads the file and applies it to the community sample
+spec   <- read_combinations(tmp)
+genpop <- rename_ptsd_columns(simulated_ptsd_genpop[1:250, ],
+                              id_col = c("patient_id", "age", "sex"))
+
+applied <- apply_symptom_combinations(genpop, spec$combinations,
+                                      n_required = spec$n_required)
+summarize_ptsd_changes(applied) %>%
+  create_readable_summary()
+```
+
+Compare this table with the derivation performance. Sensitivity and specificity, which are properties of the rule, should remain close to their values in the clinical sample. The predictive values will move: in the lower-prevalence community sample, PPV falls and NPV rises, so a positive result from the same rule is less likely to correspond to a true case than it was in the clinic. This is not a failure of the rule but a property of applying any fixed criterion across settings with different PTSD prevalence rates.
+
+## See also
+
+- [Getting started](getting-started.html) for the single-cohort derivation workflow.
+- [Comparing diagnostic criteria](comparing-criteria.html) for the symptom-frequency heatmap and multi-rule comparison.
+- [CAPS-5 workflow](caps5-workflow.html) for validation against a clinician-administered reference.

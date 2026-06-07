@@ -7,7 +7,7 @@
 holdout_validation(
   data,
   train_ratio = 0.7,
-  score_by = "newly_nondiagnosed",
+  score_by = "sensitivity",
   seed = 123,
   n_symptoms = 6,
   n_required = 4,
@@ -29,8 +29,10 @@ diagnoses can be joined back to the original dataframe.}
 
 \item{score_by}{Character string specifying optimization criterion:
 \itemize{
-  \item "false_cases": Minimize total misclassifications
-  \item "newly_nondiagnosed": Minimize false negatives only (default)
+  \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
+    maximise overall accuracy).
+  \item "sensitivity": Minimize false negatives only (i.e. maximise
+    sensitivity relative to the full DSM-5-TR diagnosis). Default.
 }}
 
 \item{seed}{Integer for random number generation reproducibility (default: 123)}

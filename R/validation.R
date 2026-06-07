@@ -46,8 +46,10 @@ utils::globalVariables(c(
 #'   (default: 0.7 for 70/30 split)
 #' @param score_by Character string specifying optimization criterion:
 #'   \itemize{
-#'     \item "false_cases": Minimize total misclassifications
-#'     \item "newly_nondiagnosed": Minimize false negatives only (default)
+#'     \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
+#'       maximise overall accuracy).
+#'     \item "sensitivity": Minimize false negatives only (i.e. maximise
+#'       sensitivity relative to the full DSM-5-TR diagnosis). Default.
 #'   }
 #' @param seed Integer for random number generation reproducibility (default: 123)
 #' @param n_symptoms Integer specifying how many symptoms per combination
@@ -103,7 +105,7 @@ utils::globalVariables(c(
 #' }
 #'
 holdout_validation <- function(data, train_ratio = 0.7,
-                               score_by = "newly_nondiagnosed", seed = 123,
+                               score_by = "sensitivity", seed = 123,
                                n_symptoms = 6, n_required = 4, n_top = 3,
                                DT = FALSE) {
   # Input validation
@@ -226,8 +228,10 @@ holdout_validation <- function(data, train_ratio = 0.7,
 #' @param k Number of folds for cross-validation (default: 5)
 #' @param score_by Character string specifying optimization criterion:
 #'   \itemize{
-#'     \item "false_cases": Minimize total misclassifications
-#'     \item "newly_nondiagnosed": Minimize false negatives only (default)
+#'     \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
+#'       maximise overall accuracy).
+#'     \item "sensitivity": Minimize false negatives only (i.e. maximise
+#'       sensitivity relative to the full DSM-5-TR diagnosis). Default.
 #'   }
 #' @param seed Integer for random number generation reproducibility (default: 123)
 #' @param n_symptoms Integer specifying how many symptoms per combination
@@ -289,7 +293,7 @@ holdout_validation <- function(data, train_ratio = 0.7,
 #' cv_results$without_clusters$combinations_summary
 #' }
 #'
-cross_validation <- function(data, k = 5, score_by = "newly_nondiagnosed",
+cross_validation <- function(data, k = 5, score_by = "sensitivity",
                              seed = 123, n_symptoms = 6, n_required = 4,
                              n_top = 3, DT = FALSE) {
   # Input validation
