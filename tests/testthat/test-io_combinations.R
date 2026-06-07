@@ -21,7 +21,7 @@ test_that("write_combinations creates a valid JSON file", {
   on.exit(unlink(tmp))
 
   result <- write_combinations(combos, tmp, n_required = 4,
-                               score_by = "false_cases",
+                               score_by = "accuracy",
                                description = "Test export")
 
   expect_true(file.exists(tmp))
@@ -130,7 +130,7 @@ test_that("read_combinations round-trips non-hierarchical combinations", {
   on.exit(unlink(tmp))
 
   write_combinations(combos, tmp, n_required = 4,
-                     score_by = "false_cases",
+                     score_by = "accuracy",
                      description = "Round-trip test")
 
   spec <- read_combinations(tmp)
@@ -146,7 +146,7 @@ test_that("read_combinations round-trips non-hierarchical combinations", {
   expect_equal(spec$n_required, 4)
   expect_null(spec$clusters)
   expect_equal(spec$parameters$n_symptoms, 6)
-  expect_equal(spec$parameters$score_by, "false_cases")
+  expect_equal(spec$parameters$score_by, "accuracy")
   expect_equal(spec$description, "Round-trip test")
   expect_true(!is.na(spec$ptsddiag_version))
   expect_true(!is.na(spec$created_at))
@@ -159,7 +159,7 @@ test_that("read_combinations round-trips hierarchical combinations", {
   on.exit(unlink(tmp))
 
   write_combinations(combos, tmp, n_required = 4, clusters = clusters,
-                     score_by = "false_cases")
+                     score_by = "accuracy")
 
   spec <- read_combinations(tmp)
 

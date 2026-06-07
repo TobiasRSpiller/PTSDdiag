@@ -10,13 +10,13 @@ test_that("analyze_best_six_symptoms_four_required works correctly", {
   # Test deprecation warning is issued
   rlang::local_options(lifecycle_verbosity = "warning")
   expect_warning(
-    analyze_best_six_symptoms_four_required(test_data, score_by = "false_cases"),
+    analyze_best_six_symptoms_four_required(test_data, score_by = "accuracy"),
     class = "lifecycle_warning_deprecated"
   )
 
   # Test basic functionality (suppress deprecation warning)
   results <- suppressWarnings(
-    analyze_best_six_symptoms_four_required(test_data, score_by = "false_cases")
+    analyze_best_six_symptoms_four_required(test_data, score_by = "accuracy")
   )
 
   # Check structure of results
@@ -47,13 +47,13 @@ test_that("analyze_best_six_symptoms_four_required_clusters works correctly", {
   # Test deprecation warning is issued
   rlang::local_options(lifecycle_verbosity = "warning")
   expect_warning(
-    analyze_best_six_symptoms_four_required_clusters(test_data, score_by = "false_cases"),
+    analyze_best_six_symptoms_four_required_clusters(test_data, score_by = "accuracy"),
     class = "lifecycle_warning_deprecated"
   )
 
   # Test basic functionality (suppress deprecation warning)
   results <- suppressWarnings(
-    analyze_best_six_symptoms_four_required_clusters(test_data, score_by = "false_cases")
+    analyze_best_six_symptoms_four_required_clusters(test_data, score_by = "accuracy")
   )
 
   # Check structure of results
@@ -89,14 +89,14 @@ test_that("optimize_combinations returns data.frame by default and DT when reque
   # Default: data.frame
 
   results <- optimize_combinations(test_data, n_symptoms = 4, n_required = 3,
-                                   n_top = 2, score_by = "false_cases")
+                                   n_top = 2, score_by = "accuracy")
   expect_true(is.data.frame(results$summary))
   expect_true("Scenario" %in% names(results$summary))
 
   # DT = TRUE: htmlwidget
   skip_if_not_installed("DT")
   results_dt <- optimize_combinations(test_data, n_symptoms = 4, n_required = 3,
-                                      n_top = 2, score_by = "false_cases", DT = TRUE)
+                                      n_top = 2, score_by = "accuracy", DT = TRUE)
   expect_s3_class(results_dt$summary, "datatables")
 })
 
@@ -111,14 +111,14 @@ test_that("optimize_combinations_clusters returns data.frame by default and DT w
 
   # Default: data.frame
   results <- optimize_combinations_clusters(test_data, n_symptoms = 5, n_required = 4,
-                                            n_top = 2, score_by = "false_cases",
+                                            n_top = 2, score_by = "accuracy",
                                             clusters = clusters)
   expect_true(is.data.frame(results$summary))
 
   # DT = TRUE: htmlwidget
   skip_if_not_installed("DT")
   results_dt <- optimize_combinations_clusters(test_data, n_symptoms = 5, n_required = 4,
-                                               n_top = 2, score_by = "false_cases",
+                                               n_top = 2, score_by = "accuracy",
                                                clusters = clusters, DT = TRUE)
   expect_s3_class(results_dt$summary, "datatables")
 })
@@ -132,7 +132,7 @@ test_that("optimize_combinations summary includes combination_id and rank", {
   colnames(test_data) <- paste0("symptom_", 1:20)
 
   results <- optimize_combinations(test_data, n_symptoms = 4, n_required = 3,
-                                   n_top = 2, score_by = "false_cases")
+                                   n_top = 2, score_by = "accuracy")
   summary <- results$summary
 
   # Check combination_id and rank columns exist
@@ -173,12 +173,12 @@ test_that("combination IDs are consistent across optimize -> write -> read pipel
 
   # Optimize
   results <- optimize_combinations(test_data, n_symptoms = 4, n_required = 3,
-                                   n_top = 2, score_by = "false_cases")
+                                   n_top = 2, score_by = "accuracy")
 
   # Write
   tmp <- tempfile(fileext = ".json")
   on.exit(unlink(tmp))
-  write_combinations(results, tmp, n_required = 3, score_by = "false_cases")
+  write_combinations(results, tmp, n_required = 3, score_by = "accuracy")
 
   # Read
   spec <- read_combinations(tmp)
@@ -202,7 +202,7 @@ test_that("optimize_combinations returns n_tied count", {
   colnames(test_data) <- paste0("symptom_", 1:20)
 
   results <- optimize_combinations(test_data, n_symptoms = 4, n_required = 3,
-                                   n_top = 2, score_by = "false_cases")
+                                   n_top = 2, score_by = "accuracy")
 
   expect_true("n_tied" %in% names(results))
   expect_true(is.integer(results$n_tied))
@@ -219,7 +219,7 @@ test_that("optimize_combinations_clusters returns n_tied count", {
 
   clusters <- list(B = 1:5, C = 6:7, D = 8:14, E = 15:20)
   results <- optimize_combinations_clusters(test_data, n_symptoms = 5,
-               n_required = 4, n_top = 2, score_by = "false_cases",
+               n_required = 4, n_top = 2, score_by = "accuracy",
                clusters = clusters)
 
   expect_true("n_tied" %in% names(results))
@@ -317,7 +317,7 @@ test_that("read_combinations falls back gracefully for old JSON files without ID
     parameters = list(
       n_symptoms = 4,
       n_required = 3,
-      score_by = "false_cases",
+      score_by = "accuracy",
       clusters = NULL
     ),
     combinations = list(c(1, 2, 3, 4), c(5, 6, 7, 8))

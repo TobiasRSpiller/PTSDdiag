@@ -1,0 +1,111 @@
+---
+title: "Comparing diagnostic criteria"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Comparing diagnostic criteria}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  fig.width  = 7,
+  fig.height = 4
+)
+```
+
+This vignette evaluates a set of candidate definitions for PTSD on a single sample, reports their diagnostic performance, and identifies the symptoms that recur across the most accurate solutions.
+
+## Why compare different definitions
+
+As the differences between the DSM-5-TR and the ICD-11 illustrate, there are numerous ways PTSD could be defined. With regard to the DSM-5-TR definition, there are two relevant parameters that can be changed: the number of items that must be present and whether the clusters structure should be retained. `compare_optimizations()` runs a set of different rules in one call so they can be compared easily. Although fully customizable (see below) the default set contains three example rules, as well as the option to add the ICD-11 criteria. These rules are:
+
+- **Four of six symptoms, hierarchical.** At least four of a total of six selected symptoms must be present, and the selected set must include at least one symptom from each DSM-5-TR cluster (B, C, D, E). This preserves the polythetic structure of the full criteria.
+- **Four of six symptoms, without the cluster requirement.** The same number of symptoms, but any six symptoms may be chosen, not requiring the cluster structre.
+- **Three of six symptoms, without the cluster requirement.** A lower threshold on six symptoms, more resembling the ICD-11 definition of PTSD.
+- **ICD-11.** A fixed rule using seven items (re-experiencing items 1, 2, 3; avoidance items 6, 7; sense of current threat items 16, 17). 
+
+## Requirements for the input data
+
+The input must be the 20 PCL-5 items in their standard order, scored 0 to 4, with no missing values, plus any identifier columns you name in `id_col`. For more details see the [Getting started](getting-started.html) vignette. As there, we keep `patient_id`, `age`, and `sex` attached with `id_col` so that per-participant results remain linked to demographics.
+
+## Running the comparison in one call
+
+`compare_optimizations()` evaluates the three scenario outlined above and returns one object that holds the per-scenario results. We request the three default optimized rules, add ICD-11 with `include_icd11 = TRUE`, and keep the ten best combinations per optimized rule with `n_top = 10`. The `score_by = "accuracy"` argument ranks combinations by total agreement with the full diagnosis. To keep the vignette fast we use a 500-row subset of the bundled data.
+
+```{r setup, message = FALSE}
+library(PTSDdiag)
+
+data("simulated_ptsd")
+ptsd <- rename_ptsd_columns(simulated_ptsd[1:500, ],
+                            id_col = c("patient_id", "age", "sex"))
+
+comp <- compare_optimizations(
+  ptsd,
+  n_top         = 10,
+  include_icd11 = TRUE,
+  score_by      = "accuracy",
+  show_progress = FALSE
+)
+print(comp)
+```
+
+The printed object lists each scenario with its best combination, so the best performing combinations for each of the four scenarios are now directly comparable.
+
+## A performance table for the manuscript
+
+`summarize_top_combinations()` collapses the object into one table with a single row per candidate definition. Setting `as_percent = TRUE` reports the rates as percentages, and `top_n` limits how many combinations per rule are shown. 
+
+Each row carries the approach label, the rank within that approach, the symptom combination, the four cell counts against the full diagnosis (TP, FN, FP, TN), and the four derived rates (sensitivity, specificity, PPV, and NPV). Overall accuracy is not a separate column; it equals (TP + TN) divided by the sample size, and it is the quantity that `score_by = "accuracy"` minimized the errors of.
+
+```{r table-2}
+tbl <- summarize_top_combinations(comp, top_n = 10, as_percent = TRUE)
+head(tbl, 12)
+```
+
+## Core symptoms across definitions
+
+Which symptoms a rule selects can itself be of interest. If the same symptoms are part of the best performing combination in different scenarios, they are the symptoms carrying most of the diagnostic signal. `plot_symptom_frequency()` shows, for each scenario, how often each of the 20 symptoms appears among its top combinations, with a pooled OVERALL row across the optimized rules (if `overall_includes_fixed = TRUE`). The more frequent a symptom is, the darker its color.
+
+```{r heatmap, fig.alt = "Heatmap of PCL-5 symptom selection frequency across optimization scenarios"}
+plot_symptom_frequency(comp, type = "relative")
+```
+
+The same information in raw counts is available through `symptom_frequency()`. Reshaping it to one row per item and one column per rule gives the table behind the figure, in which the OVERALL column pools the three optimized rules.
+
+```{r table heat}
+freq   <- symptom_frequency(comp)
+counts <- xtabs(Count ~ Symptom + Approach, data = freq)
+wide   <- as.data.frame.matrix(counts, optional = TRUE)
+wide   <- cbind(Symptom = as.integer(rownames(wide)), wide)
+
+knitr::kable(
+  wide,
+  row.names = FALSE,
+  caption = "Number of times each PCL-5 item is selected among the top combinations - ICD-11 not included"
+)
+```
+
+## Customising the scenarios
+
+The `scenarios` argument takes a named list. Each entry is either an optimized rule (`type = "optimize"`, with `n_symptoms`, `n_required`, and `hierarchical`) or a fixed criterion (`type = "fixed"`, with `criterion = "icd11"`, `"caps5"`, or a logical diagnosis vector you supply). This is how you vary the subset size, supply custom clusters, or benchmark against a criterion you have already derived from an other dataset (also see [Validating abbreviated symptom definitions](validation.html))
+
+```{r custom, eval = FALSE}
+my_scenarios <- list(
+  "5/7 Hierarchical"     = list(n_symptoms = 7, n_required = 5, hierarchical = TRUE),
+  "4/6 Hierarchical"     = list(n_symptoms = 6, n_required = 4, hierarchical = TRUE),
+  "4/6 Non-hierarchical" = list(n_symptoms = 6, n_required = 4, hierarchical = FALSE),
+  "ICD-11"               = list(type = "fixed", criterion = "icd11")
+)
+
+compare_optimizations(ptsd, scenarios = my_scenarios, n_top = 10,
+                      score_by = "accuracy", show_progress = FALSE)
+```
+
+## See also
+
+- [Getting started](getting-started.html) for the single-definition workflow and the full input contract.
+- [Validating abbreviated symptom definitions](validation.html) for internal and cross-cohort tests of whether a definition generalizes.
+- [CAPS-5 workflow](caps5-workflow.html) for using the clinician-administered CAPS-5 as the reference instrument.

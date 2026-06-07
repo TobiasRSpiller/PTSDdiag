@@ -1,7 +1,7 @@
 Package: PTSDdiag
 Type: Package
 Title: Optimize PTSD Diagnostic Criteria
-Version: 0.3.0
+Version: 0.3.1
 Authors@R: c(
     person(
       "Laura", "Weidmann",
@@ -49,6 +49,7 @@ Suggests:
     DT,
     future.apply,
     ggplot2,
+    gtsummary,
     knitr,
     lattice,
     psych,

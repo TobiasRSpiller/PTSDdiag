@@ -46,7 +46,8 @@ continues to reflect data-driven symptom selection. Set
 }
 \examples{
 \donttest{
-ptsd_data <- rename_ptsd_columns(simulated_ptsd)
+ptsd_data <- rename_ptsd_columns(simulated_ptsd,
+                                  id_col = c("patient_id", "age", "sex"))
 comp <- compare_optimizations(ptsd_data, n_top = 5, show_progress = FALSE)
 freq <- symptom_frequency(comp)
 head(freq)

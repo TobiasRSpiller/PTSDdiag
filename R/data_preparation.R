@@ -76,7 +76,12 @@ rename_ptsd_columns <- function(data, id_col = NULL) {
   if (ncol(symptoms_only) != 20) {
     cli::cli_abort(c(
       "{.arg data} must contain exactly 20 PCL-5 item columns (excluding {.arg id_col}).",
-      "x" = "Got {ncol(symptoms_only)} non-ID column{?s}."
+      "x" = "Got {ncol(symptoms_only)} non-ID column{?s}.",
+      "i" = "{.fn rename_ptsd_columns} renames the non-ID columns \\
+            {.strong positionally}, not by name. Either drop the unrelated \\
+            columns or list them in {.arg id_col} so they ride alongside \\
+            without being renamed.",
+      "i" = "Example: {.code rename_ptsd_columns(data, id_col = c(\"patient_id\", \"age\", \"sex\"))}."
     ))
   }
 
@@ -178,7 +183,11 @@ rename_caps5_columns <- function(data, id_col = NULL) {
   if (ncol(symptoms_only) != 20) {
     cli::cli_abort(c(
       "{.arg data} must contain exactly 20 CAPS-5 item columns (excluding {.arg id_col}).",
-      "x" = "Got {ncol(symptoms_only)} non-ID column{?s}."
+      "x" = "Got {ncol(symptoms_only)} non-ID column{?s}.",
+      "i" = "{.fn rename_caps5_columns} renames the non-ID columns \\
+            {.strong positionally}, not by name. Either drop the unrelated \\
+            columns or list them in {.arg id_col} so they ride alongside \\
+            without being renamed."
     ))
   }
 

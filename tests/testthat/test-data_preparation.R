@@ -125,6 +125,27 @@ test_that("rename_ptsd_columns errors when remaining columns are not 20", {
   )
 })
 
+test_that("rename_ptsd_columns errors loudly on 50-column input (no silent renaming)", {
+  # Demographics + 20 PCL-5 + 27 columns from a depression inventory = 50 cols.
+  # The function must error, never silently rename the first 20 non-ID columns.
+  raw <- data.frame(
+    patient_id = sprintf("P%03d", 1:10),
+    age        = sample(20:60, 10, replace = TRUE),
+    sex        = sample(c("F", "M"), 10, replace = TRUE),
+    matrix(sample(0:4, 47 * 10, replace = TRUE), nrow = 10, ncol = 47),
+    stringsAsFactors = FALSE
+  )
+  expect_error(
+    rename_ptsd_columns(raw, id_col = c("patient_id", "age", "sex")),
+    "exactly 20"
+  )
+  # The hint about listing unrelated columns in id_col must be present
+  expect_error(
+    rename_ptsd_columns(raw, id_col = c("patient_id", "age", "sex")),
+    "id_col"
+  )
+})
+
 test_that("rename_caps5_columns preserves id_col", {
   raw <- data.frame(
     patient_id = sprintf("P%03d", 1:10),

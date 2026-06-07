@@ -5,11 +5,17 @@
 #' rated 20 PTSD symptoms on a scale from 0 to 4. This dataset has a lower
 #' PTSD prevalence (~21%) compared to the clinical veteran sample in
 #' \code{\link{simulated_ptsd}} (~94%), making it suitable for external
-#' validation of diagnostic criteria derived from clinical samples.
+#' validation of diagnostic criteria derived from clinical samples. Like
+#' \code{simulated_ptsd}, it ships with three demographic columns
+#' (\code{patient_id}, \code{age}, \code{sex}).
 #'
-#' @format A data frame with 1,200 rows and 20 columns:
+#' @format A data frame with 1,200 rows and 23 columns:
 #'
 #' \describe{
+#'   \item{patient_id}{Character. Synthetic participant identifier
+#'     (\code{"G0001"}--\code{"G1200"}).}
+#'   \item{age}{Integer. Age in years (truncated normal, range 18--80).}
+#'   \item{sex}{Factor. \code{"female"} / \code{"male"}.}
 #'   \item{S1}{Intrusive memories}
 #'   \item{S2}{Nightmares}
 #'   \item{S3}{Flashbacks}

@@ -61,9 +61,10 @@
 #'   scenario (default 10). Fixed scenarios always contribute exactly one
 #'   combination regardless of \code{n_top}.
 #'
-#' @param score_by Character. Optimization criterion (\code{"false_cases"} or
-#'   \code{"newly_nondiagnosed"}). Applied to optimize scenarios that do not
-#'   override it. Default \code{"false_cases"}.
+#' @param score_by Character. Optimization criterion: \code{"accuracy"}
+#'   (minimise FP + FN) or \code{"sensitivity"} (minimise FN only). Applied
+#'   to optimize scenarios that do not override it. Default
+#'   \code{"accuracy"}.
 #'
 #' @param clusters Optional named list of integer vectors defining the PCL-5
 #'   clusters used by hierarchical optimize scenarios that do not specify
@@ -101,7 +102,8 @@
 #' @export
 #'
 #' @examples
-#' ptsd_data <- rename_ptsd_columns(simulated_ptsd)
+#' ptsd_data <- rename_ptsd_columns(simulated_ptsd,
+#'                                   id_col = c("patient_id", "age", "sex"))
 #' \donttest{
 #' # Three preprint scenarios + ICD-11 in one call
 #' comp <- compare_optimizations(ptsd_data, n_top = 5, include_icd11 = TRUE,
@@ -116,7 +118,7 @@ compare_optimizations <- function(data,
                                   scenarios     = NULL,
                                   include_icd11 = FALSE,
                                   n_top         = 10,
-                                  score_by      = "false_cases",
+                                  score_by      = "accuracy",
                                   clusters      = NULL,
                                   show_progress = TRUE) {
   .validate_pcl5_data(data, strict_cols = FALSE)

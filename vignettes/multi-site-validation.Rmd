@@ -1,0 +1,155 @@
+---
+title: "Validating a shared definition across sites"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Validating a shared definition across sites}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  fig.width  = 7,
+  fig.height = 4
+)
+```
+
+This vignette illustrates how two sites that cannot share patient-level data, can still be used to derive and validate a simplified PTSD definition.
+
+## The multi-site problem
+
+Collaborations across clinics, registries, or countries are often bound by privacy rules and data-use agreements that forbid moving patient records between sites. Hence, pooling data is often not possible. However, as a simplified definition is fully described by the symptom indices it uses and the number required, optimization can take palace a one site and validation at another without sharing the original data but only symptom sets constituting the new definitions.
+
+In this vignette, one site has data from the veterans with a high PTSD prevalence and another has population data with a low PTSD prevalence. The first site derives a definition and inspects which symptoms its optimization selects. It shares the definitions as a JSON file. The general-population site then applies that definition locally, and we compare how it performs in each sample.
+
+## Requirements for the input data
+
+Each site standardizes its own data with `rename_ptsd_columns()`: the 20 PCL-5 items in their standard order, scored 0 to 4, with no missing values, plus any identifier columns named in `id_col`. The full contract is in the [Getting started](getting-started.html) vignette. For this vignette, we subset the veteran sample to keep the optimization fast.
+
+## Site 1: deriving the definition in the veteran sample
+
+The veteran site optimizes on its own data. `compare_optimizations()` runs the three default rules and returns one object holding the results; nothing patient-level leaves the site.
+
+```{r derive, message = FALSE}
+library(PTSDdiag)
+library(dplyr)
+
+data("simulated_ptsd")
+vet <- rename_ptsd_columns(simulated_ptsd[1:500, ],
+                           id_col = c("patient_id", "age", "sex"))
+
+comp_vet <- compare_optimizations(
+  vet,
+  n_top         = 10,
+  score_by      = "accuracy",
+  show_progress = FALSE
+)
+```
+
+Before sharing anything, the site can look at which symptoms its optimization keeps selecting. `plot_symptom_frequency()` shows, for each rule, how often each of the 20 symptoms appears among the top combinations, with a pooled OVERALL row.
+
+```{r figure, fig.alt = "Heatmap of PCL-5 symptom selection frequency in the veteran sample"}
+plot_symptom_frequency(comp_vet, type = "relative")
+```
+
+The symptoms whose tiles are dark across the rules are the core symptoms the derivation settles on. These are stable features of the veteran sample, and the question for the collaboration is whether a definition built from them also works elsewhere.
+
+## Sharing the definitions without sharing data
+
+Rather than commit to a single winner, the site carries forward the top five combinations from each of the three rules, fifteen candidate definitions in all. This is closer to real practice, where a collaboration weighs several promising definitions rather than betting on one. `extract_definitions()` pulls them straight from the comparison object: it keeps the top `n` combinations of each rule and records, for each, how many symptoms must be present and whether all four clusters are required. The researcher chooses only how many to carry. (Like the evaluation helper below, this function is planned as an exported part of PTSDdiag and is defined behind the scenes here.)
+
+```{r extract-fn, echo = FALSE}
+# Defined inline for now; planned as an exported PTSDdiag function.
+extract_definitions <- function(comparison, n = 5) {
+  cfg      <- comparison$config
+  optimize <- cfg$label[cfg$type == "optimize"]
+  defs <- lapply(optimize, function(label) {
+    row    <- cfg[cfg$label == label, ]
+    combos <- comparison$scenarios[[label]]$best_symptoms
+    list(symptoms     = combos[seq_len(min(n, length(combos)))],
+         n_required   = row$n_required,
+         hierarchical = isTRUE(row$hierarchical))
+  })
+  stats::setNames(defs, optimize)
+}
+```
+
+```{r definitions}
+definitions <- extract_definitions(comp_vet, n = 5)
+
+# The shared object: only symptom numbers and the rule to apply them
+lapply(definitions, function(d) d$symptoms)
+```
+
+This object is everything the other site needs, and it holds nothing but symptom numbers and rules. No participant, score, or demographic is in it, so it can be shared freely. `write_combinations()` serializes a set of combinations to a small JSON file for transfer, as shown in the [Validating abbreviated symptom definitions](validation.html) vignette.
+
+## Evaluating every definition in a sample
+
+Alongside the fifteen derived definitions we include ICD-11 as a fixed published benchmark. ICD-11 is the same rule everywhere, so each site computes it locally and nothing about it is shared. We use a small helper, `evaluate_definitions()`, that applies each shared definition with its own rule, adds ICD-11, and scores all of them against the sample's full DSM-5-TR diagnosis. Because it needs only the definitions and a data frame, the identical call runs at either site. The helper will be added to PTSDdiag as an exported function in a future release; here it is defined behind the scenes so the workflow reads cleanly.
+
+```{r helper, echo = FALSE}
+# Defined inline for now; planned as an exported PTSDdiag function.
+evaluate_definitions <- function(data, definitions, include_icd11 = TRUE) {
+  clusters <- list(B = 1:5, C = 6:7, D = 8:14, E = 15:20)
+
+  comparison <- data.frame(
+    PTSD_orig = create_ptsd_diagnosis_binarized(data)$PTSD_orig,
+    check.names = FALSE
+  )
+  for (rule in names(definitions)) {
+    d  <- definitions[[rule]]
+    cl <- if (isTRUE(d$hierarchical)) clusters else NULL
+    applied <- apply_symptom_combinations(data, d$symptoms,
+                                          n_required = d$n_required, clusters = cl)
+    for (cc in grep("^symptom_[0-9]+(_[0-9]+)+$", names(applied), value = TRUE)) {
+      label <- paste0(rule, " (", gsub("_", ", ", sub("^symptom_", "", cc)), ")")
+      comparison[[label]] <- applied[[cc]]
+    }
+  }
+  if (isTRUE(include_icd11)) {
+    comparison[["ICD-11"]] <- create_icd11_diagnosis(data)$PTSD_icd11
+  }
+
+  summarize_ptsd_changes(comparison) %>%
+    create_readable_summary()
+}
+```
+
+## Performance in the derivation sample
+
+The veteran site records how every definition performs on its own patients, the baseline the other site will be read against.
+
+```{r perf-derivation}
+evaluate_definitions(vet, definitions, include_icd11 = TRUE)
+```
+
+The first row is the full DSM-5-TR diagnosis itself, the reference. Below it are the fifteen derived definitions, grouped by rule, followed by ICD-11, each scored against the reference.
+
+## Validating in the general-population sample
+
+The general-population site receives only the definitions printed above. It runs the same evaluation on its own patients. The veteran site never sees these records, and this site never sees the veteran records.
+
+```{r perf-validation}
+data("simulated_ptsd_genpop")
+genpop <- rename_ptsd_columns(simulated_ptsd_genpop,
+                              id_col = c("patient_id", "age", "sex"))
+
+evaluate_definitions(genpop, definitions, include_icd11 = TRUE)
+```
+
+Both tables are built the same way, so they line up row for row with the derivation table above.
+
+## Reading the two tables together
+
+Each definition keeps its character across the two samples: the hierarchical rule is the most specific and the least sensitive, the three-of-six rule the most sensitive and the least specific, and the four-of-six and ICD-11 rules fall between them. What changes with the sample is the balance of errors. Sensitivity and specificity move only modestly, because they are properties of the rule, while the predictive values shift with prevalence: in the lower-prevalence community sample the positive predictive value of every definition falls and the negative predictive value rises, so a positive result there is less likely to mark a true case than in the clinic.
+
+The agreement on core symptoms in the figure and the performance of every definition in the two tables were obtained without moving a single patient record between the sites. In a full collaboration the second site would also optimize, and the two sites would combine their selections into a cross-site consensus; the [Validating abbreviated symptom definitions](validation.html) vignette covers the external-validation logic and the JSON mechanism in more depth.
+
+## See also
+
+- [Getting started](getting-started.html) for the single-cohort derivation workflow.
+- [Comparing diagnostic criteria](comparing-criteria.html) for the symptom-frequency tools and multi-rule comparison.
+- [Validating abbreviated symptom definitions](validation.html) for internal and external validation.
+- [CAPS-5 workflow](caps5-workflow.html) for validation against a clinician-administered reference.

@@ -76,16 +76,32 @@ test_that("holdout_validation handles different score_by options", {
   colnames(test_data) <- paste0("symptom_", 1:20)
   
   # Test with different scoring methods
-  results_false <- holdout_validation(test_data, score_by = "false_cases", seed = 123)
-  results_newly <- holdout_validation(test_data, score_by = "newly_nondiagnosed", seed = 123)
-  
+  results_acc <- holdout_validation(test_data, score_by = "accuracy",    seed = 123)
+  results_sen <- holdout_validation(test_data, score_by = "sensitivity", seed = 123)
+
   # Both should return valid results
-  expect_type(results_false, "list")
-  expect_type(results_newly, "list")
-  
+  expect_type(results_acc, "list")
+  expect_type(results_sen, "list")
+
   # Results might differ based on optimization criterion
   # but structure should be the same
-  expect_equal(names(results_false), names(results_newly))
+  expect_equal(names(results_acc), names(results_sen))
+})
+
+test_that("legacy score_by values error with a migration hint", {
+  # v <= 0.3.0 names were renamed in 0.3.1
+  test_data <- as.data.frame(matrix(sample(0:4, 20 * 30, replace = TRUE),
+                                    nrow = 30, ncol = 20))
+  colnames(test_data) <- paste0("symptom_", 1:20)
+
+  expect_error(
+    holdout_validation(test_data, score_by = "false_cases", seed = 123),
+    "accuracy"
+  )
+  expect_error(
+    holdout_validation(test_data, score_by = "newly_nondiagnosed", seed = 123),
+    "sensitivity"
+  )
 })
 
 test_that("holdout_validation validates input correctly", {

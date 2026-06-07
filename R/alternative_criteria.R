@@ -57,7 +57,8 @@
 #'
 #' @examples
 #' # Apply ICD-11 criteria to the built-in simulated dataset
-#' ptsd_data <- rename_ptsd_columns(simulated_ptsd)
+#' ptsd_data <- rename_ptsd_columns(simulated_ptsd,
+#'                                   id_col = c("patient_id", "age", "sex"))
 #' icd11_result <- create_icd11_diagnosis(ptsd_data)
 #' head(icd11_result)
 #'
@@ -265,7 +266,8 @@ create_caps5_diagnosis <- function(data) {
 #' @export
 #'
 #' @examples
-#' ptsd_data <- rename_ptsd_columns(simulated_ptsd)
+#' ptsd_data <- rename_ptsd_columns(simulated_ptsd,
+#'                                   id_col = c("patient_id", "age", "sex"))
 #'
 #' # ICD-11 vs DSM-5-TR only (no optimized combinations)
 #' tbl <- compare_diagnostic_systems(ptsd_data, icd11 = TRUE)
@@ -286,7 +288,7 @@ create_caps5_diagnosis <- function(data) {
 #' knitr::kable(tbl2)
 #'
 #' # With CAPS-5 as gold standard reference
-#' caps5_raw <- data.frame(matrix(sample(0:4, ncol(simulated_ptsd) * nrow(simulated_ptsd),
+#' caps5_raw <- data.frame(matrix(sample(0:4, 20 * nrow(simulated_ptsd),
 #'                                       replace = TRUE), ncol = 20))
 #' caps5_data <- rename_caps5_columns(caps5_raw)
 #' tbl3 <- compare_diagnostic_systems(

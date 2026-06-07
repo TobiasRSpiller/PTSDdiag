@@ -58,8 +58,10 @@
 #' @param score_by Character string specifying optimization criterion:
 #'
 #' \itemize{
-#'   \item "false_cases": Minimize total misclassifications
-#'   \item "newly_nondiagnosed": Minimize false negatives only
+#'   \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
+#'     maximise overall accuracy). Default.
+#'   \item "sensitivity": Minimize false negatives only (i.e. maximise
+#'     sensitivity relative to the full DSM-5-TR diagnosis).
 #'}
 #'
 #' @param DT Logical. If \code{TRUE}, return the summary as an interactive
@@ -102,11 +104,11 @@
 #' \donttest{
 #' # Find best 6-symptom combinations requiring 4 present (classic defaults)
 #' results <- optimize_combinations(ptsd_data, n_symptoms = 6, n_required = 4,
-#'              score_by = "false_cases")
+#'              score_by = "accuracy")
 #'
 #' # Find best 5-symptom combinations requiring 3 present, return top 5
 #' results2 <- optimize_combinations(ptsd_data, n_symptoms = 5, n_required = 3,
-#'               n_top = 5, score_by = "false_cases")
+#'               n_top = 5, score_by = "accuracy")
 #'
 #' # Get symptom numbers
 #' results$best_symptoms
@@ -119,7 +121,7 @@
 #' }
 #'
 optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
-                                  n_top = 3, score_by = "false_cases",
+                                  n_top = 3, score_by = "accuracy",
                                   DT = FALSE, show_progress = TRUE) {
   # Validate inputs
   .validate_pcl5_data(data, strict_cols = FALSE)
@@ -236,8 +238,10 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
 #' @param score_by Character string specifying optimization criterion:
 #'
 #' \itemize{
-#'   \item "false_cases": Minimize total misclassifications
-#'   \item "newly_nondiagnosed": Minimize false negatives only
+#'   \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
+#'     maximise overall accuracy). Default.
+#'   \item "sensitivity": Minimize false negatives only (i.e. maximise
+#'     sensitivity relative to the full DSM-5-TR diagnosis).
 #'}
 #'
 #' @param clusters A named list of integer vectors defining the cluster
@@ -284,7 +288,7 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
 #' # Find best hierarchical combinations with PCL-5 clusters
 #' pcl5_clusters <- list(B = 1:5, C = 6:7, D = 8:14, E = 15:20)
 #' results <- optimize_combinations_clusters(ptsd_data, n_symptoms = 6,
-#'              n_required = 4, score_by = "false_cases", clusters = pcl5_clusters)
+#'              n_required = 4, score_by = "accuracy", clusters = pcl5_clusters)
 #'
 #' # Get symptom numbers
 #' results$best_symptoms
@@ -294,7 +298,7 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
 #' }
 #'
 optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
-                                           n_top = 3, score_by = "false_cases",
+                                           n_top = 3, score_by = "accuracy",
                                            clusters, DT = FALSE, show_progress = TRUE) {
   # Validate inputs
   .validate_pcl5_data(data, strict_cols = FALSE)
@@ -449,8 +453,10 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
 #' @param score_by Character string specifying optimization criterion:
 #'
 #' \itemize{
-#'   \item "false_cases": Minimize total misclassifications
-#'   \item "newly_nondiagnosed": Minimize false negatives only
+#'   \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
+#'     maximise overall accuracy). Default.
+#'   \item "sensitivity": Minimize false negatives only (i.e. maximise
+#'     sensitivity relative to the full DSM-5-TR diagnosis).
 #'}
 #'
 #' @param DT Logical. If \code{TRUE}, return the summary as an interactive
@@ -483,7 +489,7 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
 #'
 #' \donttest{
 #' # Find best combinations minimizing false cases
-#' results <- analyze_best_six_symptoms_four_required(ptsd_data, score_by = "false_cases")
+#' results <- analyze_best_six_symptoms_four_required(ptsd_data, score_by = "accuracy")
 #'
 #' # Get symptom numbers
 #' results$best_symptoms
@@ -495,7 +501,7 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
 #' results$summary
 #' }
 #'
-analyze_best_six_symptoms_four_required <- function(data, score_by = "false_cases",
+analyze_best_six_symptoms_four_required <- function(data, score_by = "accuracy",
                                                     DT = FALSE) {
   lifecycle::deprecate_warn(
     "0.2.1",
@@ -561,8 +567,10 @@ analyze_best_six_symptoms_four_required <- function(data, score_by = "false_case
 #' @param score_by Character string specifying optimization criterion:
 #'
 #' \itemize{
-#'   \item "false_cases": Minimize total misclassifications
-#'   \item "newly_nondiagnosed": Minimize false negatives only
+#'   \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
+#'     maximise overall accuracy). Default.
+#'   \item "sensitivity": Minimize false negatives only (i.e. maximise
+#'     sensitivity relative to the full DSM-5-TR diagnosis).
 #'}
 #'
 #' @param DT Logical. If \code{TRUE}, return the summary as an interactive
@@ -595,7 +603,7 @@ analyze_best_six_symptoms_four_required <- function(data, score_by = "false_case
 #'
 #' \donttest{
 #' # Find best hierarchical combinations minimizing false cases
-#' results <- analyze_best_six_symptoms_four_required_clusters(ptsd_data, score_by = "false_cases")
+#' results <- analyze_best_six_symptoms_four_required_clusters(ptsd_data, score_by = "accuracy")
 #'
 #' # Get symptom numbers
 #' results$best_symptoms
@@ -607,7 +615,7 @@ analyze_best_six_symptoms_four_required <- function(data, score_by = "false_case
 #' results$summary
 #' }
 #'
-analyze_best_six_symptoms_four_required_clusters <- function(data, score_by = "false_cases",
+analyze_best_six_symptoms_four_required_clusters <- function(data, score_by = "accuracy",
                                                              DT = FALSE) {
   lifecycle::deprecate_warn(
     "0.2.1",
