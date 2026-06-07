@@ -14,7 +14,7 @@ optimize_combinations(
   n_symptoms = 6,
   n_required = 4,
   n_top = 3,
-  score_by = "false_cases",
+  score_by = "accuracy",
   DT = FALSE,
   show_progress = TRUE
 )
@@ -58,9 +58,11 @@ optimize_combinations(
 
   Character string specifying optimization criterion:
 
-  - "false_cases": Minimize total misclassifications
+  - "accuracy": Minimize total misclassifications (FP + FN, i.e.
+    maximise overall accuracy). Default.
 
-  - "newly_nondiagnosed": Minimize false negatives only
+  - "sensitivity": Minimize false negatives only (i.e. maximise
+    sensitivity relative to the full DSM-5-TR diagnosis).
 
 - DT:
 
@@ -137,15 +139,14 @@ names(ptsd_data) <- paste0("symptom_", 1:20)
 # \donttest{
 # Find best 6-symptom combinations requiring 4 present (classic defaults)
 results <- optimize_combinations(ptsd_data, n_symptoms = 6, n_required = 4,
-             score_by = "false_cases")
-#> Evaluating combinations ■■■■■■■■■                         27% | ETA:  3s
-#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■     95% | ETA:  0s
+             score_by = "accuracy")
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■                56% | ETA:  2s
 #> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
 #> ℹ Evaluated 38760 combinations. Best: 1, 2, 4, 9, 13, 14 (417 additional tied)
 
 # Find best 5-symptom combinations requiring 3 present, return top 5
 results2 <- optimize_combinations(ptsd_data, n_symptoms = 5, n_required = 3,
-              n_top = 5, score_by = "false_cases")
+              n_top = 5, score_by = "accuracy")
 #> ℹ Evaluated 15504 combinations. Best: 1, 2, 4, 9, 13 (1052 additional tied)
 
 # Get symptom numbers

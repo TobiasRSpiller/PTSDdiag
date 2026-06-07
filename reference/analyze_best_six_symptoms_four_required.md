@@ -16,7 +16,7 @@ membership.
 ``` r
 analyze_best_six_symptoms_four_required(
   data,
-  score_by = "false_cases",
+  score_by = "accuracy",
   DT = FALSE
 )
 ```
@@ -43,9 +43,11 @@ analyze_best_six_symptoms_four_required(
 
   Character string specifying optimization criterion:
 
-  - "false_cases": Minimize total misclassifications
+  - "accuracy": Minimize total misclassifications (FP + FN, i.e.
+    maximise overall accuracy). Default.
 
-  - "newly_nondiagnosed": Minimize false negatives only
+  - "sensitivity": Minimize false negatives only (i.e. maximise
+    sensitivity relative to the full DSM-5-TR diagnosis).
 
 - DT:
 
@@ -111,11 +113,11 @@ names(ptsd_data) <- paste0("symptom_", 1:20)
 
 # \donttest{
 # Find best combinations minimizing false cases
-results <- analyze_best_six_symptoms_four_required(ptsd_data, score_by = "false_cases")
+results <- analyze_best_six_symptoms_four_required(ptsd_data, score_by = "accuracy")
 #> Warning: `analyze_best_six_symptoms_four_required()` was deprecated in PTSDdiag 0.2.1.
 #> ℹ Please use `optimize_combinations()` instead.
-#> Evaluating combinations ■■■■■■■■                          24% | ETA:  3s
-#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■          77% | ETA:  1s
+#> Evaluating combinations ■■■■■■■■                          23% | ETA:  3s
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■           74% | ETA:  1s
 #> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
 #> ℹ Evaluated 38760 combinations. Best: 1, 2, 3, 6, 11, 16 (866 additional tied)
 

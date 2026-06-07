@@ -6,6 +6,8 @@ individual rated 20 PTSD symptoms on a scale from 0 to 4. This dataset
 has a lower PTSD prevalence (~21
 [`simulated_ptsd`](https://tobiasrspiller.github.io/PTSDdiag/reference/simulated_ptsd.md)
 (~94 validation of diagnostic criteria derived from clinical samples.
+Like `simulated_ptsd`, it ships with three demographic columns
+(`patient_id`, `age`, `sex`).
 
 ## Usage
 
@@ -15,7 +17,19 @@ simulated_ptsd_genpop
 
 ## Format
 
-A data frame with 1,200 rows and 20 columns:
+A data frame with 1,200 rows and 23 columns:
+
+- patient_id:
+
+  Character. Synthetic participant identifier (`"G0001"`–`"G1200"`).
+
+- age:
+
+  Integer. Age in years (truncated normal, range 18–80).
+
+- sex:
+
+  Factor. `"female"` / `"male"`.
 
 - S1:
 

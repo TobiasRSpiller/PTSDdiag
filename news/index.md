@@ -1,5 +1,65 @@
 # Changelog
 
+## PTSDdiag 0.3.1
+
+### Breaking changes
+
+- The `score_by` argument values have been renamed for clarity.
+  Pre-0.3.1 values are no longer accepted; passing them errors with a
+  migration hint.
+
+  | Old value (≤ 0.3.0) | New value (0.3.1) | Meaning |
+  |----|----|----|
+  | `"false_cases"` | `"accuracy"` | minimise FP + FN (= maximise accuracy) |
+  | `"newly_nondiagnosed"` | `"sensitivity"` | minimise FN (= maximise sensitivity) |
+
+  Defaults updated accordingly:
+  [`optimize_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations.md),
+  [`optimize_combinations_clusters()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations_clusters.md),
+  and
+  [`compare_optimizations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/compare_optimizations.md)
+  default to `"accuracy"`;
+  [`holdout_validation()`](https://tobiasrspiller.github.io/PTSDdiag/reference/holdout_validation.md)
+  and
+  [`cross_validation()`](https://tobiasrspiller.github.io/PTSDdiag/reference/cross_validation.md)
+  default to `"sensitivity"`.
+
+### Bundled data
+
+- `simulated_ptsd` and `simulated_ptsd_genpop` now ship with three
+  demographic columns (`patient_id`, `age`, `sex`) so that the
+  demographic carry-through workflow (`id_col`) can be demonstrated
+  end-to-end on the bundled data. The numerical PCL-5 profile of both
+  datasets is unchanged.
+
+### Documentation
+
+- The error message from
+  [`rename_ptsd_columns()`](https://tobiasrspiller.github.io/PTSDdiag/reference/rename_ptsd_columns.md)
+  /
+  [`rename_caps5_columns()`](https://tobiasrspiller.github.io/PTSDdiag/reference/rename_caps5_columns.md)
+  when the number of non-ID columns is not exactly 20 now spells out the
+  strict positional behaviour and points users at `id_col` for unrelated
+  covariates.
+- Vignette restructure: the previous six vignettes have been
+  consolidated into four with a shared template (clinical purpose +
+  explicit input assumptions + epidemiological vocabulary +
+  interpretation of every results table):
+  - **Getting started** — single-cohort workflow + demographic join-back
+    (replaces `quickstart` and folds in `id_column_workflow`).
+  - **Comparing diagnostic criteria** — multi-scenario optimisation +
+    ICD-11 + symptom-frequency heatmap (replaces `internal_analysis` and
+    `multi_scenario_analysis`).
+  - **Validating abbreviated symptom definitions** — internal and
+    external validation (replaces validation sections of
+    `internal_analysis` and `external_validation_pcl5`).
+  - **Validating a shared definition across sites** — a multi-site
+    workflow that derives a definition at one site and validates it at
+    another by exchanging only a JSON symptom-index file, with no
+    patient-level data shared.
+  - **CAPS-5 workflow** — using CAPS-5 as the reference instrument
+    (replaces `external_validation_caps5`).
+
 ## PTSDdiag 0.3.0
 
 ### New features

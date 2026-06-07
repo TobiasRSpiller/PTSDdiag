@@ -2,7 +2,10 @@
 
 A dataset containing simulated responses from 5,000 patients on the
 PCL-5 (PTSD Checklist for DSM-5). Each patient rated 20 PTSD symptoms on
-a scale from 0 to 4.
+a scale from 0 to 4. The dataset additionally ships with three
+demographic columns (`patient_id`, `age`, `sex`) so that the demographic
+carry-through workflow (`id_col`) can be demonstrated end-to-end on the
+bundled data.
 
 ## Usage
 
@@ -12,7 +15,19 @@ simulated_ptsd
 
 ## Format
 
-A data frame with 5,000 rows and 20 columns:
+A data frame with 5,000 rows and 23 columns:
+
+- patient_id:
+
+  Character. Synthetic participant identifier (`"P0001"`–`"P5000"`).
+
+- age:
+
+  Integer. Age in years (truncated normal, range 18–80).
+
+- sex:
+
+  Factor. `"female"` / `"male"`.
 
 - S1:
 

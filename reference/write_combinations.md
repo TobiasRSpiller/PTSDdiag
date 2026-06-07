@@ -56,7 +56,7 @@ write_combinations(
 - score_by:
 
   Character or `NULL`. The scoring criterion used during optimization
-  (`"false_cases"` or `"newly_nondiagnosed"`). Stored as metadata for
+  (`"accuracy"` or `"sensitivity"`). Stored as metadata for
   reproducibility. If `NULL` (default), omitted from the file.
 
 - description:
@@ -114,9 +114,9 @@ my_combos <- list(
 # Write to a temporary file
 tmp <- tempfile(fileext = ".json")
 write_combinations(my_combos, tmp, n_required = 4,
-                   score_by = "false_cases",
+                   score_by = "accuracy",
                    description = "Example non-hierarchical combinations")
-#> ✔ Combinations written to /tmp/Rtmpk0LFnn/file1a3211ea1679.json
+#> ✔ Combinations written to /tmp/RtmpB5iQ0z/file1af75ee744f7.json
 
 # Can also pass a full optimization result directly:
 # write_combinations(optimization_result, tmp, n_required = 4)

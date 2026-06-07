@@ -14,7 +14,7 @@ optimize_combinations_clusters(
   n_symptoms = 6,
   n_required = 4,
   n_top = 3,
-  score_by = "false_cases",
+  score_by = "accuracy",
   clusters,
   DT = FALSE,
   show_progress = TRUE
@@ -59,9 +59,11 @@ optimize_combinations_clusters(
 
   Character string specifying optimization criterion:
 
-  - "false_cases": Minimize total misclassifications
+  - "accuracy": Minimize total misclassifications (FP + FN, i.e.
+    maximise overall accuracy). Default.
 
-  - "newly_nondiagnosed": Minimize false negatives only
+  - "sensitivity": Minimize false negatives only (i.e. maximise
+    sensitivity relative to the full DSM-5-TR diagnosis).
 
 - clusters:
 
@@ -146,7 +148,7 @@ names(ptsd_data) <- paste0("symptom_", 1:20)
 # Find best hierarchical combinations with PCL-5 clusters
 pcl5_clusters <- list(B = 1:5, C = 6:7, D = 8:14, E = 15:20)
 results <- optimize_combinations_clusters(ptsd_data, n_symptoms = 6,
-             n_required = 4, score_by = "false_cases", clusters = pcl5_clusters)
+             n_required = 4, score_by = "accuracy", clusters = pcl5_clusters)
 #> ℹ Generated 13685 valid cluster-constrained combinations
 #> ℹ Evaluated 13685 combinations. Best: 1, 6, 8, 10, 17, 19 (7 additional tied)
 

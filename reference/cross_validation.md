@@ -9,7 +9,7 @@ generalization performance and identify stable symptom combinations.
 cross_validation(
   data,
   k = 5,
-  score_by = "newly_nondiagnosed",
+  score_by = "sensitivity",
   seed = 123,
   n_symptoms = 6,
   n_required = 4,
@@ -38,9 +38,11 @@ cross_validation(
 
   Character string specifying optimization criterion:
 
-  - "false_cases": Minimize total misclassifications
+  - "accuracy": Minimize total misclassifications (FP + FN, i.e.
+    maximise overall accuracy).
 
-  - "newly_nondiagnosed": Minimize false negatives only (default)
+  - "sensitivity": Minimize false negatives only (i.e. maximise
+    sensitivity relative to the full DSM-5-TR diagnosis). Default.
 
 - seed:
 

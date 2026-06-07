@@ -76,16 +76,17 @@ for computing and formatting diagnostic metrics.
 
 ``` r
 # Apply ICD-11 criteria to the built-in simulated dataset
-ptsd_data <- rename_ptsd_columns(simulated_ptsd)
+ptsd_data <- rename_ptsd_columns(simulated_ptsd,
+                                  id_col = c("patient_id", "age", "sex"))
 icd11_result <- create_icd11_diagnosis(ptsd_data)
 head(icd11_result)
-#>   PTSD_orig PTSD_icd11
-#> 1      TRUE       TRUE
-#> 2      TRUE       TRUE
-#> 3      TRUE      FALSE
-#> 4      TRUE       TRUE
-#> 5      TRUE       TRUE
-#> 6      TRUE       TRUE
+#>   patient_id age    sex PTSD_orig PTSD_icd11
+#> 1      P0001  48   male      TRUE       TRUE
+#> 2      P0002  29   male      TRUE       TRUE
+#> 3      P0003  44   male      TRUE      FALSE
+#> 4      P0004  41 female      TRUE       TRUE
+#> 5      P0005  34   male      TRUE       TRUE
+#> 6      P0006  18   male      TRUE       TRUE
 
 # Feed directly into the metrics pipeline
 metrics <- summarize_ptsd_changes(icd11_result)

@@ -15,7 +15,7 @@ compare_optimizations(
   scenarios = NULL,
   include_icd11 = FALSE,
   n_top = 10,
-  score_by = "false_cases",
+  score_by = "accuracy",
   clusters = NULL,
   show_progress = TRUE
 )
@@ -66,9 +66,9 @@ compare_optimizations(
 
 - score_by:
 
-  Character. Optimization criterion (`"false_cases"` or
-  `"newly_nondiagnosed"`). Applied to optimize scenarios that do not
-  override it. Default `"false_cases"`.
+  Character. Optimization criterion: `"accuracy"` (minimise FP + FN) or
+  `"sensitivity"` (minimise FN only). Applied to optimize scenarios that
+  do not override it. Default `"accuracy"`.
 
 - clusters:
 
@@ -140,7 +140,8 @@ diagnoses can be joined back to demographics.
 ## Examples
 
 ``` r
-ptsd_data <- rename_ptsd_columns(simulated_ptsd)
+ptsd_data <- rename_ptsd_columns(simulated_ptsd,
+                                  id_col = c("patient_id", "age", "sex"))
 # \donttest{
 # Three preprint scenarios + ICD-11 in one call
 comp <- compare_optimizations(ptsd_data, n_top = 5, include_icd11 = TRUE,

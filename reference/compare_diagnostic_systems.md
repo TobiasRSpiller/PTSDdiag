@@ -150,7 +150,8 @@ for deriving optimal combinations.
 ## Examples
 
 ``` r
-ptsd_data <- rename_ptsd_columns(simulated_ptsd)
+ptsd_data <- rename_ptsd_columns(simulated_ptsd,
+                                  id_col = c("patient_id", "age", "sex"))
 
 # ICD-11 vs DSM-5-TR only (no optimized combinations)
 tbl <- compare_diagnostic_systems(ptsd_data, icd11 = TRUE)
@@ -188,7 +189,7 @@ knitr::kable(tbl2)
 #> |Combo B  |        4646|         92.92|      0.9618|      0.6000| 0.9750| 0.4915|              180|               3.60|              116|               2.32|             296|
 
 # With CAPS-5 as gold standard reference
-caps5_raw <- data.frame(matrix(sample(0:4, ncol(simulated_ptsd) * nrow(simulated_ptsd),
+caps5_raw <- data.frame(matrix(sample(0:4, 20 * nrow(simulated_ptsd),
                                       replace = TRUE), ncol = 20))
 caps5_data <- rename_caps5_columns(caps5_raw)
 tbl3 <- compare_diagnostic_systems(

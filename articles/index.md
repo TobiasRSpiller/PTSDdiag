@@ -1,23 +1,16 @@
 # Articles
 
-### Getting Started
+### Workflows
 
-Core workflows for new users
+End-to-end workflows for new users and methodological extensions
 
-- [Quick
-  Start](https://tobiasrspiller.github.io/PTSDdiag/articles/quickstart.md):
-- [Full Internal
-  Analysis](https://tobiasrspiller.github.io/PTSDdiag/articles/internal_analysis.md):
-- [Joining diagnoses back to demographics with
-  id_col](https://tobiasrspiller.github.io/PTSDdiag/articles/id_column_workflow.md):
-- [Multi-scenario optimization
-  analysis](https://tobiasrspiller.github.io/PTSDdiag/articles/multi_scenario_analysis.md):
-
-### External Validation
-
-Test optimised criteria on independent datasets
-
-- [External Validation with PCL-5
-  Data](https://tobiasrspiller.github.io/PTSDdiag/articles/external_validation_pcl5.md):
-- [External Validation with CAPS-5
-  Data](https://tobiasrspiller.github.io/PTSDdiag/articles/external_validation_caps5.md):
+- [Getting started with
+  PTSDdiag](https://tobiasrspiller.github.io/PTSDdiag/articles/getting-started.md):
+- [Comparing diagnostic
+  criteria](https://tobiasrspiller.github.io/PTSDdiag/articles/comparing-criteria.md):
+- [Validating abbreviated symptom
+  definitions](https://tobiasrspiller.github.io/PTSDdiag/articles/validation.md):
+- [Validating a shared definition across
+  sites](https://tobiasrspiller.github.io/PTSDdiag/articles/multi-site-validation.md):
+- [CAPS-5
+  workflow](https://tobiasrspiller.github.io/PTSDdiag/articles/caps5-workflow.md):
