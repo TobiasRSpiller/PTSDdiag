@@ -93,10 +93,14 @@ write_combinations(deriv$best_symptoms, tmp,
                    score_by = "accuracy",
                    description = "Six-symptom, four-required definition")
 
-# A second analyst reads the file and applies it to the community sample
+# A second analyst reads the file and applies it to the community sample.
+# simulated_ptsd_genpop also carries paired CAPS-5 columns (C1..C20); here we
+# use only the PCL-5 items, so we select those before standardising.
 spec   <- read_combinations(tmp)
-genpop <- rename_ptsd_columns(simulated_ptsd_genpop[1:250, ],
-                              id_col = c("patient_id", "age", "sex"))
+genpop <- rename_ptsd_columns(
+  simulated_ptsd_genpop[1:250, c("patient_id", "age", "sex", paste0("S", 1:20))],
+  id_col = c("patient_id", "age", "sex")
+)
 
 applied <- apply_symptom_combinations(genpop, spec$combinations,
                                       n_required = spec$n_required)

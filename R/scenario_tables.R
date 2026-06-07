@@ -6,7 +6,7 @@
 #' \code{\link{compare_optimizations}} result. The output matches the layout
 #' of the PTSDdiag preprint's Table 2: one row per combination, with
 #' Approach / Rank / Combination / TP / FN / FP / TN / Sensitivity /
-#' Specificity / PPV / NPV.
+#' Specificity / PPV / NPV / Accuracy.
 #'
 #' @details
 #' For each scenario, the per-row \code{diagnosis_comparison} dataframe is
@@ -14,21 +14,24 @@
 #' \code{PTSD_orig} row is dropped, the remaining rows are renamed, and the
 #' scenario label is prepended.
 #'
-#' Sensitivity, specificity, PPV and NPV are returned on the 0-1 fraction
-#' scale by default (matching \code{\link{compare_diagnostic_systems}});
+#' Sensitivity, specificity, PPV, NPV and accuracy are returned on the 0-1
+#' fraction scale by default (matching \code{\link{compare_diagnostic_systems}});
 #' set \code{as_percent = TRUE} to convert to 0-100 for manuscript display.
+#' Accuracy is \code{(TP + TN) / N}, the quantity minimised by
+#' \code{score_by = "accuracy"}.
 #'
 #' @param comparison A \code{ptsdiag_comparison} object.
 #' @param top_n Optional integer. Per-scenario limit on combinations to
 #'   include. Fixed scenarios always contribute exactly one row. Default
 #'   \code{NULL} returns all stored combinations.
-#' @param as_percent Logical. If \code{TRUE}, Sensitivity/Specificity/PPV/NPV
-#'   are returned as percentages (0-100); otherwise as fractions (0-1).
-#'   Default \code{FALSE}.
+#' @param as_percent Logical. If \code{TRUE},
+#'   Sensitivity/Specificity/PPV/NPV/Accuracy are returned as percentages
+#'   (0-100); otherwise as fractions (0-1). Default \code{FALSE}.
 #'
 #' @returns A data.frame with columns: \code{Approach}, \code{Rank},
 #'   \code{Combination}, \code{TP}, \code{FN}, \code{FP}, \code{TN},
-#'   \code{Sensitivity}, \code{Specificity}, \code{PPV}, \code{NPV}.
+#'   \code{Sensitivity}, \code{Specificity}, \code{PPV}, \code{NPV},
+#'   \code{Accuracy}.
 #'
 #' @seealso \code{\link{compare_optimizations}},
 #'   \code{\link{symptom_frequency}},
@@ -100,6 +103,7 @@ summarize_top_combinations <- function(comparison, top_n = NULL,
       Specificity = stats$specificity,
       PPV         = stats$ppv,
       NPV         = stats$npv,
+      Accuracy    = stats$accuracy,
       stringsAsFactors = FALSE
     )
     if (isTRUE(as_percent)) {
@@ -107,6 +111,7 @@ summarize_top_combinations <- function(comparison, top_n = NULL,
       out$Specificity <- out$Specificity * 100
       out$PPV         <- out$PPV         * 100
       out$NPV         <- out$NPV         * 100
+      out$Accuracy    <- out$Accuracy    * 100
     }
     rows[[label]] <- out
   }

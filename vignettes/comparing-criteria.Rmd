@@ -58,7 +58,7 @@ The printed object lists each scenario with its best combination, so the best pe
 
 `summarize_top_combinations()` collapses the object into one table with a single row per candidate definition. Setting `as_percent = TRUE` reports the rates as percentages, and `top_n` limits how many combinations per rule are shown. 
 
-Each row carries the approach label, the rank within that approach, the symptom combination, the four cell counts against the full diagnosis (TP, FN, FP, TN), and the four derived rates (sensitivity, specificity, PPV, and NPV). Overall accuracy is not a separate column; it equals (TP + TN) divided by the sample size, and it is the quantity that `score_by = "accuracy"` minimized the errors of.
+Each row carries the approach label, the rank within that approach, the symptom combination, the four cell counts against the full diagnosis (TP, FN, FP, TN), and the derived rates: sensitivity, specificity, PPV, NPV, and accuracy. Accuracy is (TP + TN) divided by the sample size, the quantity that `score_by = "accuracy"` optimized for, so it is the natural headline number when these definitions are compared.
 
 ```{r table-2}
 tbl <- summarize_top_combinations(comp, top_n = 10, as_percent = TRUE)

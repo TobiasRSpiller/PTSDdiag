@@ -1,3 +1,40 @@
+# PTSDdiag 0.3.2
+
+## New features
+
+* `extract_definitions()` and `evaluate_definitions()` are now exported.
+  `extract_definitions()` pulls the top-n combinations of each optimized
+  scenario out of a `compare_optimizations()` result (reading each rule from
+  the object) as a portable, shareable object; `evaluate_definitions()`
+  applies such a set of mixed-rule definitions (plus ICD-11) to any sample
+  and returns a performance table. Together they support multi-site
+  workflows where only symptom-index definitions, not patient data, are
+  shared.
+* An `Accuracy` column ((TP + TN) / N) is now reported by
+  `create_readable_summary()` (so `res$summary`, the holdout/cross-validation
+  summaries, and the multi-site tables show it), `summarize_top_combinations()`,
+  and `compare_diagnostic_systems()`. This makes the reported metric match the
+  quantity `score_by = "accuracy"` optimizes.
+
+## Behavior changes
+
+* `holdout_validation()` and `cross_validation()` now default to
+  `score_by = "accuracy"` (was `"sensitivity"`), matching
+  `optimize_combinations()` and `compare_optimizations()`.
+
+## Data
+
+* `simulated_ptsd_genpop` now also ships paired clinician-administered CAPS-5
+  ratings (`C1`–`C20`) for the same participants, simulated to correlate with
+  the PCL-5 items at a total-score r of about 0.8. The dataset now has 43
+  columns (demographics + 20 PCL-5 + 20 CAPS-5); the PCL-5 items and
+  demographics are unchanged.
+
+## Documentation
+
+* The CAPS-5 workflow vignette now uses the bundled paired data instead of
+  random CAPS-5 ratings, so the instrument agreement it shows is realistic.
+
 # PTSDdiag 0.3.1
 
 ## Breaking changes

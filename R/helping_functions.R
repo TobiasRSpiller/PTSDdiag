@@ -192,6 +192,8 @@ create_ptsd_diagnosis_binarized <- function(data) {
 #'   \item  false_cases: Sum of newly diagnosed (false positive) and newly non-diagnosed
 #'     (false negative)
 #'   \item  sensitivity, specificity, ppv, npv: Standard diagnostic accuracy metrics
+#'   \item  accuracy: Proportion of cases classified the same as the baseline
+#'     criterion ((true positives + true negatives) / total)
 #'}
 #'
 #' @export
@@ -276,6 +278,9 @@ summarize_ptsd_changes <- function(data) {
   summary_stats$diagnosed_percent <- round(summary_stats$diagnosed / total_cases * 100, 2)
   summary_stats$non_diagnosed_percent <- round(summary_stats$non_diagnosed / total_cases * 100, 2)
 
+  # Accuracy: proportion of cases classified the same as the baseline criterion
+  summary_stats$accuracy <- summary_stats$true_cases / total_cases
+
   return(summary_stats)
 }
 
@@ -315,7 +320,7 @@ summarize_ptsd_changes <- function(data) {
 #'   \item  Newly Non-Diagnosed: Count of new negative diagnoses (false negative)
 #'   \item  True Cases: Total correctly classified cases
 #'   \item  False Cases: Total misclassified cases
-#'   \item  Sensitivity, Specificity, PPV, NPV: Diagnostic accuracy metrics (4 decimals)
+#'   \item  Sensitivity, Specificity, PPV, NPV, Accuracy: Diagnostic accuracy metrics (4 decimals)
 #'}
 #'
 #' @export
@@ -343,7 +348,7 @@ create_readable_summary <- function(summary_stats, DT = FALSE) {
                      "true_positive", "true_negative",
                      "newly_diagnosed", "newly_nondiagnosed",
                      "true_cases", "false_cases",
-                     "sensitivity", "specificity", "ppv", "npv")
+                     "sensitivity", "specificity", "ppv", "npv", "accuracy")
 
   missing_cols <- setdiff(required_cols, names(summary_stats))
   if (length(missing_cols) > 0) {
@@ -355,7 +360,7 @@ create_readable_summary <- function(summary_stats, DT = FALSE) {
                   "true_positive", "true_negative",
                   "newly_diagnosed", "newly_nondiagnosed",
                   "true_cases", "false_cases")
-  metric_cols <- c("sensitivity", "specificity", "ppv", "npv")
+  metric_cols <- c("sensitivity", "specificity", "ppv", "npv", "accuracy")
 
   for (col in c(count_cols, metric_cols)) {
     if (!is.numeric(summary_stats[[col]])) {
@@ -376,8 +381,9 @@ create_readable_summary <- function(summary_stats, DT = FALSE) {
   if (any(summary_stats$sensitivity < 0 | summary_stats$sensitivity > 1, na.rm = TRUE) ||
       any(summary_stats$specificity < 0 | summary_stats$specificity > 1, na.rm = TRUE) ||
       any(summary_stats$ppv < 0 | summary_stats$ppv > 1, na.rm = TRUE) ||
-      any(summary_stats$npv < 0 | summary_stats$npv > 1, na.rm = TRUE)) {
-    cli::cli_abort("Diagnostic metrics (sensitivity, specificity, PPV, NPV) must be between 0 and 1.")
+      any(summary_stats$npv < 0 | summary_stats$npv > 1, na.rm = TRUE) ||
+      any(summary_stats$accuracy < 0 | summary_stats$accuracy > 1, na.rm = TRUE)) {
+    cli::cli_abort("Diagnostic metrics (sensitivity, specificity, PPV, NPV, accuracy) must be between 0 and 1.")
   }
 
   result <- data.frame(
@@ -396,6 +402,7 @@ create_readable_summary <- function(summary_stats, DT = FALSE) {
     `Specificity` = round(summary_stats$specificity, 4),
     `PPV` = round(summary_stats$ppv, 4),
     `NPV` = round(summary_stats$npv, 4),
+    `Accuracy` = round(summary_stats$accuracy, 4),
     check.names = FALSE
   )
 

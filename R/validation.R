@@ -8,6 +8,7 @@ utils::globalVariables(c(
   "True Positive", "True Negative", "Newly Diagnosed", "Newly Non-Diagnosed",
   "True Cases", "False Cases",
   "True_Positive", "Newly_Non_Diagnosed", "True_Negative", "Newly_Diagnosed",
+  "True_Cases", "False_Cases", "Accuracy",
   "Splits_Appeared",
   ".strata"
 ))
@@ -47,9 +48,9 @@ utils::globalVariables(c(
 #' @param score_by Character string specifying optimization criterion:
 #'   \itemize{
 #'     \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
-#'       maximise overall accuracy).
+#'       maximise overall accuracy). Default.
 #'     \item "sensitivity": Minimize false negatives only (i.e. maximise
-#'       sensitivity relative to the full DSM-5-TR diagnosis). Default.
+#'       sensitivity relative to the full DSM-5-TR diagnosis).
 #'   }
 #' @param seed Integer for random number generation reproducibility (default: 123)
 #' @param n_symptoms Integer specifying how many symptoms per combination
@@ -105,7 +106,7 @@ utils::globalVariables(c(
 #' }
 #'
 holdout_validation <- function(data, train_ratio = 0.7,
-                               score_by = "sensitivity", seed = 123,
+                               score_by = "accuracy", seed = 123,
                                n_symptoms = 6, n_required = 4, n_top = 3,
                                DT = FALSE) {
   # Input validation
@@ -229,9 +230,9 @@ holdout_validation <- function(data, train_ratio = 0.7,
 #' @param score_by Character string specifying optimization criterion:
 #'   \itemize{
 #'     \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
-#'       maximise overall accuracy).
+#'       maximise overall accuracy). Default.
 #'     \item "sensitivity": Minimize false negatives only (i.e. maximise
-#'       sensitivity relative to the full DSM-5-TR diagnosis). Default.
+#'       sensitivity relative to the full DSM-5-TR diagnosis).
 #'   }
 #' @param seed Integer for random number generation reproducibility (default: 123)
 #' @param n_symptoms Integer specifying how many symptoms per combination
@@ -293,7 +294,7 @@ holdout_validation <- function(data, train_ratio = 0.7,
 #' cv_results$without_clusters$combinations_summary
 #' }
 #'
-cross_validation <- function(data, k = 5, score_by = "sensitivity",
+cross_validation <- function(data, k = 5, score_by = "accuracy",
                              seed = 123, n_symptoms = 6, n_required = 4,
                              n_top = 3, DT = FALSE) {
   # Input validation
@@ -396,7 +397,9 @@ cross_validation <- function(data, k = 5, score_by = "sensitivity",
         PPV = ifelse((True_Positive + Newly_Diagnosed) == 0, NA_real_,
                      round(True_Positive / (True_Positive + Newly_Diagnosed), 4)),
         NPV = ifelse((True_Negative + Newly_Non_Diagnosed) == 0, NA_real_,
-                     round(True_Negative / (True_Negative + Newly_Non_Diagnosed), 4))
+                     round(True_Negative / (True_Negative + Newly_Non_Diagnosed), 4)),
+        Accuracy = ifelse((True_Cases + False_Cases) == 0, NA_real_,
+                          round(True_Cases / (True_Cases + False_Cases), 4))
       )
 
     multiple_appearance <- combo_summary %>% dplyr::filter(Splits_Appeared > 1)
