@@ -1,3 +1,15 @@
+# PTSDdiag 0.3.3
+
+## Bug fixes
+
+* `create_icd11_diagnosis()` now operationalises the ICD-11 "sense of current
+  threat" cluster with PCL-5 items 17 (hypervigilance) and 18 (exaggerated
+  startle), the symptoms the documentation always intended. Earlier versions
+  used items 16 (risk-taking behaviour) and 17, so the ICD-11 benchmark
+  diagnosis, the ICD-11 symptom set reported by `compare_optimizations()` /
+  `symptom_frequency()`, and any comparison against ICD-11 are affected.
+  Re-run analyses that benchmarked against ICD-11.
+
 # PTSDdiag 0.3.2
 
 ## New features

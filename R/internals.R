@@ -563,7 +563,7 @@
     icd11 = list(
       label    = "ICD-11",
       column   = "PTSD_icd11",
-      symptoms = c(1, 2, 3, 6, 7, 16, 17),
+      symptoms = c(1, 2, 3, 6, 7, 17, 18),
       producer = function(data) create_icd11_diagnosis(data)$PTSD_icd11
     ),
     caps5 = list(

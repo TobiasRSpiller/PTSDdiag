@@ -80,7 +80,7 @@ test_that("ICD-11 fixed scenario contributes Count = 1 on its 7 known symptoms",
   icd <- freq[freq$Approach == "ICD-11", ]
   icd <- icd[order(icd$Symptom), ]
   expected <- integer(20)
-  expected[c(1, 2, 3, 6, 7, 16, 17)] <- 1L
+  expected[c(1, 2, 3, 6, 7, 17, 18)] <- 1L
   expect_equal(icd$Count, expected)
   expect_equal(icd$RelFreq, as.numeric(expected))  # n_combinations = 1
 })
@@ -95,6 +95,6 @@ test_that("overall_includes_fixed = TRUE folds fixed scenarios into the OVERALL 
   delta <- incl$Count - excl$Count
   delta <- delta[order(freq_excl$Symptom[freq_excl$Approach == "OVERALL"])]
   expected_delta <- integer(20)
-  expected_delta[c(1, 2, 3, 6, 7, 16, 17)] <- 1L
+  expected_delta[c(1, 2, 3, 6, 7, 17, 18)] <- 1L
   expect_equal(delta, expected_delta)
 })
