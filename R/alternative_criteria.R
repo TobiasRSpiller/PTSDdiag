@@ -15,12 +15,12 @@
 #'   \item \strong{Re-experiencing} (in the present): \eqn{\ge} 1 of PCL-5
 #'     items 1, 2, 3 (intrusive memories, nightmares, flashbacks)
 #'   \item \strong{Avoidance}: \eqn{\ge} 1 of PCL-5 items 6, 7
-#'   \item \strong{Sense of current threat}: \eqn{\ge} 1 of PCL-5 items 16, 17
+#'   \item \strong{Sense of current threat}: \eqn{\ge} 1 of PCL-5 items 17, 18
 #'     (hypervigilance, exaggerated startle)
 #' }
 #'
-#' A minimum of 3 symptoms total across all ICD-11 items (1, 2, 3, 6, 7, 16,
-#' 17) must be present. This is automatically satisfied when all three cluster
+#' A minimum of 3 symptoms total across all ICD-11 items (1, 2, 3, 6, 7, 17,
+#' 18) must be present. This is automatically satisfied when all three cluster
 #' requirements are met but is enforced explicitly for clarity.
 #'
 #' DSM-5-TR diagnosis (\code{PTSD_orig}) is computed using the same binarization
@@ -74,8 +74,8 @@ create_icd11_diagnosis <- function(data) {
 
   reexperiencing <- rowSums(data[, paste0("symptom_", c(1, 2, 3))]        >= 2) >= 1
   avoidance      <- rowSums(data[, paste0("symptom_", c(6, 7))]           >= 2) >= 1
-  threat         <- rowSums(data[, paste0("symptom_", c(16, 17))]         >= 2) >= 1
-  min_total      <- rowSums(data[, paste0("symptom_", c(1,2,3,6,7,16,17))] >= 2) >= 3
+  threat         <- rowSums(data[, paste0("symptom_", c(17, 18))]         >= 2) >= 1
+  min_total      <- rowSums(data[, paste0("symptom_", c(1,2,3,6,7,17,18))] >= 2) >= 3
 
   result <- data.frame(
     PTSD_orig  = ptsd_orig,

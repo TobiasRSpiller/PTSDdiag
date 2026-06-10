@@ -29,7 +29,7 @@ icd11_cases <- rbind(
   # row 3: avoidance absent (items 6-7 all 0) -> ICD-11 FALSE
   make_pcl5(symptom_1 = 3, symptom_2 = 3, symptom_3 = 3,
             symptom_16 = 3, symptom_17 = 3),
-  # row 4: sense-of-current-threat absent (items 16-17 all 0) -> ICD-11 FALSE
+  # row 4: sense-of-current-threat absent (items 17-18 all 0) -> ICD-11 FALSE
   make_pcl5(symptom_1 = 3, symptom_2 = 3, symptom_3 = 3,
             symptom_6 = 3, symptom_7  = 3)
 )
@@ -65,6 +65,20 @@ test_that("create_icd11_diagnosis: missing avoidance -> FALSE", {
 test_that("create_icd11_diagnosis: missing sense-of-current-threat -> FALSE", {
   result <- create_icd11_diagnosis(icd11_cases)
   expect_false(result$PTSD_icd11[4])
+})
+
+test_that("create_icd11_diagnosis: current threat uses items 17/18, not 16", {
+  # Re-experiencing (items 1-3) and avoidance (items 6,7) are present in both
+  # cases. The sense-of-current-threat cluster is hypervigilance (item 17) and
+  # exaggerated startle (item 18); risk-taking behaviour (item 16) is NOT an
+  # ICD-11 symptom, so it must not satisfy the cluster on its own.
+  threat_via_16 <- make_pcl5(symptom_1 = 3, symptom_2 = 3, symptom_3 = 3,
+                             symptom_6 = 3, symptom_7 = 3, symptom_16 = 3)
+  expect_false(create_icd11_diagnosis(threat_via_16)$PTSD_icd11)
+
+  threat_via_18 <- make_pcl5(symptom_1 = 3, symptom_2 = 3, symptom_3 = 3,
+                             symptom_6 = 3, symptom_7 = 3, symptom_18 = 3)
+  expect_true(create_icd11_diagnosis(threat_via_18)$PTSD_icd11)
 })
 
 test_that("create_icd11_diagnosis output passes into summarize_ptsd_changes", {

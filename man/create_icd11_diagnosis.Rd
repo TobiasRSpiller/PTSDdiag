@@ -43,12 +43,12 @@ present = score \eqn{\ge} 2 on original 0–4 scale):
   \item \strong{Re-experiencing} (in the present): \eqn{\ge} 1 of PCL-5
     items 1, 2, 3 (intrusive memories, nightmares, flashbacks)
   \item \strong{Avoidance}: \eqn{\ge} 1 of PCL-5 items 6, 7
-  \item \strong{Sense of current threat}: \eqn{\ge} 1 of PCL-5 items 16, 17
+  \item \strong{Sense of current threat}: \eqn{\ge} 1 of PCL-5 items 17, 18
     (hypervigilance, exaggerated startle)
 }
 
-A minimum of 3 symptoms total across all ICD-11 items (1, 2, 3, 6, 7, 16,
-17) must be present. This is automatically satisfied when all three cluster
+A minimum of 3 symptoms total across all ICD-11 items (1, 2, 3, 6, 7, 17,
+18) must be present. This is automatically satisfied when all three cluster
 requirements are met but is enforced explicitly for clarity.
 
 DSM-5-TR diagnosis (\code{PTSD_orig}) is computed using the same binarization
