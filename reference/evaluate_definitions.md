@@ -83,7 +83,7 @@ evaluate_definitions(ptsd, definitions)
 #> 8    3/6 Non-hierarchical (2, 6, 7, 8, 10, 15)    283 (94.33%)
 #> 9  3/6 Non-hierarchical (2, 6, 10, 11, 15, 16)       285 (95%)
 #> 10 3/6 Non-hierarchical (2, 6, 10, 11, 15, 19)       285 (95%)
-#> 11                                      ICD-11    271 (90.33%)
+#> 11                                      ICD-11       270 (90%)
 #>    Total Non-Diagnosed True Positive True Negative Newly Diagnosed
 #> 1           23 (7.67%)           277            23               0
 #> 2          50 (16.67%)           250            23               0
@@ -95,7 +95,7 @@ evaluate_definitions(ptsd, definitions)
 #> 8           17 (5.67%)           276            16               7
 #> 9              15 (5%)           277            15               8
 #> 10             15 (5%)           277            15               8
-#> 11          29 (9.67%)           269            21               2
+#> 11            30 (10%)           268            21               2
 #>    Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV
 #> 1                    0        300           0      1.0000      1.0000 1.0000
 #> 2                   27        273          27      0.9025      1.0000 1.0000
@@ -107,7 +107,7 @@ evaluate_definitions(ptsd, definitions)
 #> 8                    1        292           8      0.9964      0.6957 0.9753
 #> 9                    0        292           8      1.0000      0.6522 0.9719
 #> 10                   0        292           8      1.0000      0.6522 0.9719
-#> 11                   8        290          10      0.9711      0.9130 0.9926
+#> 11                   9        289          11      0.9675      0.9130 0.9926
 #>       NPV Accuracy
 #> 1  1.0000   1.0000
 #> 2  0.4600   0.9100
@@ -119,6 +119,6 @@ evaluate_definitions(ptsd, definitions)
 #> 8  0.9412   0.9733
 #> 9  1.0000   0.9733
 #> 10 1.0000   0.9733
-#> 11 0.7241   0.9667
+#> 11 0.7000   0.9633
 # }
 ```

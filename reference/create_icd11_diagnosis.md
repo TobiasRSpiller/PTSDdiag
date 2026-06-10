@@ -51,11 +51,11 @@ ICD-11 PTSD requires ALL THREE of the following clusters to be met
 
 2.  **Avoidance**: \\\ge\\ 1 of PCL-5 items 6, 7
 
-3.  **Sense of current threat**: \\\ge\\ 1 of PCL-5 items 16, 17
+3.  **Sense of current threat**: \\\ge\\ 1 of PCL-5 items 17, 18
     (hypervigilance, exaggerated startle)
 
 A minimum of 3 symptoms total across all ICD-11 items (1, 2, 3, 6, 7,
-16, 17) must be present. This is automatically satisfied when all three
+17, 18) must be present. This is automatically satisfied when all three
 cluster requirements are met but is enforced explicitly for clarity.
 
 DSM-5-TR diagnosis (`PTSD_orig`) is computed using the same binarization
@@ -86,18 +86,18 @@ head(icd11_result)
 #> 3      P0003  44   male      TRUE      FALSE
 #> 4      P0004  41 female      TRUE       TRUE
 #> 5      P0005  34   male      TRUE       TRUE
-#> 6      P0006  18   male      TRUE       TRUE
+#> 6      P0006  18   male      TRUE      FALSE
 
 # Feed directly into the metrics pipeline
 metrics <- summarize_ptsd_changes(icd11_result)
 create_readable_summary(metrics)
 #>     Scenario Total Diagnosed Total Non-Diagnosed True Positive True Negative
 #> 1  PTSD_orig    4710 (94.2%)          290 (5.8%)          4710           290
-#> 2 PTSD_icd11   4641 (92.82%)         359 (7.18%)          4607           256
+#> 2 PTSD_icd11   4578 (91.56%)         422 (8.44%)          4549           261
 #>   Newly Diagnosed Newly Non-Diagnosed True Cases False Cases Sensitivity
 #> 1               0                   0       5000           0      1.0000
-#> 2              34                 103       4863         137      0.9781
+#> 2              29                 161       4810         190      0.9658
 #>   Specificity    PPV    NPV Accuracy
-#> 1      1.0000 1.0000 1.0000   1.0000
-#> 2      0.8828 0.9927 0.7131   0.9726
+#> 1         1.0 1.0000 1.0000    1.000
+#> 2         0.9 0.9937 0.6185    0.962
 ```

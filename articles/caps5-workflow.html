@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -141,18 +141,18 @@ misclassifications.</p>
 <span>  icd11      <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  reference  <span class="op">=</span> <span class="st">"caps5"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;              system n_diagnosed pct_diagnosed sensitivity specificity    ppv</span></span>
-<span><span class="co">#&gt; 1 DSM-5-TR (CAPS-5)         102          20.4      1.0000      1.0000 1.0000</span></span>
-<span><span class="co">#&gt; 2  DSM-5-TR (PCL-5)         105          21.0      0.6176      0.8945 0.6000</span></span>
-<span><span class="co">#&gt; 3    ICD-11 (PCL-5)         104          20.8      0.5686      0.8844 0.5577</span></span>
+<span><span class="co">#&gt;              system n_diagnosed pct_diagnosed sensitivity specificity   ppv</span></span>
+<span><span class="co">#&gt; 1 DSM-5-TR (CAPS-5)         102          20.4      1.0000      1.0000 1.000</span></span>
+<span><span class="co">#&gt; 2  DSM-5-TR (PCL-5)         105          21.0      0.6176      0.8945 0.600</span></span>
+<span><span class="co">#&gt; 3    ICD-11 (PCL-5)         113          22.6      0.5882      0.8668 0.531</span></span>
 <span><span class="co">#&gt;      npv n_false_negative pct_false_negative n_false_positive</span></span>
 <span><span class="co">#&gt; 1 1.0000                0                0.0                0</span></span>
 <span><span class="co">#&gt; 2 0.9013               39                7.8               42</span></span>
-<span><span class="co">#&gt; 3 0.8889               44                8.8               46</span></span>
+<span><span class="co">#&gt; 3 0.8915               42                8.4               53</span></span>
 <span><span class="co">#&gt;   pct_false_positive n_misclassified accuracy</span></span>
 <span><span class="co">#&gt; 1                0.0               0    1.000</span></span>
 <span><span class="co">#&gt; 2                8.4              81    0.838</span></span>
-<span><span class="co">#&gt; 3                9.2              90    0.820</span></span></code></pre></div>
+<span><span class="co">#&gt; 3               10.6              95    0.810</span></span></code></pre></div>
 <p>Because the two instruments are correlated here rather than random,
 the self-report PCL-5 diagnosis agrees substantially with the clinician
 CAPS-5 reference. Sensitivity is the share of CAPS-5-positive

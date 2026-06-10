@@ -159,7 +159,7 @@ print(comp)
 #> • 4/6 Hierarchical [optimize]: best = 1, 6, 8, 11, 17, 19 (1 tied)
 #> • 4/6 Non-hierarchical [optimize]: best = 6, 7, 9, 16, 17, 19
 #> • 3/6 Non-hierarchical [optimize]: best = 5, 6, 7, 8, 10, 12
-#> • ICD-11 [fixed]: symptoms 1, 2, 3, 6, 7, 16, 17
+#> • ICD-11 [fixed]: symptoms 1, 2, 3, 6, 7, 17, 18
 
 # Manuscript Table 2
 summarize_top_combinations(comp, as_percent = TRUE)
@@ -179,7 +179,7 @@ summarize_top_combinations(comp, as_percent = TRUE)
 #> 13 3/6 Non-hierarchical    3  symptom_4_6_7_8_11_14 4687  23 156 134
 #> 14 3/6 Non-hierarchical    4  symptom_6_7_8_9_11_19 4691  19 160 130
 #> 15 3/6 Non-hierarchical    5  symptom_6_7_8_9_11_20 4696  14 165 125
-#> 16               ICD-11    1             PTSD_icd11 4607 103  34 256
+#> 16               ICD-11    1             PTSD_icd11 4549 161  29 261
 #>    Sensitivity Specificity      PPV      NPV Accuracy
 #> 1     87.32484    95.86207 99.70909 31.77143    87.82
 #> 2     87.19745    97.93103 99.85412 32.01804    87.82
@@ -196,6 +196,6 @@ summarize_top_combinations(comp, as_percent = TRUE)
 #> 13    99.51168    46.20690 96.77886 85.35032    96.42
 #> 14    99.59660    44.82759 96.70171 87.24832    96.42
 #> 15    99.70276    43.10345 96.60564 89.92806    96.42
-#> 16    97.81316    88.27586 99.26740 71.30919    97.26
+#> 16    96.58174    90.00000 99.36654 61.84834    96.20
 # }
 ```

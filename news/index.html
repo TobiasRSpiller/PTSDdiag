@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,14 @@
       <small>Source: <a href="https://github.com/TobiasRSpiller/PTSDdiag/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.3" id="ptsddiag-033">PTSDdiag 0.3.3<a class="anchor" aria-label="anchor" href="#ptsddiag-033"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-0-3-3">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-3-3"></a></h3>
+<ul><li>
+<code><a href="../reference/create_icd11_diagnosis.html">create_icd11_diagnosis()</a></code> now operationalises the ICD-11 “sense of current threat” cluster with PCL-5 items 17 (hypervigilance) and 18 (exaggerated startle), the symptoms the documentation always intended. Earlier versions used items 16 (risk-taking behaviour) and 17, so the ICD-11 benchmark diagnosis, the ICD-11 symptom set reported by <code><a href="../reference/compare_optimizations.html">compare_optimizations()</a></code> / <code><a href="../reference/symptom_frequency.html">symptom_frequency()</a></code>, and any comparison against ICD-11 are affected. Re-run analyses that benchmarked against ICD-11.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.2" id="ptsddiag-032">PTSDdiag 0.3.2<a class="anchor" aria-label="anchor" href="#ptsddiag-032"></a></h2>
 <div class="section level3">

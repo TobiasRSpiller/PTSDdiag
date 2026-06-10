@@ -190,7 +190,7 @@ evaluate_definitions(vet, definitions, include_icd11 = TRUE)
 #> 14    3/6 Non-hierarchical (5, 6, 7, 8, 10, 15)     479 (95.8%)
 #> 15  3/6 Non-hierarchical (6, 7, 10, 11, 15, 19)     481 (96.2%)
 #> 16 3/6 Non-hierarchical (6, 11, 12, 15, 16, 19)     481 (96.2%)
-#> 17                                       ICD-11       460 (92%)
+#> 17                                       ICD-11     453 (90.6%)
 #>    Total Non-Diagnosed True Positive True Negative Newly Diagnosed
 #> 1              35 (7%)           465            35               0
 #> 2           89 (17.8%)           411            35               0
@@ -208,7 +208,7 @@ evaluate_definitions(vet, definitions, include_icd11 = TRUE)
 #> 14           21 (4.2%)           463            19              16
 #> 15           19 (3.8%)           464            18              17
 #> 16           19 (3.8%)           464            18              17
-#> 17             40 (8%)           455            30               5
+#> 17           47 (9.4%)           448            30               5
 #>    Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV
 #> 1                    0        500           0      1.0000      1.0000 1.0000
 #> 2                   54        446          54      0.8839      1.0000 1.0000
@@ -226,7 +226,7 @@ evaluate_definitions(vet, definitions, include_icd11 = TRUE)
 #> 14                   2        482          18      0.9957      0.5429 0.9666
 #> 15                   1        482          18      0.9978      0.5143 0.9647
 #> 16                   1        482          18      0.9978      0.5143 0.9647
-#> 17                  10        485          15      0.9785      0.8571 0.9891
+#> 17                  17        478          22      0.9634      0.8571 0.9890
 #>       NPV Accuracy
 #> 1  1.0000    1.000
 #> 2  0.3933    0.892
@@ -244,7 +244,7 @@ evaluate_definitions(vet, definitions, include_icd11 = TRUE)
 #> 14 0.9048    0.964
 #> 15 0.9474    0.964
 #> 16 0.9474    0.964
-#> 17 0.7500    0.970
+#> 17 0.6383    0.956
 ```
 
 The first row is the full DSM-5-TR diagnosis itself, the reference.
@@ -286,7 +286,7 @@ evaluate_definitions(genpop, definitions, include_icd11 = TRUE)
 #> 14    3/6 Non-hierarchical (5, 6, 7, 8, 10, 15)    340 (28.33%)
 #> 15  3/6 Non-hierarchical (6, 7, 10, 11, 15, 19)    357 (29.75%)
 #> 16 3/6 Non-hierarchical (6, 11, 12, 15, 16, 19)    331 (27.58%)
-#> 17                                       ICD-11    267 (22.25%)
+#> 17                                       ICD-11    279 (23.25%)
 #>    Total Non-Diagnosed True Positive True Negative Newly Diagnosed
 #> 1            948 (79%)           252           948               0
 #> 2           1056 (88%)           142           946               2
@@ -304,7 +304,7 @@ evaluate_definitions(genpop, definitions, include_icd11 = TRUE)
 #> 14        860 (71.67%)           229           837             111
 #> 15        843 (70.25%)           233           824             124
 #> 16        869 (72.42%)           234           851              97
-#> 17        933 (77.75%)           218           899              49
+#> 17        921 (76.75%)           221           890              58
 #>    Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV
 #> 1                    0       1200           0      1.0000      1.0000 1.0000
 #> 2                  110       1088         112      0.5635      0.9979 0.9861
@@ -322,7 +322,7 @@ evaluate_definitions(genpop, definitions, include_icd11 = TRUE)
 #> 14                  23       1066         134      0.9087      0.8829 0.6735
 #> 15                  19       1057         143      0.9246      0.8692 0.6527
 #> 16                  18       1085         115      0.9286      0.8977 0.7069
-#> 17                  34       1117          83      0.8651      0.9483 0.8165
+#> 17                  31       1111          89      0.8770      0.9388 0.7921
 #>       NPV Accuracy
 #> 1  1.0000   1.0000
 #> 2  0.8958   0.9067
@@ -340,7 +340,7 @@ evaluate_definitions(genpop, definitions, include_icd11 = TRUE)
 #> 14 0.9733   0.8883
 #> 15 0.9775   0.8808
 #> 16 0.9793   0.9042
-#> 17 0.9636   0.9308
+#> 17 0.9663   0.9258
 ```
 
 Both tables are built the same way, so they line up row for row with the

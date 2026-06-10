@@ -75,18 +75,18 @@ compare_diagnostic_systems(
   icd11      = TRUE,
   reference  = "caps5"
 )
-#>              system n_diagnosed pct_diagnosed sensitivity specificity    ppv
-#> 1 DSM-5-TR (CAPS-5)         102          20.4      1.0000      1.0000 1.0000
-#> 2  DSM-5-TR (PCL-5)         105          21.0      0.6176      0.8945 0.6000
-#> 3    ICD-11 (PCL-5)         104          20.8      0.5686      0.8844 0.5577
+#>              system n_diagnosed pct_diagnosed sensitivity specificity   ppv
+#> 1 DSM-5-TR (CAPS-5)         102          20.4      1.0000      1.0000 1.000
+#> 2  DSM-5-TR (PCL-5)         105          21.0      0.6176      0.8945 0.600
+#> 3    ICD-11 (PCL-5)         113          22.6      0.5882      0.8668 0.531
 #>      npv n_false_negative pct_false_negative n_false_positive
 #> 1 1.0000                0                0.0                0
 #> 2 0.9013               39                7.8               42
-#> 3 0.8889               44                8.8               46
+#> 3 0.8915               42                8.4               53
 #>   pct_false_positive n_misclassified accuracy
 #> 1                0.0               0    1.000
 #> 2                8.4              81    0.838
-#> 3                9.2              90    0.820
+#> 3               10.6              95    0.810
 ```
 
 Because the two instruments are correlated here rather than random, the

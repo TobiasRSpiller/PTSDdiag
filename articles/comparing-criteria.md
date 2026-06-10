@@ -28,7 +28,7 @@ These rules are:
   threshold on six symptoms, more resembling the ICD-11 definition of
   PTSD.
 - **ICD-11.** A fixed rule using seven items (re-experiencing items 1,
-  2, 3; avoidance items 6, 7; sense of current threat items 16, 17).
+  2, 3; avoidance items 6, 7; sense of current threat items 17, 18).
 
 ## Requirements for the input data
 
@@ -175,9 +175,9 @@ knitr::kable(
 | 13 | 0 | 1 | 2 | 0 | 3 |
 | 14 | 0 | 0 | 0 | 0 | 0 |
 | 15 | 1 | 7 | 9 | 0 | 17 |
-| 16 | 4 | 1 | 2 | 1 | 7 |
+| 16 | 4 | 1 | 2 | 0 | 7 |
 | 17 | 5 | 1 | 0 | 1 | 6 |
-| 18 | 2 | 0 | 0 | 0 | 2 |
+| 18 | 2 | 0 | 0 | 1 | 2 |
 | 19 | 5 | 0 | 7 | 0 | 12 |
 | 20 | 3 | 1 | 0 | 0 | 4 |
 

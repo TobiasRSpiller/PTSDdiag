@@ -104,7 +104,7 @@ my_combos <- list(
 tmp <- tempfile(fileext = ".json")
 write_combinations(my_combos, tmp, n_required = 4,
                    score_by = "accuracy")
-#> ✔ Combinations written to /tmp/RtmpmPXUzn/file1ad4148c9141.json
+#> ✔ Combinations written to /tmp/RtmpZGVfK3/file1a8d676313a6.json
 
 # Read them back
 spec <- read_combinations(tmp)
