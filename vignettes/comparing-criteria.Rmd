@@ -23,7 +23,7 @@ This vignette evaluates a set of candidate definitions for PTSD on a single samp
 As the differences between the DSM-5-TR and the ICD-11 illustrate, there are numerous ways PTSD could be defined. With regard to the DSM-5-TR definition, there are two relevant parameters that can be changed: the number of items that must be present and whether the clusters structure should be retained. `compare_optimizations()` runs a set of different rules in one call so they can be compared easily. Although fully customizable (see below) the default set contains three example rules, as well as the option to add the ICD-11 criteria. These rules are:
 
 - **Four of six symptoms, hierarchical.** At least four of a total of six selected symptoms must be present, and the selected set must include at least one symptom from each DSM-5-TR cluster (B, C, D, E). This preserves the polythetic structure of the full criteria.
-- **Four of six symptoms, without the cluster requirement.** The same number of symptoms, but any six symptoms may be chosen, not requiring the cluster structre.
+- **Four of six symptoms, without the cluster requirement.** The same number of symptoms, but any six symptoms may be chosen, not requiring the cluster structure.
 - **Three of six symptoms, without the cluster requirement.** A lower threshold on six symptoms, more resembling the ICD-11 definition of PTSD.
 - **ICD-11.** A fixed rule using seven items (re-experiencing items 1, 2, 3; avoidance items 6, 7; sense of current threat items 17, 18).
 
@@ -33,20 +33,20 @@ The input must be the 20 PCL-5 items in their standard order, scored 0 to 4, wit
 
 ## Running the comparison in one call
 
-`compare_optimizations()` evaluates the three scenario outlined above and returns one object that holds the per-scenario results. We request the three default optimized rules, add ICD-11 with `include_icd11 = TRUE`, and keep the ten best combinations per optimized rule with `n_top = 10`. The `score_by = "accuracy"` argument ranks combinations by total agreement with the full diagnosis. To keep the vignette fast we use a 500-row subset of the bundled data.
+`compare_optimizations()` evaluates the three scenarios outlined above and returns one object that holds the per-scenario results. We request the three default optimized rules, add ICD-11 with `include_icd11 = TRUE`, and keep the ten best combinations per optimized rule with `n_top = 10`. The default `score_by = "balanced_accuracy"` ranks combinations by the mean of sensitivity and specificity, so the high prevalence of the clinical sample cannot dominate the ranking; the [Getting started](getting-started.html) vignette discusses this choice and the `"accuracy"` and `"sensitivity"` alternatives. To keep the vignette fast we use a 250-row subset of the bundled data.
 
 ```{r setup, message = FALSE}
 library(PTSDdiag)
 
 data("simulated_ptsd")
-ptsd <- rename_ptsd_columns(simulated_ptsd[1:500, ],
+ptsd <- rename_ptsd_columns(simulated_ptsd[1:250, ],
                             id_col = c("patient_id", "age", "sex"))
 
 comp <- compare_optimizations(
   ptsd,
   n_top         = 10,
   include_icd11 = TRUE,
-  score_by      = "accuracy",
+  score_by      = "balanced_accuracy",
   show_progress = FALSE
 )
 print(comp)
@@ -58,7 +58,7 @@ The printed object lists each scenario with its best combination, so the best pe
 
 `summarize_top_combinations()` collapses the object into one table with a single row per candidate definition. Setting `as_percent = TRUE` reports the rates as percentages, and `top_n` limits how many combinations per rule are shown. 
 
-Each row carries the approach label, the rank within that approach, the symptom combination, the four cell counts against the full diagnosis (TP, FN, FP, TN), and the derived rates: sensitivity, specificity, PPV, NPV, and accuracy. Accuracy is (TP + TN) divided by the sample size, the quantity that `score_by = "accuracy"` optimized for, so it is the natural headline number when these definitions are compared.
+Each row carries the approach label, the rank within that approach, the symptom combination, the four cell counts against the full diagnosis (TP, FN, FP, TN), and the derived rates: sensitivity, specificity, PPV, NPV, accuracy, and balanced accuracy. Balanced accuracy is the mean of sensitivity and specificity, the quantity that the default `score_by = "balanced_accuracy"` optimized for, so it is the natural headline number when these definitions are compared; plain accuracy, (TP + TN) divided by the sample size, is reported alongside it.
 
 ```{r table-2}
 tbl <- summarize_top_combinations(comp, top_n = 10, as_percent = TRUE)
@@ -90,7 +90,7 @@ knitr::kable(
 
 ## Customising the scenarios
 
-The `scenarios` argument takes a named list. Each entry is either an optimized rule (`type = "optimize"`, with `n_symptoms`, `n_required`, and `hierarchical`) or a fixed criterion (`type = "fixed"`, with `criterion = "icd11"`, `"caps5"`, or a logical diagnosis vector you supply). This is how you vary the subset size, supply custom clusters, or benchmark against a criterion you have already derived from an other dataset (also see [Validating abbreviated symptom definitions](validation.html))
+The `scenarios` argument takes a named list. Each entry is either an optimized rule (`type = "optimize"`, with `n_symptoms`, `n_required`, and `hierarchical`) or a fixed criterion (`type = "fixed"`, with `criterion = "icd11"`, `"caps5"`, or a logical diagnosis vector you supply). This is how you vary the subset size, supply custom clusters, or benchmark against a criterion you have already derived from another dataset (also see [Validating abbreviated symptom definitions](validation.html))
 
 ```{r custom, eval = FALSE}
 my_scenarios <- list(
@@ -101,7 +101,7 @@ my_scenarios <- list(
 )
 
 compare_optimizations(ptsd, scenarios = my_scenarios, n_top = 10,
-                      score_by = "accuracy", show_progress = FALSE)
+                      score_by = "balanced_accuracy", show_progress = FALSE)
 ```
 
 ## See also

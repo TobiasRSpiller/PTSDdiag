@@ -9,7 +9,7 @@ optimize_combinations_clusters(
   n_symptoms = 6,
   n_required = 4,
   n_top = 3,
-  score_by = "accuracy",
+  score_by = "balanced_accuracy",
   clusters,
   DT = FALSE,
   show_progress = TRUE
@@ -40,8 +40,11 @@ diagnosis (default: 4). Must be between 1 and \code{n_symptoms}.}
 \item{score_by}{Character string specifying optimization criterion:
 
 \itemize{
+  \item "balanced_accuracy": Maximise balanced accuracy, the mean of
+    sensitivity and specificity. Robust when one diagnostic class is much
+    more common than the other. Default.
   \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
-    maximise overall accuracy). Default.
+    maximise overall accuracy).
   \item "sensitivity": Minimize false negatives only (i.e. maximise
     sensitivity relative to the full DSM-5-TR diagnosis).
 }}
@@ -106,23 +109,28 @@ structure. For PCL-5, the standard clusters are:
 \item Cluster E (Alterations in arousal and reactivity): Items 15-20
 }
 
-Optimization can be based on either:
+Optimization can be based on:
 
 \itemize{
+\item Maximizing balanced accuracy, the mean of sensitivity and
+  specificity (the default)
 \item Minimizing false cases (both false positives and false negatives)
 \item Minimizing only false negatives (newly non-diagnosed cases)
 }
 }
 \examples{
-# Create example data
-ptsd_data <- data.frame(matrix(sample(0:4, 200, replace=TRUE), ncol=20))
-names(ptsd_data) <- paste0("symptom_", 1:20)
+# Use a 250-row subset of the bundled data to keep the example fast
+ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+                                 id_col = c("patient_id", "age", "sex"))
 
 \donttest{
-# Find best hierarchical combinations with PCL-5 clusters
+# Find best hierarchical combinations with PCL-5 clusters (a 5-symptom
+# search keeps the example fast; the classic rule uses n_symptoms = 6,
+# n_required = 4)
 pcl5_clusters <- list(B = 1:5, C = 6:7, D = 8:14, E = 15:20)
-results <- optimize_combinations_clusters(ptsd_data, n_symptoms = 6,
-             n_required = 4, score_by = "accuracy", clusters = pcl5_clusters)
+results <- optimize_combinations_clusters(ptsd_data, n_symptoms = 5,
+             n_required = 3, score_by = "balanced_accuracy",
+             clusters = pcl5_clusters)
 
 # Get symptom numbers
 results$best_symptoms

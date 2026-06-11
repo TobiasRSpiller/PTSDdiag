@@ -68,6 +68,8 @@ A \code{data.frame} with one row per diagnostic system and the
   \item \code{n_misclassified}: Total misclassified cases
   \item \code{accuracy}: Proportion classified the same as the reference
     ((total - misclassified) / total), 4 dp
+  \item \code{balanced_accuracy}: Mean of sensitivity and specificity
+    ((sensitivity + specificity) / 2), 4 dp
 }
 }
 \description{

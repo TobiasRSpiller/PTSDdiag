@@ -37,6 +37,9 @@ A dataframe containing the following columns for each diagnostic criterion:
   \item  sensitivity, specificity, ppv, npv: Standard diagnostic accuracy metrics
   \item  accuracy: Proportion of cases classified the same as the baseline
     criterion ((true positives + true negatives) / total)
+  \item  balanced_accuracy: Mean of sensitivity and specificity
+    ((sensitivity + specificity) / 2), robust to imbalanced prevalence of
+    the baseline diagnosis
 }
 }
 \description{

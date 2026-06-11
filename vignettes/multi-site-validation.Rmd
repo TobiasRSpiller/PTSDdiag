@@ -20,13 +20,13 @@ This vignette illustrates how two sites that cannot share patient-level data, ca
 
 ## The multi-site problem
 
-Collaborations across clinics, registries, or countries are often bound by privacy rules and data-use agreements that forbid moving patient records between sites. Hence, pooling data is often not possible. However, as a simplified definition is fully described by the symptom indices it uses and the number required, optimization can take palace a one site and validation at another without sharing the original data but only symptom sets constituting the new definitions.
+Collaborations across clinics, registries, or countries are often bound by privacy rules and data-use agreements that forbid moving patient records between sites. Hence, pooling data is often not possible. However, as a simplified definition is fully described by the symptom indices it uses and the number required, optimization can take place at one site and validation at another without sharing the original data, only the symptom sets constituting the new definitions.
 
 In this vignette, one site has data from the veterans with a high PTSD prevalence and another has population data with a low PTSD prevalence. The first site derives a definition and inspects which symptoms its optimization selects. It shares the definitions as a JSON file. The general-population site then applies that definition locally, and we compare how it performs in each sample.
 
 ## Requirements for the input data
 
-Each site standardizes its own data with `rename_ptsd_columns()`: the 20 PCL-5 items in their standard order, scored 0 to 4, with no missing values, plus any identifier columns named in `id_col`. The full contract is in the [Getting started](getting-started.html) vignette. For this vignette, we subset the veteran sample to keep the optimization fast.
+Each site standardizes its own data with `rename_ptsd_columns()`: the 20 PCL-5 items in their standard order, scored 0 to 4, with no missing values, plus any identifier columns named in `id_col`. The full contract is in the [Getting started](getting-started.html) vignette. For this vignette, we subset the veteran sample to 250 rows to keep the optimization fast.
 
 ## Site 1: deriving the definition in the veteran sample
 
@@ -37,13 +37,13 @@ library(PTSDdiag)
 library(dplyr)
 
 data("simulated_ptsd")
-vet <- rename_ptsd_columns(simulated_ptsd[1:500, ],
+vet <- rename_ptsd_columns(simulated_ptsd[1:250, ],
                            id_col = c("patient_id", "age", "sex"))
 
 comp_vet <- compare_optimizations(
   vet,
   n_top         = 10,
-  score_by      = "accuracy",
+  score_by      = "balanced_accuracy",
   show_progress = FALSE
 )
 ```
@@ -104,7 +104,7 @@ Both tables are built the same way, so they line up row for row with the derivat
 
 ## Reading the two tables together
 
-Each definition keeps its character across the two samples: the hierarchical rule is the most specific and the least sensitive, the three-of-six rule the most sensitive and the least specific, and the four-of-six and ICD-11 rules fall between them. What changes with the sample is the balance of errors. Sensitivity and specificity move only modestly, because they are properties of the rule, while the predictive values shift with prevalence: in the lower-prevalence community sample the positive predictive value of every definition falls and the negative predictive value rises, so a positive result there is less likely to mark a true case than in the clinic.
+Each definition keeps its character across the two samples: the hierarchical rule is the most specific and the least sensitive, the three-of-six rule the most sensitive and the least specific, and the four-of-six and ICD-11 rules fall between them. What changes with the sample is the absolute level of performance. The positive predictive value of every definition falls in the lower-prevalence community sample, so a positive result there is less likely to mark a true case than in the clinic. Sensitivity also drops, most visibly for the strict hierarchical rule, because the community sample's symptom profiles are milder, while specificity holds or rises. These shifts are exactly what external validation is meant to reveal, and they are why a definition should not be transported across settings on its derivation performance alone.
 
 The agreement on core symptoms in the figure and the performance of every definition in the two tables were obtained without moving a single patient record between the sites. In a full collaboration the second site would also optimize, and the two sites would combine their selections into a cross-site consensus; the [Validating abbreviated symptom definitions](validation.html) vignette covers the external-validation logic and the JSON mechanism in more depth.
 

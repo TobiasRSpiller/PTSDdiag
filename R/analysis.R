@@ -18,9 +18,11 @@
 #'    DSM-5 diagnosis
 #' }
 #'
-#' Optimization can be based on either:
+#' Optimization can be based on:
 #'
 #' \itemize{
+#' \item Maximizing balanced accuracy, the mean of sensitivity and
+#'   specificity (the default)
 #' \item Minimizing false cases (both false positives and false negatives)
 #' \item Minimizing only false negatives (newly non-diagnosed cases)
 #'}
@@ -58,8 +60,11 @@
 #' @param score_by Character string specifying optimization criterion:
 #'
 #' \itemize{
+#'   \item "balanced_accuracy": Maximise balanced accuracy, the mean of
+#'     sensitivity and specificity. Robust when one diagnostic class is much
+#'     more common than the other. Default.
 #'   \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
-#'     maximise overall accuracy). Default.
+#'     maximise overall accuracy).
 #'   \item "sensitivity": Minimize false negatives only (i.e. maximise
 #'     sensitivity relative to the full DSM-5-TR diagnosis).
 #'}
@@ -97,16 +102,18 @@
 #' @importFrom utils combn
 #'
 #' @examples
-#' # Create example data
-#' ptsd_data <- data.frame(matrix(sample(0:4, 200, replace=TRUE), ncol=20))
-#' names(ptsd_data) <- paste0("symptom_", 1:20)
+#' # Use a 250-row subset of the bundled data to keep the example fast
+#' ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+#'                                  id_col = c("patient_id", "age", "sex"))
 #'
 #' \donttest{
-#' # Find best 6-symptom combinations requiring 4 present (classic defaults)
+#' # Find best 6-symptom combinations requiring 4 present (classic defaults,
+#' # optimized for balanced accuracy)
 #' results <- optimize_combinations(ptsd_data, n_symptoms = 6, n_required = 4,
-#'              score_by = "accuracy")
+#'              score_by = "balanced_accuracy")
 #'
-#' # Find best 5-symptom combinations requiring 3 present, return top 5
+#' # Find best 5-symptom combinations requiring 3 present, return top 5,
+#' # this time minimizing total misclassifications
 #' results2 <- optimize_combinations(ptsd_data, n_symptoms = 5, n_required = 3,
 #'               n_top = 5, score_by = "accuracy")
 #'
@@ -121,7 +128,7 @@
 #' }
 #'
 optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
-                                  n_top = 3, score_by = "accuracy",
+                                  n_top = 3, score_by = "balanced_accuracy",
                                   DT = FALSE, show_progress = TRUE) {
   # Validate inputs
   .validate_pcl5_data(data, strict_cols = FALSE)
@@ -207,9 +214,11 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
 #' \item Cluster E (Alterations in arousal and reactivity): Items 15-20
 #'}
 #'
-#' Optimization can be based on either:
+#' Optimization can be based on:
 #'
 #' \itemize{
+#' \item Maximizing balanced accuracy, the mean of sensitivity and
+#'   specificity (the default)
 #' \item Minimizing false cases (both false positives and false negatives)
 #' \item Minimizing only false negatives (newly non-diagnosed cases)
 #'}
@@ -238,8 +247,11 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
 #' @param score_by Character string specifying optimization criterion:
 #'
 #' \itemize{
+#'   \item "balanced_accuracy": Maximise balanced accuracy, the mean of
+#'     sensitivity and specificity. Robust when one diagnostic class is much
+#'     more common than the other. Default.
 #'   \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
-#'     maximise overall accuracy). Default.
+#'     maximise overall accuracy).
 #'   \item "sensitivity": Minimize false negatives only (i.e. maximise
 #'     sensitivity relative to the full DSM-5-TR diagnosis).
 #'}
@@ -280,15 +292,18 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
 #' @importFrom utils combn
 #'
 #' @examples
-#' # Create example data
-#' ptsd_data <- data.frame(matrix(sample(0:4, 200, replace=TRUE), ncol=20))
-#' names(ptsd_data) <- paste0("symptom_", 1:20)
+#' # Use a 250-row subset of the bundled data to keep the example fast
+#' ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+#'                                  id_col = c("patient_id", "age", "sex"))
 #'
 #' \donttest{
-#' # Find best hierarchical combinations with PCL-5 clusters
+#' # Find best hierarchical combinations with PCL-5 clusters (a 5-symptom
+#' # search keeps the example fast; the classic rule uses n_symptoms = 6,
+#' # n_required = 4)
 #' pcl5_clusters <- list(B = 1:5, C = 6:7, D = 8:14, E = 15:20)
-#' results <- optimize_combinations_clusters(ptsd_data, n_symptoms = 6,
-#'              n_required = 4, score_by = "accuracy", clusters = pcl5_clusters)
+#' results <- optimize_combinations_clusters(ptsd_data, n_symptoms = 5,
+#'              n_required = 3, score_by = "balanced_accuracy",
+#'              clusters = pcl5_clusters)
 #'
 #' # Get symptom numbers
 #' results$best_symptoms
@@ -298,7 +313,7 @@ optimize_combinations <- function(data, n_symptoms = 6, n_required = 4,
 #' }
 #'
 optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
-                                           n_top = 3, score_by = "accuracy",
+                                           n_top = 3, score_by = "balanced_accuracy",
                                            clusters, DT = FALSE, show_progress = TRUE) {
   # Validate inputs
   .validate_pcl5_data(data, strict_cols = FALSE)
@@ -422,9 +437,11 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
 #'  \item Identifies the three combinations that best match the original DSM-5 diagnosis
 #' }
 #'
-#' Optimization can be based on either:
+#' Optimization can be based on:
 #'
 #' \itemize{
+#' \item Maximizing balanced accuracy, the mean of sensitivity and
+#'   specificity (the default)
 #' \item Minimizing false cases (both false positives and false negatives)
 #' \item Minimizing only false negatives (newly non-diagnosed cases)
 #'}
@@ -453,8 +470,11 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
 #' @param score_by Character string specifying optimization criterion:
 #'
 #' \itemize{
+#'   \item "balanced_accuracy": Maximise balanced accuracy, the mean of
+#'     sensitivity and specificity. Robust when one diagnostic class is much
+#'     more common than the other. Default.
 #'   \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
-#'     maximise overall accuracy). Default.
+#'     maximise overall accuracy).
 #'   \item "sensitivity": Minimize false negatives only (i.e. maximise
 #'     sensitivity relative to the full DSM-5-TR diagnosis).
 #'}
@@ -483,13 +503,13 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
 #' @importFrom utils combn
 #'
 #' @examples
-#' # Create example data
-#' ptsd_data <- data.frame(matrix(sample(0:4, 200, replace=TRUE), ncol=20))
-#' names(ptsd_data) <- paste0("symptom_", 1:20)
+#' # Use a 250-row subset of the bundled data to keep the example fast
+#' ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+#'                                  id_col = c("patient_id", "age", "sex"))
 #'
 #' \donttest{
-#' # Find best combinations minimizing false cases
-#' results <- analyze_best_six_symptoms_four_required(ptsd_data, score_by = "accuracy")
+#' # Find best combinations with the default balanced-accuracy criterion
+#' results <- analyze_best_six_symptoms_four_required(ptsd_data)
 #'
 #' # Get symptom numbers
 #' results$best_symptoms
@@ -501,7 +521,7 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
 #' results$summary
 #' }
 #'
-analyze_best_six_symptoms_four_required <- function(data, score_by = "accuracy",
+analyze_best_six_symptoms_four_required <- function(data, score_by = "balanced_accuracy",
                                                     DT = FALSE) {
   lifecycle::deprecate_warn(
     "0.2.1",
@@ -545,9 +565,11 @@ analyze_best_six_symptoms_four_required <- function(data, score_by = "accuracy",
 #' \item Cluster 4 (E) - Alterations in arousal and reactivity: Items 15-20
 #'}
 #'
-#' Optimization can be based on either:
+#' Optimization can be based on:
 #'
 #' \itemize{
+#' \item Maximizing balanced accuracy, the mean of sensitivity and
+#'   specificity (the default)
 #' \item Minimizing false cases (both false positives and false negatives)
 #' \item Minimizing only false negatives (newly non-diagnosed cases)
 #'}
@@ -567,8 +589,11 @@ analyze_best_six_symptoms_four_required <- function(data, score_by = "accuracy",
 #' @param score_by Character string specifying optimization criterion:
 #'
 #' \itemize{
+#'   \item "balanced_accuracy": Maximise balanced accuracy, the mean of
+#'     sensitivity and specificity. Robust when one diagnostic class is much
+#'     more common than the other. Default.
 #'   \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
-#'     maximise overall accuracy). Default.
+#'     maximise overall accuracy).
 #'   \item "sensitivity": Minimize false negatives only (i.e. maximise
 #'     sensitivity relative to the full DSM-5-TR diagnosis).
 #'}
@@ -597,13 +622,15 @@ analyze_best_six_symptoms_four_required <- function(data, score_by = "accuracy",
 #' @importFrom utils combn
 #'
 #' @examples
-#' # Create example data
-#' ptsd_data <- data.frame(matrix(sample(0:4, 200, replace=TRUE), ncol=20))
-#' names(ptsd_data) <- paste0("symptom_", 1:20)
+#' # This deprecated wrapper always runs the full 6-symptom hierarchical
+#' # search, so its example uses a 50-row subset to stay fast
+#' ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:50, ],
+#'                                  id_col = c("patient_id", "age", "sex"))
 #'
 #' \donttest{
-#' # Find best hierarchical combinations minimizing false cases
-#' results <- analyze_best_six_symptoms_four_required_clusters(ptsd_data, score_by = "accuracy")
+#' # Find best hierarchical combinations with the default balanced-accuracy
+#' # criterion
+#' results <- analyze_best_six_symptoms_four_required_clusters(ptsd_data)
 #'
 #' # Get symptom numbers
 #' results$best_symptoms
@@ -615,7 +642,7 @@ analyze_best_six_symptoms_four_required <- function(data, score_by = "accuracy",
 #' results$summary
 #' }
 #'
-analyze_best_six_symptoms_four_required_clusters <- function(data, score_by = "accuracy",
+analyze_best_six_symptoms_four_required_clusters <- function(data, score_by = "balanced_accuracy",
                                                              DT = FALSE) {
   lifecycle::deprecate_warn(
     "0.2.1",

@@ -57,9 +57,11 @@ test_that("holdout_validation handles different train_ratio values", {
   )
   colnames(test_data) <- paste0("symptom_", 1:20)
   
-  # Test with different train ratios
-  results_50 <- holdout_validation(test_data, train_ratio = 0.5, seed = 123)
-  results_80 <- holdout_validation(test_data, train_ratio = 0.8, seed = 123)
+  # Test with different train ratios (small search keeps the test fast)
+  results_50 <- holdout_validation(test_data, train_ratio = 0.5, seed = 123,
+                                   n_symptoms = 4, n_required = 3)
+  results_80 <- holdout_validation(test_data, train_ratio = 0.8, seed = 123,
+                                   n_symptoms = 4, n_required = 3)
   
   # Check that test set sizes are correct
   expect_equal(nrow(results_50$without_clusters$test_results), 25)
@@ -68,24 +70,31 @@ test_that("holdout_validation handles different train_ratio values", {
 
 test_that("holdout_validation handles different score_by options", {
   # Create test data
+  set.seed(123)
   test_data <- data.frame(
     matrix(sample(0:4, 20 * 50, replace = TRUE),
            nrow = 50,
            ncol = 20)
   )
   colnames(test_data) <- paste0("symptom_", 1:20)
-  
-  # Test with different scoring methods
-  results_acc <- holdout_validation(test_data, score_by = "accuracy",    seed = 123)
-  results_sen <- holdout_validation(test_data, score_by = "sensitivity", seed = 123)
 
-  # Both should return valid results
+  # Test with different scoring methods (small search keeps the test fast)
+  results_acc <- holdout_validation(test_data, score_by = "accuracy",    seed = 123,
+                                    n_symptoms = 4, n_required = 3)
+  results_sen <- holdout_validation(test_data, score_by = "sensitivity", seed = 123,
+                                    n_symptoms = 4, n_required = 3)
+  results_bac <- holdout_validation(test_data, score_by = "balanced_accuracy",
+                                    seed = 123, n_symptoms = 4, n_required = 3)
+
+  # All should return valid results
   expect_type(results_acc, "list")
   expect_type(results_sen, "list")
+  expect_type(results_bac, "list")
 
   # Results might differ based on optimization criterion
   # but structure should be the same
   expect_equal(names(results_acc), names(results_sen))
+  expect_equal(names(results_acc), names(results_bac))
 })
 
 test_that("legacy score_by values error with a migration hint", {
@@ -159,8 +168,9 @@ test_that("cross_validation works correctly", {
   )
   colnames(test_data) <- paste0("symptom_", 1:20)
   
-  # Test basic functionality with k=3 for speed
-  results <- cross_validation(test_data, k = 3, seed = 42)
+  # Test basic functionality with k=3 and a small search for speed
+  results <- cross_validation(test_data, k = 3, seed = 42,
+                              n_symptoms = 4, n_required = 3)
   
   # Check structure of results
   expect_type(results, "list")
@@ -194,9 +204,11 @@ test_that("cross_validation handles different k values", {
   )
   colnames(test_data) <- paste0("symptom_", 1:20)
   
-  # Test with different k values
-  results_2 <- cross_validation(test_data, k = 2, seed = 123)
-  results_5 <- cross_validation(test_data, k = 5, seed = 123)
+  # Test with different k values (small search keeps the test fast)
+  results_2 <- cross_validation(test_data, k = 2, seed = 123,
+                                n_symptoms = 4, n_required = 3)
+  results_5 <- cross_validation(test_data, k = 5, seed = 123,
+                                n_symptoms = 4, n_required = 3)
   
   # Check that number of folds is correct
   expect_equal(length(results_2$without_clusters$fold_results), 2)
@@ -261,8 +273,10 @@ test_that("cross_validation combinations_summary works correctly", {
   )
   colnames(test_data) <- paste0("symptom_", 1:20)
   
-  # Run cross-validation
-  results <- cross_validation(test_data, k = 5, seed = 123)
+  # Run cross-validation (small search makes repeats across folds more
+  # likely and keeps the test fast)
+  results <- cross_validation(test_data, k = 5, seed = 123,
+                              n_symptoms = 4, n_required = 3)
   
   # Check combinations_summary structure if it exists (can be NULL)
   if (!is.null(results$without_clusters$combinations_summary)) {
@@ -274,6 +288,8 @@ test_that("cross_validation combinations_summary works correctly", {
     expect_true("Specificity" %in% names(summary_data))
     expect_true("PPV" %in% names(summary_data))
     expect_true("NPV" %in% names(summary_data))
+    expect_true("Accuracy" %in% names(summary_data))
+    expect_true("Balanced_Accuracy" %in% names(summary_data))
 
     # Splits_Appeared should be > 1 for all rows
     expect_true(all(summary_data$Splits_Appeared > 1))
@@ -297,18 +313,21 @@ test_that("holdout_validation produces consistent results with same seed", {
   )
   colnames(test_data) <- paste0("symptom_", 1:20)
   
-  # Run twice with same seed
-  results1 <- holdout_validation(test_data, seed = 42)
-  results2 <- holdout_validation(test_data, seed = 42)
-  
+  # Run twice with same seed (small search keeps the test fast)
+  results1 <- holdout_validation(test_data, seed = 42,
+                                 n_symptoms = 4, n_required = 3)
+  results2 <- holdout_validation(test_data, seed = 42,
+                                 n_symptoms = 4, n_required = 3)
+
   # Results should be identical
-  expect_equal(results1$without_clusters$best_combinations, 
+  expect_equal(results1$without_clusters$best_combinations,
                results2$without_clusters$best_combinations)
-  expect_equal(results1$with_clusters$best_combinations, 
+  expect_equal(results1$with_clusters$best_combinations,
                results2$with_clusters$best_combinations)
-  
+
   # Run with different seed
-  results3 <- holdout_validation(test_data, seed = 123)
+  results3 <- holdout_validation(test_data, seed = 123,
+                                 n_symptoms = 4, n_required = 3)
   
   # Results might differ (though not guaranteed for small datasets)
   # At least the structure should be the same
@@ -321,12 +340,14 @@ test_that("holdout_validation returns data.frame by default and DT when requeste
   )
   colnames(test_data) <- paste0("symptom_", 1:20)
 
-  results <- holdout_validation(test_data, seed = 42)
+  results <- holdout_validation(test_data, seed = 42,
+                                n_symptoms = 4, n_required = 3)
   expect_true(is.data.frame(results$without_clusters$summary))
   expect_true(is.data.frame(results$with_clusters$summary))
 
   skip_if_not_installed("DT")
-  results_dt <- holdout_validation(test_data, seed = 42, DT = TRUE)
+  results_dt <- holdout_validation(test_data, seed = 42, DT = TRUE,
+                                   n_symptoms = 4, n_required = 3)
   expect_s3_class(results_dt$without_clusters$summary, "datatables")
   expect_s3_class(results_dt$with_clusters$summary, "datatables")
 })
@@ -337,12 +358,14 @@ test_that("cross_validation returns data.frame by default and DT when requested"
   )
   colnames(test_data) <- paste0("symptom_", 1:20)
 
-  results <- cross_validation(test_data, k = 3, seed = 42)
+  results <- cross_validation(test_data, k = 3, seed = 42,
+                              n_symptoms = 4, n_required = 3)
   expect_true(is.data.frame(results$without_clusters$summary_by_fold))
   expect_true(is.data.frame(results$with_clusters$summary_by_fold))
 
   skip_if_not_installed("DT")
-  results_dt <- cross_validation(test_data, k = 3, seed = 42, DT = TRUE)
+  results_dt <- cross_validation(test_data, k = 3, seed = 42, DT = TRUE,
+                                 n_symptoms = 4, n_required = 3)
   expect_s3_class(results_dt$without_clusters$summary_by_fold, "datatables")
   expect_s3_class(results_dt$with_clusters$summary_by_fold, "datatables")
 })
@@ -356,9 +379,11 @@ test_that("cross_validation produces consistent results with same seed", {
   )
   colnames(test_data) <- paste0("symptom_", 1:20)
 
-  # Run twice with same seed
-  results1 <- cross_validation(test_data, k = 3, seed = 42)
-  results2 <- cross_validation(test_data, k = 3, seed = 42)
+  # Run twice with same seed (small search keeps the test fast)
+  results1 <- cross_validation(test_data, k = 3, seed = 42,
+                               n_symptoms = 4, n_required = 3)
+  results2 <- cross_validation(test_data, k = 3, seed = 42,
+                               n_symptoms = 4, n_required = 3)
 
   # Check that fold assignments are the same
   for (i in 1:3) {
@@ -379,7 +404,7 @@ test_that("holdout_validation restores user RNG state", {
   expected <- runif(1)
 
   set.seed(99)
-  holdout_validation(test_data, seed = 555)
+  holdout_validation(test_data, seed = 555, n_symptoms = 4, n_required = 3)
   actual <- runif(1)
 
   expect_equal(actual, expected)
@@ -395,7 +420,8 @@ test_that("cross_validation restores user RNG state", {
   expected <- runif(1)
 
   set.seed(99)
-  cross_validation(test_data, k = 2, seed = 555)
+  cross_validation(test_data, k = 2, seed = 555,
+                   n_symptoms = 4, n_required = 3)
   actual <- runif(1)
 
   expect_equal(actual, expected)
@@ -456,7 +482,7 @@ test_that("holdout_validation carries ID columns into test_results", {
   sym <- rename_ptsd_columns(raw, id_col = c("patient_id", "age"))
 
   res <- holdout_validation(sym, train_ratio = 0.7, seed = 99,
-                            n_symptoms = 6, n_required = 4, n_top = 2)
+                            n_symptoms = 4, n_required = 3, n_top = 2)
   tw <- res$without_clusters$test_results
   expect_true(all(c("patient_id", "age") %in% names(tw)))
   expect_true(all(tw$patient_id %in% raw$patient_id))
@@ -478,7 +504,7 @@ test_that("cross_validation carries ID columns into every fold_results entry", {
   sym <- rename_ptsd_columns(raw, id_col = "patient_id")
 
   res <- cross_validation(sym, k = 4, seed = 99,
-                          n_symptoms = 6, n_required = 4, n_top = 2)
+                          n_symptoms = 4, n_required = 3, n_top = 2)
   folds_w <- res$without_clusters$fold_results
   expect_length(folds_w, 4)
 

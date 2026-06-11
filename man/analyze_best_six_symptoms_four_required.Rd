@@ -6,7 +6,7 @@
 \usage{
 analyze_best_six_symptoms_four_required(
   data,
-  score_by = "accuracy",
+  score_by = "balanced_accuracy",
   DT = FALSE
 )
 }
@@ -26,8 +26,11 @@ analyze_best_six_symptoms_four_required(
 \item{score_by}{Character string specifying optimization criterion:
 
 \itemize{
+  \item "balanced_accuracy": Maximise balanced accuracy, the mean of
+    sensitivity and specificity. Robust when one diagnostic class is much
+    more common than the other. Default.
   \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
-    maximise overall accuracy). Default.
+    maximise overall accuracy).
   \item "sensitivity": Minimize false negatives only (i.e. maximise
     sensitivity relative to the full DSM-5-TR diagnosis).
 }}
@@ -67,9 +70,11 @@ The function:
  \item Identifies the three combinations that best match the original DSM-5 diagnosis
 }
 
-Optimization can be based on either:
+Optimization can be based on:
 
 \itemize{
+\item Maximizing balanced accuracy, the mean of sensitivity and
+  specificity (the default)
 \item Minimizing false cases (both false positives and false negatives)
 \item Minimizing only false negatives (newly non-diagnosed cases)
 }
@@ -84,13 +89,13 @@ The symptom clusters in PCL-5 are:
 }
 }
 \examples{
-# Create example data
-ptsd_data <- data.frame(matrix(sample(0:4, 200, replace=TRUE), ncol=20))
-names(ptsd_data) <- paste0("symptom_", 1:20)
+# Use a 250-row subset of the bundled data to keep the example fast
+ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+                                 id_col = c("patient_id", "age", "sex"))
 
 \donttest{
-# Find best combinations minimizing false cases
-results <- analyze_best_six_symptoms_four_required(ptsd_data, score_by = "accuracy")
+# Find best combinations with the default balanced-accuracy criterion
+results <- analyze_best_six_symptoms_four_required(ptsd_data)
 
 # Get symptom numbers
 results$best_symptoms

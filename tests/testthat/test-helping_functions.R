@@ -139,7 +139,8 @@ test_that("create_readable_summary works correctly", {
     specificity = c(1, 0.9),
     ppv = c(1, 0.89),
     npv = c(1, 0.82),
-    accuracy = c(1, 0.85)
+    accuracy = c(1, 0.85),
+    balanced_accuracy = c(1, 0.85)
   )
 
   results <- create_readable_summary(test_stats)
@@ -148,13 +149,15 @@ test_that("create_readable_summary works correctly", {
   expected_columns <- c("Scenario", "Total Diagnosed", "Total Non-Diagnosed",
                         "True Positive", "True Negative", "Newly Diagnosed",
                         "Newly Non-Diagnosed", "True Cases", "False Cases",
-                        "Sensitivity", "Specificity", "PPV", "NPV", "Accuracy")
+                        "Sensitivity", "Specificity", "PPV", "NPV", "Accuracy",
+                        "Balanced Accuracy")
   expect_equal(colnames(results), expected_columns)
 
   # Test formatting
   expect_equal(results$`Total Diagnosed`[1], "50 (50%)")
   expect_equal(results$Sensitivity[2], 0.8)
   expect_equal(results$Accuracy[2], 0.85)
+  expect_equal(results$`Balanced Accuracy`[2], 0.85)
 })
 
 test_that("summarize_ptsd_changes computes accuracy as (TP + TN) / N", {

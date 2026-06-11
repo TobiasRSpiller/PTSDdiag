@@ -7,7 +7,7 @@
 holdout_validation(
   data,
   train_ratio = 0.7,
-  score_by = "accuracy",
+  score_by = "balanced_accuracy",
   seed = 123,
   n_symptoms = 6,
   n_required = 4,
@@ -29,8 +29,11 @@ diagnoses can be joined back to the original dataframe.}
 
 \item{score_by}{Character string specifying optimization criterion:
 \itemize{
+  \item "balanced_accuracy": Maximise balanced accuracy, the mean of
+    sensitivity and specificity. Robust when one diagnostic class is
+    much more common than the other. Default.
   \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
-    maximise overall accuracy). Default.
+    maximise overall accuracy).
   \item "sensitivity": Minimize false negatives only (i.e. maximise
     sensitivity relative to the full DSM-5-TR diagnosis).
 }}
@@ -92,18 +95,15 @@ Two models are evaluated:
 }
 }
 \examples{
-# Create sample data
-set.seed(42)
-sample_data <- data.frame(
-  matrix(sample(0:4, 20 * 200, replace = TRUE),
-         nrow = 200,
-         ncol = 20)
-)
-colnames(sample_data) <- paste0("symptom_", 1:20)
+# Use a 250-row subset of the bundled data to keep the example fast
+ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+                                 id_col = c("patient_id", "age", "sex"))
 
 \donttest{
-# Perform holdout validation
-validation_results <- holdout_validation(sample_data, train_ratio = 0.7)
+# Validate a compact 3-of-5 definition (a 5-symptom search keeps the
+# example fast; use n_symptoms = 6, n_required = 4 for the classic rule)
+validation_results <- holdout_validation(ptsd_data, train_ratio = 0.7,
+                                         n_symptoms = 5, n_required = 3)
 
 # Access results
 validation_results$without_clusters$summary

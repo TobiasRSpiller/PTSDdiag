@@ -46,10 +46,10 @@ dim(simulated_ptsd)
 names(simulated_ptsd)[1:6]
 ```
 
-We pass the three demographic columns to `id_col`. They stay attached to every participant through the rest of the workflow, which is what later lets us describe the sample without a separate merge.
+To keep this vignette quick to build we work with a 250-row subset; the workflow is identical on the full dataset. We pass the three demographic columns to `id_col`. They stay attached to every participant through the rest of the workflow, which is what later lets us describe the sample without a separate merge.
 
 ```{r rename}
-ptsd <- rename_ptsd_columns(simulated_ptsd,
+ptsd <- rename_ptsd_columns(simulated_ptsd[1:250, ],
                             id_col = c("patient_id", "age", "sex"))
 names(ptsd)[1:6]
 ```
@@ -64,19 +64,21 @@ A diagnosis requires at least one symptom from the intrusion cluster (items 1–
 
 ```{r diagnosis}
 ptsd <- ptsd %>%
-  create_ptsd_diagnosis_nonbinarized() %>%
-  calculate_ptsd_total()
+  create_ptsd_diagnosis_nonbinarized()
 ```
 
-`calculate_ptsd_total()` adds the PCL-5 sum score (range 0–80), a severity index we will use to describe the sample. In this clinical-style dataset, `r round(mean(ptsd$PTSD_orig) * 100)`% of participants meet the full criteria.
+`calculate_ptsd_total()` adds the PCL-5 sum score (range 0–80), a severity index we use to describe the sample. We compute it on a separate descriptive copy rather than in the analysis data, because the optimization functions expect only the 20 items next to identifiers and the reference diagnosis and warn when a total-score column is present.
+
+```{r describe}
+desc <- calculate_ptsd_total(ptsd)
+mean(desc$total)
+```
+
+In this clinical-style sample, the mean PCL-5 total is `r round(mean(desc$total), 1)` points and `r round(mean(ptsd$PTSD_orig) * 100)`% of participants meet the full criteria.
 
 ```{r prevalence}
 mean(ptsd$PTSD_orig) * 100
 ```
-
-Here is the rewritten section. All prose now sits before the code, the example is framed as a four-of-six definition that ignores the cluster structure, the combination count is given explicitly, the `score_by` choice is explained with both options and a rationale, and `n_top` and `show_progress` are covered. No dashes used.
-
----
 
 ## Identifying a symptom subset
 
@@ -84,7 +86,7 @@ With the reference diagnosis in place, `optimize_combinations()` searches for th
 
 For a subset of six items, the function evaluates every possible combination of the 20 symptoms. The number of combinations is $\binom{20}{6} = 38{,}760$. To each one it applies the presence rule, classifying a participant as positive when at least `n_required` of the six selected symptoms are present (scored 2 or higher), and then ranks the combinations by how often their decision disagrees with `PTSD_orig`.
 
-Before running the search we choose the metric to optimize through the `score_by` argument. Two options are available. Setting it to `"accuracy"` minimizes the total number of misclassifications, counting false positives and false negatives equally. Setting it to `"sensitivity"` minimizes false negatives only, which prioritizes not missing participants who meet the full criteria, at the cost of more false positives. In this example we optimize for accuracy, because our aim is a simplified definition that agrees with the full DSM-5-TR diagnosis overall rather than one tuned toward a single type of error.
+Before running the search we choose the metric to optimize through the `score_by` argument. Three options are available. The default, `"balanced_accuracy"`, maximizes the mean of sensitivity and specificity, so participants who meet the full criteria and participants who do not carry equal weight. Setting it to `"accuracy"` instead minimizes the total number of misclassifications, and `"sensitivity"` minimizes false negatives only, which prioritizes not missing participants who meet the full criteria at the cost of more false positives. We use balanced accuracy here, and recommend it as the standard choice, because diagnostic samples are rarely balanced: in this sample `r round(mean(ptsd$PTSD_orig) * 100)`% of participants meet the full criteria, so a rule that simply diagnosed everyone would already reach `r round(mean(ptsd$PTSD_orig) * 100)`% accuracy while being useless for ruling anyone out. Balanced accuracy cannot be gamed this way, because it scores performance in the diagnosed and the non-diagnosed group separately.
 
 Two further arguments shape the output. `n_top = 3` returns the three best scoring subsets rather than a single winner, so that near optimal solutions can be compared; the companion value `res$n_tied` reports how many other combinations matched the top score exactly, which shows whether the leading subset is uniquely best or one of several equivalent solutions. `show_progress = FALSE` suppresses the progress bar.
 
@@ -94,7 +96,7 @@ res <- optimize_combinations(
   n_symptoms    = 6,
   n_required    = 4,
   n_top         = 3,
-  score_by      = "accuracy",
+  score_by      = "balanced_accuracy",
   show_progress = FALSE
 )
 res$best_symptoms
@@ -102,9 +104,9 @@ res$best_symptoms
 
 ## Diagnostic performance metrics
 
-The optimization minimizes the total number of misclassified participants, but a single error count hides the kind of error being made, and the two kinds carry different costs. A false negative is a participant who meets the full DSM-5-TR criteria yet falls below the simplified rule; a false positive is the reverse. Sensitivity and specificity quantify these two error rates separately and are properties of the rule itself, largely stable across samples. Positive and negative predictive values translate the rule to a particular setting: because they depend on how common PTSD is, the same six-symptom definition yields different predictive values in a specialty clinic than in a community survey. Accuracy, the overall share of participants classified the same way as the full criteria, is the single number `score_by = "accuracy"` optimized for. Reporting all of these, alongside the underlying counts, is what lets a reader judge whether a simplified definition is adequate for their purpose.
+The optimization maximizes one number, but a single score hides the kind of error being made, and the two kinds carry different costs. A false negative is a participant who meets the full DSM-5-TR criteria yet falls below the simplified rule; a false positive is the reverse. Sensitivity and specificity quantify these two error rates separately and are properties of the rule itself rather than of the sample's prevalence. Positive and negative predictive values translate the rule to a particular setting: because they depend on how common PTSD is, the same six-symptom definition yields different predictive values in a specialty clinic than in a community survey. Balanced accuracy, the mean of sensitivity and specificity, is the single number the default `score_by = "balanced_accuracy"` optimized for; plain accuracy, the overall share of participants classified the same way as the full criteria, is reported alongside it. Reporting all of these, together with the underlying counts, is what lets a reader judge whether a simplified definition is adequate for their purpose.
 
-`optimize_combinations()` returns these metrics for the reference diagnosis and each top combination in `res$summary`, including an `Accuracy` column. This is the diagnostic-performance table.
+`optimize_combinations()` returns these metrics for the reference diagnosis and each top combination in `res$summary`, including `Accuracy` and `Balanced Accuracy` columns. This is the diagnostic-performance table.
 
 ```{r summary}
 res$summary

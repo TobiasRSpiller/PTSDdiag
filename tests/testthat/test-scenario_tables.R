@@ -1,10 +1,18 @@
+# Building the default-scenario comparison is the expensive part of this
+# file, so each variant is built once and reused (all tests are read-only).
+.comparison_cache <- new.env(parent = emptyenv())
 build_comparison <- function(n = 60, seed = 7, include_icd11 = FALSE) {
-  set.seed(seed)
-  df <- as.data.frame(matrix(sample(0:4, 20 * n, replace = TRUE), nrow = n,
-                             ncol = 20))
-  names(df) <- paste0("symptom_", 1:20)
-  compare_optimizations(df, n_top = 3, include_icd11 = include_icd11,
-                        show_progress = FALSE)
+  key <- paste(n, seed, include_icd11, sep = "_")
+  if (is.null(.comparison_cache[[key]])) {
+    set.seed(seed)
+    df <- as.data.frame(matrix(sample(0:4, 20 * n, replace = TRUE), nrow = n,
+                               ncol = 20))
+    names(df) <- paste0("symptom_", 1:20)
+    .comparison_cache[[key]] <- compare_optimizations(
+      df, n_top = 3, include_icd11 = include_icd11, show_progress = FALSE
+    )
+  }
+  .comparison_cache[[key]]
 }
 
 # ---------------------------------------------------------------------------
@@ -17,12 +25,16 @@ test_that("summarize_top_combinations returns the documented columns", {
   expect_equal(
     names(tbl),
     c("Approach", "Rank", "Combination", "TP", "FN", "FP", "TN",
-      "Sensitivity", "Specificity", "PPV", "NPV", "Accuracy")
+      "Sensitivity", "Specificity", "PPV", "NPV", "Accuracy",
+      "Balanced Accuracy")
   )
   expect_false(any(tbl$Combination == "PTSD_orig"))
   expect_true(all(tbl$TP + tbl$FN + tbl$FP + tbl$TN == comp$n_rows))
   # Accuracy equals (TP + TN) / N
   expect_equal(tbl$Accuracy, (tbl$TP + tbl$TN) / comp$n_rows)
+  # Balanced accuracy equals the mean of sensitivity and specificity
+  expect_equal(tbl$`Balanced Accuracy`,
+               (tbl$Sensitivity + tbl$Specificity) / 2)
 })
 
 test_that("summarize_top_combinations metrics are in [0, 1] by default and [0, 100] with as_percent", {
@@ -37,6 +49,7 @@ test_that("summarize_top_combinations metrics are in [0, 1] by default and [0, 1
   # Conversion is consistent
   expect_equal(pct$Sensitivity, frac$Sensitivity * 100)
   expect_equal(pct$Accuracy,    frac$Accuracy * 100)
+  expect_equal(pct$`Balanced Accuracy`, frac$`Balanced Accuracy` * 100)
 })
 
 test_that("summarize_top_combinations top_n caps optimize scenarios but keeps fixed at 1 row", {
