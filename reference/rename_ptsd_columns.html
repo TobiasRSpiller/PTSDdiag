@@ -11,7 +11,7 @@ is essential for subsequent analyses using other functions in the package."><met
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -120,26 +120,26 @@ different symptom clusters:</p>
 <span class="r-in"><span><span class="va">with_id</span> <span class="op">&lt;-</span> <span class="fu">rename_ptsd_columns</span><span class="op">(</span><span class="va">sample_data</span>, id_col <span class="op">=</span> <span class="st">"patient_id"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">with_id</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   patient_id symptom_1 symptom_2 symptom_3 symptom_4 symptom_5 symptom_6</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       P001         1         4         3         3         1         1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       P002         2         0         0         3         0         0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       P003         0         2         4         1         1         2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4       P004         1         0         0         1         1         2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5       P005         1         2         3         4         4         3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6       P006         0         1         2         0         3         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       P001         0         2         3         1         3         0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       P002         4         3         2         2         2         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       P003         0         1         2         0         1         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       P004         1         4         0         2         2         2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5       P005         2         4         4         1         3         4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6       P006         0         1         4         3         2         4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   symptom_7 symptom_8 symptom_9 symptom_10 symptom_11 symptom_12 symptom_13</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1         2         3         3          1          3          1          1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2         0         2         4          4          4          1          1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3         0         3         2          0          3          1          2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4         4         2         2          2          1          3          2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5         3         4         1          2          1          2          0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6         1         0         1          0          1          1          3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1         0         2         2          3          0          2          0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         0         0         4          1          4          0          4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3         2         0         0          1          4          2          1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4         0         3         0          1          3          3          3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5         3         3         1          3          4          2          4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6         2         0         2          4          0          4          2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   symptom_14 symptom_15 symptom_16 symptom_17 symptom_18 symptom_19 symptom_20</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          2          4          3          2          0          2          4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          1          1          2          1          4          3          3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3          0          0          1          1          4          2          1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4          3          0          1          1          2          0          0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5          1          4          1          1          3          3          4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6          1          2          2          4          4          1          1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1          2          2          2          4          3          0          4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          4          3          3          4          3          2          1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3          2          0          2          2          3          0          3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4          0          4          4          1          3          3          3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5          0          0          4          2          4          0          2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6          0          0          2          2          2          0          0</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

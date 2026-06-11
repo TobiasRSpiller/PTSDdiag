@@ -15,7 +15,7 @@ where any four symptoms must be present, regardless of their cluster membership.
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,7 +60,7 @@ where any four symptoms must be present, regardless of their cluster membership.
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">analyze_best_six_symptoms_four_required</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  score_by <span class="op">=</span> <span class="st">"accuracy"</span>,</span>
+<span>  score_by <span class="op">=</span> <span class="st">"balanced_accuracy"</span>,</span>
 <span>  DT <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -83,8 +83,11 @@ where any four symptoms must be present, regardless of their cluster membership.
 
 <dt id="arg-score-by">score_by<a class="anchor" aria-label="anchor" href="#arg-score-by"></a></dt>
 <dd><p>Character string specifying optimization criterion:</p>
-<ul><li><p>"accuracy": Minimize total misclassifications (FP + FN, i.e.
-    maximise overall accuracy). Default.</p></li>
+<ul><li><p>"balanced_accuracy": Maximise balanced accuracy, the mean of
+    sensitivity and specificity. Robust when one diagnostic class is much
+    more common than the other. Default.</p></li>
+<li><p>"accuracy": Minimize total misclassifications (FP + FN, i.e.
+    maximise overall accuracy).</p></li>
 <li><p>"sensitivity": Minimize false negatives only (i.e. maximise
     sensitivity relative to the full DSM-5-TR diagnosis).</p></li>
 </ul></dd>
@@ -113,8 +116,10 @@ plain data.frame.</p></dd>
 <ol><li><p>Tests all possible combinations of 6 symptoms from the 20 PCL-5 items</p></li>
 <li><p>Requires 4 symptoms to be present (&gt;=2 on original 0-4 scale) for diagnosis</p></li>
 <li><p>Identifies the three combinations that best match the original DSM-5 diagnosis</p></li>
-</ol><p>Optimization can be based on either:</p>
-<ul><li><p>Minimizing false cases (both false positives and false negatives)</p></li>
+</ol><p>Optimization can be based on:</p>
+<ul><li><p>Maximizing balanced accuracy, the mean of sensitivity and
+  specificity (the default)</p></li>
+<li><p>Minimizing false cases (both false positives and false negatives)</p></li>
 <li><p>Minimizing only false negatives (newly non-diagnosed cases)</p></li>
 </ul><p>The symptom clusters in PCL-5 are:</p>
 <ul><li><p>Items 1-5: Intrusion symptoms (Criterion B)</p></li>
@@ -130,63 +135,559 @@ plain data.frame.</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Create example data</span></span></span>
-<span class="r-in"><span><span class="va">ptsd_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">4</span>, <span class="fl">200</span>, replace<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">20</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ptsd_data</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"symptom_"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Use a 250-row subset of the bundled data to keep the example fast</span></span></span>
+<span class="r-in"><span><span class="va">ptsd_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="rename_ptsd_columns.html">rename_ptsd_columns</a></span><span class="op">(</span><span class="va">simulated_ptsd</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">250</span>, <span class="op">]</span>,</span></span>
+<span class="r-in"><span>                                 id_col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"patient_id"</span>, <span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="co"># Find best combinations minimizing false cases</span></span></span>
-<span class="r-in"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">analyze_best_six_symptoms_four_required</span><span class="op">(</span><span class="va">ptsd_data</span>, score_by <span class="op">=</span> <span class="st">"accuracy"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Find best combinations with the default balanced-accuracy criterion</span></span></span>
+<span class="r-in"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">analyze_best_six_symptoms_four_required</span><span class="op">(</span><span class="va">ptsd_data</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`analyze_best_six_symptoms_four_required()` was deprecated in PTSDdiag 0.2.1.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Please use `optimize_combinations()` instead.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■                         </span>  20% | ETA:  4s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■         </span>  75% | ETA:  1s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■                          </span>  18% | ETA:  5s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■              </span>  57% | ETA:  2s</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ </span> 100% | ETA:  0s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 1, 2, 3, 6, 11, 16 (866 additional tied)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 6, 7, 8, 11, 13, 17 (1 additional tied)</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Get symptom numbers</span></span></span>
 <span class="r-in"><span><span class="va">results</span><span class="op">$</span><span class="va">best_symptoms</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  1  2  3  6 11 16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  6  7  8 11 13 17</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[2]]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  1  2  3  8 11 13</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  6  7 10 11 13 15</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[3]]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  1  2  3  8 11 16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  4  6  7  8 11 17</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># View raw comparison data</span></span></span>
 <span class="r-in"><span><span class="va">results</span><span class="op">$</span><span class="va">diagnosis_comparison</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    PTSD_orig symptom_1_2_3_6_11_16 symptom_1_2_3_8_11_13 symptom_1_2_3_8_11_16</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      FALSE                 FALSE                 FALSE                 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       TRUE                  TRUE                  TRUE                  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       TRUE                  TRUE                  TRUE                  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4       TRUE                  TRUE                  TRUE                  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5       TRUE                  TRUE                  TRUE                  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6      FALSE                 FALSE                 FALSE                 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7       TRUE                  TRUE                  TRUE                  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8      FALSE                 FALSE                 FALSE                 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9      FALSE                 FALSE                 FALSE                 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10      TRUE                  TRUE                  TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     patient_id age    sex PTSD_orig symptom_6_7_8_11_13_17</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        P0001  48   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2        P0002  29   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3        P0003  44   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4        P0004  41 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5        P0005  34   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6        P0006  18   male      TRUE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7        P0007  33   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8        P0008  30 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9        P0009  43 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10       P0010  36 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11       P0011  37 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12       P0012  33   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13       P0013  39 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14       P0014  39   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15       P0015  18 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16       P0016  58 female     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17       P0017  49 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18       P0018  45 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19       P0019  32 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20       P0020  50   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21       P0021  38   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22       P0022  40 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23       P0023  25   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24       P0024  60 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25       P0025  43 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26       P0026  65   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27       P0027  63   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28       P0028  43 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29       P0029  50 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30       P0030  63   male     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31       P0031  36   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32       P0032  44   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33       P0033  39   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34       P0034  46   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35       P0035  44 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36       P0036  56   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37       P0037  49   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38       P0038  31 female     FALSE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 39       P0039  49 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 40       P0040  32 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 41       P0041  28 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 42       P0042  51 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 43       P0043  28 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 44       P0044  46 female     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 45       P0045  32 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 46       P0046  59   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 47       P0047  51   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 48       P0048  37 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 49       P0049  52   male     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 50       P0050  47 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 51       P0051  28 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 52       P0052  40 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 53       P0053  31   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 54       P0054  47   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 55       P0055  34   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 56       P0056  39   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 57       P0057  27   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 58       P0058  30 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 59       P0059  44   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 60       P0060  30 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 61       P0061  40 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 62       P0062  44 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 63       P0063  40   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 64       P0064  39 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 65       P0065  21   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 66       P0066  39 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 67       P0067  20 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 68       P0068  56   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 69       P0069  30 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 70       P0070  44 female     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 71       P0071  48   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 72       P0072  42   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 73       P0073  58 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 74       P0074  32   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 75       P0075  47 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 76       P0076  30   male     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 77       P0077  67 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 78       P0078  50 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 79       P0079  38   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 80       P0080  51   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 81       P0081  28   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 82       P0082  60 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 83       P0083  28   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 84       P0084  23   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 85       P0085  41   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 86       P0086  52   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 87       P0087  42   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 88       P0088  33 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 89       P0089  56 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 90       P0090  71 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 91       P0091  18 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 92       P0092  60   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 93       P0093  36 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 94       P0094  54   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 95       P0095  20 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 96       P0096  39 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 97       P0097  30   male     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 98       P0098  36 female     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 99       P0099  29 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 100      P0100  46   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 101      P0101  57   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 102      P0102  36 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 103      P0103  39   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 104      P0104  29 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 105      P0105  54 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 106      P0106  49 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 107      P0107  23 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 108      P0108  60   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 109      P0109  28   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 110      P0110  29 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 111      P0111  24   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 112      P0112  28 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 113      P0113  38 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 114      P0114  48   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 115      P0115  33   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 116      P0116  40 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 117      P0117  39   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 118      P0118  56 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 119      P0119  69   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 120      P0120  29   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 121      P0121  65   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 122      P0122  68   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 123      P0123  45   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 124      P0124  53 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 125      P0125  21   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 126      P0126  48 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 127      P0127  35   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 128      P0128  40   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 129      P0129  49   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 130      P0130  54 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 131      P0131  41   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 132      P0132  74 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 133      P0133  49   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 134      P0134  40   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 135      P0135  47 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 136      P0136  41   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 137      P0137  29   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 138      P0138  48 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 139      P0139  53 female      TRUE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 140      P0140  47 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 141      P0141  46 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 142      P0142  44 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 143      P0143  52   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 144      P0144  27 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 145      P0145  56 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 146      P0146  31   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 147      P0147  46 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 148      P0148  51 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 149      P0149  45   male     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 150      P0150  23   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 151      P0151  42 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 152      P0152  46   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 153      P0153  54 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 154      P0154  48   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 155      P0155  49 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 156      P0156  56 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 157      P0157  34 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 158      P0158  35   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 159      P0159  42   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 160      P0160  46   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 161      P0161  59 female     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 162      P0162  32 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 163      P0163  32   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 164      P0164  51 female     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 165      P0165  37 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 166      P0166  39   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 167      P0167  49   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 168      P0168  35 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 169      P0169  33 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 170      P0170  39 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 171      P0171  37 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 172      P0172  34 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 173      P0173  53 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 174      P0174  36 female     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 175      P0175  43   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 176      P0176  44 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 177      P0177  20 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 178      P0178  46 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 179      P0179  60   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 180      P0180  42 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 181      P0181  33   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 182      P0182  58   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 183      P0183  45 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 184      P0184  54   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 185      P0185  45 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 186      P0186  49   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 187      P0187  59   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 188      P0188  50 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 189      P0189  47   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 190      P0190  34 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 191      P0191  49   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 192      P0192  37 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 193      P0193  68 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 194      P0194  46 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 195      P0195  32 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 196      P0196  62 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 197      P0197  36 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 198      P0198  23 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 199      P0199  29 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 200      P0200  42   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 201      P0201  37 female     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 202      P0202  48 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 203      P0203  39   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 204      P0204  20   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 205      P0205  39 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 206      P0206  63 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 207      P0207  37   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 208      P0208  35 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 209      P0209  41   male     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 210      P0210  62 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 211      P0211  32   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 212      P0212  51   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 213      P0213  35   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 214      P0214  38 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 215      P0215  38   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 216      P0216  51   male     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 217      P0217  49   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 218      P0218  55 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 219      P0219  55   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 220      P0220  68 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 221      P0221  43 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 222      P0222  18 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 223      P0223  36 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 224      P0224  33   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 225      P0225  38   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 226      P0226  56   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 227      P0227  35   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 228      P0228  32   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 229      P0229  48 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 230      P0230  50   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 231      P0231  39   male     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 232      P0232  47 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 233      P0233  48 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 234      P0234  46 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 235      P0235  35   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 236      P0236  51 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 237      P0237  18 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 238      P0238  49   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 239      P0239  47 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 240      P0240  67 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 241      P0241  45 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 242      P0242  43   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 243      P0243  56   male      TRUE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 244      P0244  51   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 245      P0245  42   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 246      P0246  42   male     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 247      P0247  44 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 248      P0248  29 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 249      P0249  57   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 250      P0250  36   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     symptom_6_7_10_11_13_15 symptom_4_6_7_8_11_17</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                      TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                      TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                      TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                      TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                      TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                     FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7                      TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8                      TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9                      TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16                    FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30                    FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 39                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 40                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 41                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 42                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 43                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 44                    FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 45                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 46                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 47                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 48                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 49                    FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 50                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 51                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 52                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 53                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 54                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 55                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 56                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 57                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 58                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 59                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 60                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 61                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 62                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 63                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 64                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 65                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 66                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 67                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 68                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 69                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 70                    FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 71                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 72                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 73                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 74                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 75                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 76                    FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 77                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 78                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 79                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 80                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 81                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 82                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 83                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 84                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 85                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 86                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 87                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 88                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 89                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 90                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 91                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 92                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 93                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 94                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 95                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 96                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 97                    FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 98                    FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 99                     TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 100                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 101                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 102                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 103                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 104                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 105                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 106                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 107                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 108                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 109                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 110                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 111                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 112                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 113                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 114                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 115                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 116                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 117                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 118                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 119                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 120                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 121                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 122                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 123                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 124                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 125                   FALSE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 126                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 127                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 128                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 129                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 130                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 131                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 132                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 133                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 134                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 135                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 136                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 137                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 138                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 139                   FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 140                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 141                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 142                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 143                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 144                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 145                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 146                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 147                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 148                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 149                   FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 150                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 151                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 152                    TRUE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 153                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 154                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 155                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 156                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 157                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 158                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 159                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 160                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 161                   FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 162                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 163                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 164                   FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 165                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 166                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 167                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 168                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 169                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 170                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 171                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 172                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 173                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 174                   FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 175                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 176                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 177                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 178                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 179                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 180                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 181                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 182                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 183                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 184                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 185                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 186                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 187                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 188                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 189                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 190                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 191                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 192                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 193                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 194                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 195                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 196                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 197                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 198                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 199                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 200                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 201                   FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 202                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 203                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 204                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 205                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 206                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 207                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 208                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 209                   FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 210                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 211                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 212                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 213                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 214                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 215                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 216                   FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 217                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 218                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 219                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 220                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 221                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 222                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 223                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 224                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 225                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 226                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 227                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 228                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 229                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 230                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 231                   FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 232                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 233                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 234                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 235                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 236                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 237                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 238                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 239                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 240                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 241                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 242                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 243                    TRUE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 244                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 245                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 246                   FALSE                 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 247                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 248                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 249                    TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 250                    TRUE                  TRUE</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># View summary statistics</span></span></span>
 <span class="r-in"><span><span class="va">results</span><span class="op">$</span><span class="va">summary</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                Scenario combination_id rank Total Diagnosed Total Non-Diagnosed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1             PTSD_orig           &lt;NA&gt;   NA         6 (60%)             4 (40%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 symptom_1_2_3_6_11_16  1_2_3_6_11_16    1         6 (60%)             4 (40%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 symptom_1_2_3_8_11_13  1_2_3_8_11_13    2         6 (60%)             4 (40%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 symptom_1_2_3_8_11_16  1_2_3_8_11_16    3         6 (60%)             4 (40%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   True Positive True Negative Newly Diagnosed Newly Non-Diagnosed True Cases</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1             6             4               0                   0         10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2             6             4               0                   0         10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3             6             4               0                   0         10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4             6             4               0                   0         10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   False Cases Sensitivity Specificity PPV NPV Accuracy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1           0           1           1   1   1        1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2           0           1           1   1   1        1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3           0           1           1   1   1        1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4           0           1           1   1   1        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  Scenario  combination_id rank Total Diagnosed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1               PTSD_orig            &lt;NA&gt;   NA     232 (92.8%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  symptom_6_7_8_11_13_17  6_7_8_11_13_17    1       230 (92%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 symptom_6_7_10_11_13_15 6_7_10_11_13_15    2       230 (92%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   symptom_4_6_7_8_11_17   4_6_7_8_11_17    3     229 (91.6%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Total Non-Diagnosed True Positive True Negative Newly Diagnosed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           18 (7.2%)           232            18               0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2             20 (8%)           229            17               1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3             20 (8%)           229            17               1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           21 (8.4%)           228            17               1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                   0        250           0      1.0000      1.0000 1.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                   3        246           4      0.9871      0.9444 0.9957</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                   3        246           4      0.9871      0.9444 0.9957</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                   4        245           5      0.9828      0.9444 0.9956</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      NPV Accuracy Balanced Accuracy</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1.0000    1.000            1.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.8500    0.984            0.9658</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.8500    0.984            0.9658</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 0.8095    0.980            0.9636</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

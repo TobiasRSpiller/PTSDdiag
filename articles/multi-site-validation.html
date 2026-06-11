@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,8 +82,8 @@ bound by privacy rules and data-use agreements that forbid moving
 patient records between sites. Hence, pooling data is often not
 possible. However, as a simplified definition is fully described by the
 symptom indices it uses and the number required, optimization can take
-palace a one site and validation at another without sharing the original
-data but only symptom sets constituting the new definitions.</p>
+place at one site and validation at another without sharing the original
+data, only the symptom sets constituting the new definitions.</p>
 <p>In this vignette, one site has data from the veterans with a high
 PTSD prevalence and another has population data with a low PTSD
 prevalence. The first site derives a definition and inspects which
@@ -98,8 +98,8 @@ and we compare how it performs in each sample.</p>
 <code><a href="../reference/rename_ptsd_columns.html">rename_ptsd_columns()</a></code>: the 20 PCL-5 items in their standard
 order, scored 0 to 4, with no missing values, plus any identifier
 columns named in <code>id_col</code>. The full contract is in the <a href="getting-started.html">Getting started</a> vignette. For this
-vignette, we subset the veteran sample to keep the optimization
-fast.</p>
+vignette, we subset the veteran sample to 250 rows to keep the
+optimization fast.</p>
 </div>
 <div class="section level2">
 <h2 id="site-1-deriving-the-definition-in-the-veteran-sample">Site 1: deriving the definition in the veteran sample<a class="anchor" aria-label="anchor" href="#site-1-deriving-the-definition-in-the-veteran-sample"></a>
@@ -113,13 +113,13 @@ site.</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"simulated_ptsd"</span><span class="op">)</span></span>
-<span><span class="va">vet</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rename_ptsd_columns.html">rename_ptsd_columns</a></span><span class="op">(</span><span class="va">simulated_ptsd</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">500</span>, <span class="op">]</span>,</span>
+<span><span class="va">vet</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rename_ptsd_columns.html">rename_ptsd_columns</a></span><span class="op">(</span><span class="va">simulated_ptsd</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">250</span>, <span class="op">]</span>,</span>
 <span>                           id_col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"patient_id"</span>, <span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">comp_vet</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_optimizations.html">compare_optimizations</a></span><span class="op">(</span></span>
 <span>  <span class="va">vet</span>,</span>
 <span>  n_top         <span class="op">=</span> <span class="fl">10</span>,</span>
-<span>  score_by      <span class="op">=</span> <span class="st">"accuracy"</span>,</span>
+<span>  score_by      <span class="op">=</span> <span class="st">"balanced_accuracy"</span>,</span>
 <span>  show_progress <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Before sharing anything, the site can look at which symptoms its
@@ -153,53 +153,53 @@ to carry.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">definitions</span>, <span class="kw">function</span><span class="op">(</span><span class="va">d</span><span class="op">)</span> <span class="va">d</span><span class="op">$</span><span class="va">symptoms</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $`4/6 Hierarchical`</span></span>
 <span><span class="co">#&gt; $`4/6 Hierarchical`[[1]]</span></span>
-<span><span class="co">#&gt; [1]  1  6  7 11 16 17</span></span>
+<span><span class="co">#&gt; [1]  1  6  7 13 15 17</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`4/6 Hierarchical`[[2]]</span></span>
-<span><span class="co">#&gt; [1]  1  6  7 11 16 19</span></span>
+<span><span class="co">#&gt; [1]  1  3  7 13 15 17</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`4/6 Hierarchical`[[3]]</span></span>
-<span><span class="co">#&gt; [1]  4  6  7 11 16 19</span></span>
+<span><span class="co">#&gt; [1]  1  3  6 13 16 19</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`4/6 Hierarchical`[[4]]</span></span>
-<span><span class="co">#&gt; [1]  1  6  7 11 15 17</span></span>
+<span><span class="co">#&gt; [1]  1  4  6  7 11 17</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`4/6 Hierarchical`[[5]]</span></span>
-<span><span class="co">#&gt; [1]  1  4  6 11 16 19</span></span>
+<span><span class="co">#&gt; [1]  1  6  7 11 15 17</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`4/6 Non-hierarchical`</span></span>
 <span><span class="co">#&gt; $`4/6 Non-hierarchical`[[1]]</span></span>
-<span><span class="co">#&gt; [1]  1  3  6  7 11 15</span></span>
+<span><span class="co">#&gt; [1]  6  7  8 11 13 17</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`4/6 Non-hierarchical`[[2]]</span></span>
-<span><span class="co">#&gt; [1]  3  5  6  7 11 15</span></span>
+<span><span class="co">#&gt; [1]  6  7 10 11 13 15</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`4/6 Non-hierarchical`[[3]]</span></span>
-<span><span class="co">#&gt; [1]  5  6  7 11 15 16</span></span>
+<span><span class="co">#&gt; [1]  4  6  7  8 11 17</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`4/6 Non-hierarchical`[[4]]</span></span>
-<span><span class="co">#&gt; [1]  1  5  6  7 11 15</span></span>
+<span><span class="co">#&gt; [1]  4  6  7 10 11 15</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`4/6 Non-hierarchical`[[5]]</span></span>
-<span><span class="co">#&gt; [1]  3  5  6  7 12 15</span></span>
+<span><span class="co">#&gt; [1]  6  7  8 11 13 18</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`3/6 Non-hierarchical`</span></span>
 <span><span class="co">#&gt; $`3/6 Non-hierarchical`[[1]]</span></span>
-<span><span class="co">#&gt; [1]  2  6  7  8 10 15</span></span>
+<span><span class="co">#&gt; [1]  3  6  7 11 15 16</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`3/6 Non-hierarchical`[[2]]</span></span>
-<span><span class="co">#&gt; [1]  4  6 11 15 16 19</span></span>
+<span><span class="co">#&gt; [1]  4  6  7 12 15 19</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`3/6 Non-hierarchical`[[3]]</span></span>
-<span><span class="co">#&gt; [1]  5  6  7  8 10 15</span></span>
+<span><span class="co">#&gt; [1]  4  6  7 13 15 19</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`3/6 Non-hierarchical`[[4]]</span></span>
-<span><span class="co">#&gt; [1]  6  7 10 11 15 19</span></span>
+<span><span class="co">#&gt; [1]  6  7 10 12 15 19</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`3/6 Non-hierarchical`[[5]]</span></span>
-<span><span class="co">#&gt; [1]  6 11 12 15 16 19</span></span></code></pre></div>
+<span><span class="co">#&gt; [1]  2  6  7  8 10 15</span></span></code></pre></div>
 <p>This object is everything the other site needs, and it holds nothing
 but symptom numbers and rules. No participant, score, or demographic is
 in it, so it can be shared freely. <code><a href="../reference/write_combinations.html">write_combinations()</a></code>
@@ -225,78 +225,78 @@ data frame, the identical call runs at either site.</p>
 patients, the baseline the other site will be read against.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/evaluate_definitions.html">evaluate_definitions</a></span><span class="op">(</span><span class="va">vet</span>, <span class="va">definitions</span>, include_icd11 <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                                        Scenario Total Diagnosed</span></span>
-<span><span class="co">#&gt; 1                                     PTSD_orig       465 (93%)</span></span>
-<span><span class="co">#&gt; 2        4/6 Hierarchical (1, 6, 7, 11, 16, 17)     411 (82.2%)</span></span>
-<span><span class="co">#&gt; 3        4/6 Hierarchical (1, 6, 7, 11, 16, 19)     412 (82.4%)</span></span>
-<span><span class="co">#&gt; 4        4/6 Hierarchical (4, 6, 7, 11, 16, 19)       410 (82%)</span></span>
-<span><span class="co">#&gt; 5        4/6 Hierarchical (1, 6, 7, 11, 15, 17)     409 (81.8%)</span></span>
-<span><span class="co">#&gt; 6        4/6 Hierarchical (1, 4, 6, 11, 16, 19)     411 (82.2%)</span></span>
-<span><span class="co">#&gt; 7     4/6 Non-hierarchical (1, 3, 6, 7, 11, 15)     468 (93.6%)</span></span>
-<span><span class="co">#&gt; 8     4/6 Non-hierarchical (3, 5, 6, 7, 11, 15)     463 (92.6%)</span></span>
-<span><span class="co">#&gt; 9    4/6 Non-hierarchical (5, 6, 7, 11, 15, 16)     461 (92.2%)</span></span>
-<span><span class="co">#&gt; 10    4/6 Non-hierarchical (1, 5, 6, 7, 11, 15)     466 (93.2%)</span></span>
-<span><span class="co">#&gt; 11    4/6 Non-hierarchical (3, 5, 6, 7, 12, 15)     464 (92.8%)</span></span>
-<span><span class="co">#&gt; 12    3/6 Non-hierarchical (2, 6, 7, 8, 10, 15)     477 (95.4%)</span></span>
-<span><span class="co">#&gt; 13  3/6 Non-hierarchical (4, 6, 11, 15, 16, 19)     483 (96.6%)</span></span>
-<span><span class="co">#&gt; 14    3/6 Non-hierarchical (5, 6, 7, 8, 10, 15)     479 (95.8%)</span></span>
-<span><span class="co">#&gt; 15  3/6 Non-hierarchical (6, 7, 10, 11, 15, 19)     481 (96.2%)</span></span>
-<span><span class="co">#&gt; 16 3/6 Non-hierarchical (6, 11, 12, 15, 16, 19)     481 (96.2%)</span></span>
-<span><span class="co">#&gt; 17                                       ICD-11     453 (90.6%)</span></span>
+<span><span class="co">#&gt;                                       Scenario Total Diagnosed</span></span>
+<span><span class="co">#&gt; 1                                    PTSD_orig     232 (92.8%)</span></span>
+<span><span class="co">#&gt; 2       4/6 Hierarchical (1, 6, 7, 13, 15, 17)     213 (85.2%)</span></span>
+<span><span class="co">#&gt; 3       4/6 Hierarchical (1, 3, 7, 13, 15, 17)     213 (85.2%)</span></span>
+<span><span class="co">#&gt; 4       4/6 Hierarchical (1, 3, 6, 13, 16, 19)     213 (85.2%)</span></span>
+<span><span class="co">#&gt; 5        4/6 Hierarchical (1, 4, 6, 7, 11, 17)     213 (85.2%)</span></span>
+<span><span class="co">#&gt; 6       4/6 Hierarchical (1, 6, 7, 11, 15, 17)     212 (84.8%)</span></span>
+<span><span class="co">#&gt; 7   4/6 Non-hierarchical (6, 7, 8, 11, 13, 17)       230 (92%)</span></span>
+<span><span class="co">#&gt; 8  4/6 Non-hierarchical (6, 7, 10, 11, 13, 15)       230 (92%)</span></span>
+<span><span class="co">#&gt; 9    4/6 Non-hierarchical (4, 6, 7, 8, 11, 17)     229 (91.6%)</span></span>
+<span><span class="co">#&gt; 10  4/6 Non-hierarchical (4, 6, 7, 10, 11, 15)     229 (91.6%)</span></span>
+<span><span class="co">#&gt; 11  4/6 Non-hierarchical (6, 7, 8, 11, 13, 18)     229 (91.6%)</span></span>
+<span><span class="co">#&gt; 12  3/6 Non-hierarchical (3, 6, 7, 11, 15, 16)     237 (94.8%)</span></span>
+<span><span class="co">#&gt; 13  3/6 Non-hierarchical (4, 6, 7, 12, 15, 19)     237 (94.8%)</span></span>
+<span><span class="co">#&gt; 14  3/6 Non-hierarchical (4, 6, 7, 13, 15, 19)     237 (94.8%)</span></span>
+<span><span class="co">#&gt; 15 3/6 Non-hierarchical (6, 7, 10, 12, 15, 19)     237 (94.8%)</span></span>
+<span><span class="co">#&gt; 16   3/6 Non-hierarchical (2, 6, 7, 8, 10, 15)     236 (94.4%)</span></span>
+<span><span class="co">#&gt; 17                                      ICD-11     226 (90.4%)</span></span>
 <span><span class="co">#&gt;    Total Non-Diagnosed True Positive True Negative Newly Diagnosed</span></span>
-<span><span class="co">#&gt; 1              35 (7%)           465            35               0</span></span>
-<span><span class="co">#&gt; 2           89 (17.8%)           411            35               0</span></span>
-<span><span class="co">#&gt; 3           88 (17.6%)           411            34               1</span></span>
-<span><span class="co">#&gt; 4             90 (18%)           410            35               0</span></span>
-<span><span class="co">#&gt; 5           91 (18.2%)           409            35               0</span></span>
-<span><span class="co">#&gt; 6           89 (17.8%)           410            34               1</span></span>
-<span><span class="co">#&gt; 7            32 (6.4%)           460            27               8</span></span>
-<span><span class="co">#&gt; 8            37 (7.4%)           457            29               6</span></span>
-<span><span class="co">#&gt; 9            39 (7.8%)           456            30               5</span></span>
-<span><span class="co">#&gt; 10           34 (6.8%)           458            27               8</span></span>
-<span><span class="co">#&gt; 11           36 (7.2%)           457            28               7</span></span>
-<span><span class="co">#&gt; 12           23 (4.6%)           462            20              15</span></span>
-<span><span class="co">#&gt; 13           17 (3.4%)           465            17              18</span></span>
-<span><span class="co">#&gt; 14           21 (4.2%)           463            19              16</span></span>
-<span><span class="co">#&gt; 15           19 (3.8%)           464            18              17</span></span>
-<span><span class="co">#&gt; 16           19 (3.8%)           464            18              17</span></span>
-<span><span class="co">#&gt; 17           47 (9.4%)           448            30               5</span></span>
+<span><span class="co">#&gt; 1            18 (7.2%)           232            18               0</span></span>
+<span><span class="co">#&gt; 2           37 (14.8%)           213            18               0</span></span>
+<span><span class="co">#&gt; 3           37 (14.8%)           213            18               0</span></span>
+<span><span class="co">#&gt; 4           37 (14.8%)           213            18               0</span></span>
+<span><span class="co">#&gt; 5           37 (14.8%)           213            18               0</span></span>
+<span><span class="co">#&gt; 6           38 (15.2%)           212            18               0</span></span>
+<span><span class="co">#&gt; 7              20 (8%)           229            17               1</span></span>
+<span><span class="co">#&gt; 8              20 (8%)           229            17               1</span></span>
+<span><span class="co">#&gt; 9            21 (8.4%)           228            17               1</span></span>
+<span><span class="co">#&gt; 10           21 (8.4%)           228            17               1</span></span>
+<span><span class="co">#&gt; 11           21 (8.4%)           228            17               1</span></span>
+<span><span class="co">#&gt; 12           13 (5.2%)           232            13               5</span></span>
+<span><span class="co">#&gt; 13           13 (5.2%)           232            13               5</span></span>
+<span><span class="co">#&gt; 14           13 (5.2%)           232            13               5</span></span>
+<span><span class="co">#&gt; 15           13 (5.2%)           232            13               5</span></span>
+<span><span class="co">#&gt; 16           14 (5.6%)           231            13               5</span></span>
+<span><span class="co">#&gt; 17           24 (9.6%)           224            16               2</span></span>
 <span><span class="co">#&gt;    Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV</span></span>
-<span><span class="co">#&gt; 1                    0        500           0      1.0000      1.0000 1.0000</span></span>
-<span><span class="co">#&gt; 2                   54        446          54      0.8839      1.0000 1.0000</span></span>
-<span><span class="co">#&gt; 3                   54        445          55      0.8839      0.9714 0.9976</span></span>
-<span><span class="co">#&gt; 4                   55        445          55      0.8817      1.0000 1.0000</span></span>
-<span><span class="co">#&gt; 5                   56        444          56      0.8796      1.0000 1.0000</span></span>
-<span><span class="co">#&gt; 6                   55        444          56      0.8817      0.9714 0.9976</span></span>
-<span><span class="co">#&gt; 7                    5        487          13      0.9892      0.7714 0.9829</span></span>
-<span><span class="co">#&gt; 8                    8        486          14      0.9828      0.8286 0.9870</span></span>
-<span><span class="co">#&gt; 9                    9        486          14      0.9806      0.8571 0.9892</span></span>
-<span><span class="co">#&gt; 10                   7        485          15      0.9849      0.7714 0.9828</span></span>
-<span><span class="co">#&gt; 11                   8        485          15      0.9828      0.8000 0.9849</span></span>
-<span><span class="co">#&gt; 12                   3        482          18      0.9935      0.5714 0.9686</span></span>
-<span><span class="co">#&gt; 13                   0        482          18      1.0000      0.4857 0.9627</span></span>
-<span><span class="co">#&gt; 14                   2        482          18      0.9957      0.5429 0.9666</span></span>
-<span><span class="co">#&gt; 15                   1        482          18      0.9978      0.5143 0.9647</span></span>
-<span><span class="co">#&gt; 16                   1        482          18      0.9978      0.5143 0.9647</span></span>
-<span><span class="co">#&gt; 17                  17        478          22      0.9634      0.8571 0.9890</span></span>
-<span><span class="co">#&gt;       NPV Accuracy</span></span>
-<span><span class="co">#&gt; 1  1.0000    1.000</span></span>
-<span><span class="co">#&gt; 2  0.3933    0.892</span></span>
-<span><span class="co">#&gt; 3  0.3864    0.890</span></span>
-<span><span class="co">#&gt; 4  0.3889    0.890</span></span>
-<span><span class="co">#&gt; 5  0.3846    0.888</span></span>
-<span><span class="co">#&gt; 6  0.3820    0.888</span></span>
-<span><span class="co">#&gt; 7  0.8438    0.974</span></span>
-<span><span class="co">#&gt; 8  0.7838    0.972</span></span>
-<span><span class="co">#&gt; 9  0.7692    0.972</span></span>
-<span><span class="co">#&gt; 10 0.7941    0.970</span></span>
-<span><span class="co">#&gt; 11 0.7778    0.970</span></span>
-<span><span class="co">#&gt; 12 0.8696    0.964</span></span>
-<span><span class="co">#&gt; 13 1.0000    0.964</span></span>
-<span><span class="co">#&gt; 14 0.9048    0.964</span></span>
-<span><span class="co">#&gt; 15 0.9474    0.964</span></span>
-<span><span class="co">#&gt; 16 0.9474    0.964</span></span>
-<span><span class="co">#&gt; 17 0.6383    0.956</span></span></code></pre></div>
+<span><span class="co">#&gt; 1                    0        250           0      1.0000      1.0000 1.0000</span></span>
+<span><span class="co">#&gt; 2                   19        231          19      0.9181      1.0000 1.0000</span></span>
+<span><span class="co">#&gt; 3                   19        231          19      0.9181      1.0000 1.0000</span></span>
+<span><span class="co">#&gt; 4                   19        231          19      0.9181      1.0000 1.0000</span></span>
+<span><span class="co">#&gt; 5                   19        231          19      0.9181      1.0000 1.0000</span></span>
+<span><span class="co">#&gt; 6                   20        230          20      0.9138      1.0000 1.0000</span></span>
+<span><span class="co">#&gt; 7                    3        246           4      0.9871      0.9444 0.9957</span></span>
+<span><span class="co">#&gt; 8                    3        246           4      0.9871      0.9444 0.9957</span></span>
+<span><span class="co">#&gt; 9                    4        245           5      0.9828      0.9444 0.9956</span></span>
+<span><span class="co">#&gt; 10                   4        245           5      0.9828      0.9444 0.9956</span></span>
+<span><span class="co">#&gt; 11                   4        245           5      0.9828      0.9444 0.9956</span></span>
+<span><span class="co">#&gt; 12                   0        245           5      1.0000      0.7222 0.9789</span></span>
+<span><span class="co">#&gt; 13                   0        245           5      1.0000      0.7222 0.9789</span></span>
+<span><span class="co">#&gt; 14                   0        245           5      1.0000      0.7222 0.9789</span></span>
+<span><span class="co">#&gt; 15                   0        245           5      1.0000      0.7222 0.9789</span></span>
+<span><span class="co">#&gt; 16                   1        244           6      0.9957      0.7222 0.9788</span></span>
+<span><span class="co">#&gt; 17                   8        240          10      0.9655      0.8889 0.9912</span></span>
+<span><span class="co">#&gt;       NPV Accuracy Balanced Accuracy</span></span>
+<span><span class="co">#&gt; 1  1.0000    1.000            1.0000</span></span>
+<span><span class="co">#&gt; 2  0.4865    0.924            0.9591</span></span>
+<span><span class="co">#&gt; 3  0.4865    0.924            0.9591</span></span>
+<span><span class="co">#&gt; 4  0.4865    0.924            0.9591</span></span>
+<span><span class="co">#&gt; 5  0.4865    0.924            0.9591</span></span>
+<span><span class="co">#&gt; 6  0.4737    0.920            0.9569</span></span>
+<span><span class="co">#&gt; 7  0.8500    0.984            0.9658</span></span>
+<span><span class="co">#&gt; 8  0.8500    0.984            0.9658</span></span>
+<span><span class="co">#&gt; 9  0.8095    0.980            0.9636</span></span>
+<span><span class="co">#&gt; 10 0.8095    0.980            0.9636</span></span>
+<span><span class="co">#&gt; 11 0.8095    0.980            0.9636</span></span>
+<span><span class="co">#&gt; 12 1.0000    0.980            0.8611</span></span>
+<span><span class="co">#&gt; 13 1.0000    0.980            0.8611</span></span>
+<span><span class="co">#&gt; 14 1.0000    0.980            0.8611</span></span>
+<span><span class="co">#&gt; 15 1.0000    0.980            0.8611</span></span>
+<span><span class="co">#&gt; 16 0.9286    0.976            0.8590</span></span>
+<span><span class="co">#&gt; 17 0.6667    0.960            0.9272</span></span></code></pre></div>
 <p>The first row is the full DSM-5-TR diagnosis itself, the reference.
 Below it are the fifteen derived definitions, grouped by rule, followed
 by ICD-11, each scored against the reference.</p>
@@ -319,78 +319,78 @@ records.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/evaluate_definitions.html">evaluate_definitions</a></span><span class="op">(</span><span class="va">genpop</span>, <span class="va">definitions</span>, include_icd11 <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                                        Scenario Total Diagnosed</span></span>
-<span><span class="co">#&gt; 1                                     PTSD_orig       252 (21%)</span></span>
-<span><span class="co">#&gt; 2        4/6 Hierarchical (1, 6, 7, 11, 16, 17)       144 (12%)</span></span>
-<span><span class="co">#&gt; 3        4/6 Hierarchical (1, 6, 7, 11, 16, 19)       144 (12%)</span></span>
-<span><span class="co">#&gt; 4        4/6 Hierarchical (4, 6, 7, 11, 16, 19)    140 (11.67%)</span></span>
-<span><span class="co">#&gt; 5        4/6 Hierarchical (1, 6, 7, 11, 15, 17)    148 (12.33%)</span></span>
-<span><span class="co">#&gt; 6        4/6 Hierarchical (1, 4, 6, 11, 16, 19)    148 (12.33%)</span></span>
-<span><span class="co">#&gt; 7     4/6 Non-hierarchical (1, 3, 6, 7, 11, 15)    221 (18.42%)</span></span>
-<span><span class="co">#&gt; 8     4/6 Non-hierarchical (3, 5, 6, 7, 11, 15)    218 (18.17%)</span></span>
-<span><span class="co">#&gt; 9    4/6 Non-hierarchical (5, 6, 7, 11, 15, 16)    221 (18.42%)</span></span>
-<span><span class="co">#&gt; 10    4/6 Non-hierarchical (1, 5, 6, 7, 11, 15)       216 (18%)</span></span>
-<span><span class="co">#&gt; 11    4/6 Non-hierarchical (3, 5, 6, 7, 12, 15)    213 (17.75%)</span></span>
-<span><span class="co">#&gt; 12    3/6 Non-hierarchical (2, 6, 7, 8, 10, 15)    346 (28.83%)</span></span>
-<span><span class="co">#&gt; 13  3/6 Non-hierarchical (4, 6, 11, 15, 16, 19)     330 (27.5%)</span></span>
-<span><span class="co">#&gt; 14    3/6 Non-hierarchical (5, 6, 7, 8, 10, 15)    340 (28.33%)</span></span>
-<span><span class="co">#&gt; 15  3/6 Non-hierarchical (6, 7, 10, 11, 15, 19)    357 (29.75%)</span></span>
-<span><span class="co">#&gt; 16 3/6 Non-hierarchical (6, 11, 12, 15, 16, 19)    331 (27.58%)</span></span>
-<span><span class="co">#&gt; 17                                       ICD-11    279 (23.25%)</span></span>
+<span><span class="co">#&gt;                                       Scenario Total Diagnosed</span></span>
+<span><span class="co">#&gt; 1                                    PTSD_orig       252 (21%)</span></span>
+<span><span class="co">#&gt; 2       4/6 Hierarchical (1, 6, 7, 13, 15, 17)     138 (11.5%)</span></span>
+<span><span class="co">#&gt; 3       4/6 Hierarchical (1, 3, 7, 13, 15, 17)    137 (11.42%)</span></span>
+<span><span class="co">#&gt; 4       4/6 Hierarchical (1, 3, 6, 13, 16, 19)     150 (12.5%)</span></span>
+<span><span class="co">#&gt; 5        4/6 Hierarchical (1, 4, 6, 7, 11, 17)    158 (13.17%)</span></span>
+<span><span class="co">#&gt; 6       4/6 Hierarchical (1, 6, 7, 11, 15, 17)    148 (12.33%)</span></span>
+<span><span class="co">#&gt; 7   4/6 Non-hierarchical (6, 7, 8, 11, 13, 17)    224 (18.67%)</span></span>
+<span><span class="co">#&gt; 8  4/6 Non-hierarchical (6, 7, 10, 11, 13, 15)    223 (18.58%)</span></span>
+<span><span class="co">#&gt; 9    4/6 Non-hierarchical (4, 6, 7, 8, 11, 17)    224 (18.67%)</span></span>
+<span><span class="co">#&gt; 10  4/6 Non-hierarchical (4, 6, 7, 10, 11, 15)    226 (18.83%)</span></span>
+<span><span class="co">#&gt; 11  4/6 Non-hierarchical (6, 7, 8, 11, 13, 18)       228 (19%)</span></span>
+<span><span class="co">#&gt; 12  3/6 Non-hierarchical (3, 6, 7, 11, 15, 16)    322 (26.83%)</span></span>
+<span><span class="co">#&gt; 13  3/6 Non-hierarchical (4, 6, 7, 12, 15, 19)    333 (27.75%)</span></span>
+<span><span class="co">#&gt; 14  3/6 Non-hierarchical (4, 6, 7, 13, 15, 19)    332 (27.67%)</span></span>
+<span><span class="co">#&gt; 15 3/6 Non-hierarchical (6, 7, 10, 12, 15, 19)    345 (28.75%)</span></span>
+<span><span class="co">#&gt; 16   3/6 Non-hierarchical (2, 6, 7, 8, 10, 15)    346 (28.83%)</span></span>
+<span><span class="co">#&gt; 17                                      ICD-11    279 (23.25%)</span></span>
 <span><span class="co">#&gt;    Total Non-Diagnosed True Positive True Negative Newly Diagnosed</span></span>
 <span><span class="co">#&gt; 1            948 (79%)           252           948               0</span></span>
-<span><span class="co">#&gt; 2           1056 (88%)           142           946               2</span></span>
-<span><span class="co">#&gt; 3           1056 (88%)           141           945               3</span></span>
-<span><span class="co">#&gt; 4        1060 (88.33%)           138           946               2</span></span>
-<span><span class="co">#&gt; 5        1052 (87.67%)           145           945               3</span></span>
+<span><span class="co">#&gt; 2         1062 (88.5%)           135           945               3</span></span>
+<span><span class="co">#&gt; 3        1063 (88.58%)           135           946               2</span></span>
+<span><span class="co">#&gt; 4         1050 (87.5%)           141           939               9</span></span>
+<span><span class="co">#&gt; 5        1042 (86.83%)           156           946               2</span></span>
 <span><span class="co">#&gt; 6        1052 (87.67%)           145           945               3</span></span>
-<span><span class="co">#&gt; 7         979 (81.58%)           207           934              14</span></span>
-<span><span class="co">#&gt; 8         982 (81.83%)           202           932              16</span></span>
-<span><span class="co">#&gt; 9         979 (81.58%)           206           933              15</span></span>
-<span><span class="co">#&gt; 10           984 (82%)           203           935              13</span></span>
-<span><span class="co">#&gt; 11        987 (82.25%)           197           932              16</span></span>
-<span><span class="co">#&gt; 12        854 (71.17%)           225           827             121</span></span>
-<span><span class="co">#&gt; 13         870 (72.5%)           225           843             105</span></span>
-<span><span class="co">#&gt; 14        860 (71.67%)           229           837             111</span></span>
-<span><span class="co">#&gt; 15        843 (70.25%)           233           824             124</span></span>
-<span><span class="co">#&gt; 16        869 (72.42%)           234           851              97</span></span>
+<span><span class="co">#&gt; 7         976 (81.33%)           207           931              17</span></span>
+<span><span class="co">#&gt; 8         977 (81.42%)           205           930              18</span></span>
+<span><span class="co">#&gt; 9         976 (81.33%)           206           930              18</span></span>
+<span><span class="co">#&gt; 10        974 (81.17%)           202           924              24</span></span>
+<span><span class="co">#&gt; 11           972 (81%)           208           928              20</span></span>
+<span><span class="co">#&gt; 12        878 (73.17%)           227           853              95</span></span>
+<span><span class="co">#&gt; 13        867 (72.25%)           225           840             108</span></span>
+<span><span class="co">#&gt; 14        868 (72.33%)           225           841             107</span></span>
+<span><span class="co">#&gt; 15        855 (71.25%)           230           833             115</span></span>
+<span><span class="co">#&gt; 16        854 (71.17%)           225           827             121</span></span>
 <span><span class="co">#&gt; 17        921 (76.75%)           221           890              58</span></span>
 <span><span class="co">#&gt;    Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV</span></span>
 <span><span class="co">#&gt; 1                    0       1200           0      1.0000      1.0000 1.0000</span></span>
-<span><span class="co">#&gt; 2                  110       1088         112      0.5635      0.9979 0.9861</span></span>
-<span><span class="co">#&gt; 3                  111       1086         114      0.5595      0.9968 0.9792</span></span>
-<span><span class="co">#&gt; 4                  114       1084         116      0.5476      0.9979 0.9857</span></span>
-<span><span class="co">#&gt; 5                  107       1090         110      0.5754      0.9968 0.9797</span></span>
+<span><span class="co">#&gt; 2                  117       1080         120      0.5357      0.9968 0.9783</span></span>
+<span><span class="co">#&gt; 3                  117       1081         119      0.5357      0.9979 0.9854</span></span>
+<span><span class="co">#&gt; 4                  111       1080         120      0.5595      0.9905 0.9400</span></span>
+<span><span class="co">#&gt; 5                   96       1102          98      0.6190      0.9979 0.9873</span></span>
 <span><span class="co">#&gt; 6                  107       1090         110      0.5754      0.9968 0.9797</span></span>
-<span><span class="co">#&gt; 7                   45       1141          59      0.8214      0.9852 0.9367</span></span>
-<span><span class="co">#&gt; 8                   50       1134          66      0.8016      0.9831 0.9266</span></span>
-<span><span class="co">#&gt; 9                   46       1139          61      0.8175      0.9842 0.9321</span></span>
-<span><span class="co">#&gt; 10                  49       1138          62      0.8056      0.9863 0.9398</span></span>
-<span><span class="co">#&gt; 11                  55       1129          71      0.7817      0.9831 0.9249</span></span>
-<span><span class="co">#&gt; 12                  27       1052         148      0.8929      0.8724 0.6503</span></span>
-<span><span class="co">#&gt; 13                  27       1068         132      0.8929      0.8892 0.6818</span></span>
-<span><span class="co">#&gt; 14                  23       1066         134      0.9087      0.8829 0.6735</span></span>
-<span><span class="co">#&gt; 15                  19       1057         143      0.9246      0.8692 0.6527</span></span>
-<span><span class="co">#&gt; 16                  18       1085         115      0.9286      0.8977 0.7069</span></span>
+<span><span class="co">#&gt; 7                   45       1138          62      0.8214      0.9821 0.9241</span></span>
+<span><span class="co">#&gt; 8                   47       1135          65      0.8135      0.9810 0.9193</span></span>
+<span><span class="co">#&gt; 9                   46       1136          64      0.8175      0.9810 0.9196</span></span>
+<span><span class="co">#&gt; 10                  50       1126          74      0.8016      0.9747 0.8938</span></span>
+<span><span class="co">#&gt; 11                  44       1136          64      0.8254      0.9789 0.9123</span></span>
+<span><span class="co">#&gt; 12                  25       1080         120      0.9008      0.8998 0.7050</span></span>
+<span><span class="co">#&gt; 13                  27       1065         135      0.8929      0.8861 0.6757</span></span>
+<span><span class="co">#&gt; 14                  27       1066         134      0.8929      0.8871 0.6777</span></span>
+<span><span class="co">#&gt; 15                  22       1063         137      0.9127      0.8787 0.6667</span></span>
+<span><span class="co">#&gt; 16                  27       1052         148      0.8929      0.8724 0.6503</span></span>
 <span><span class="co">#&gt; 17                  31       1111          89      0.8770      0.9388 0.7921</span></span>
-<span><span class="co">#&gt;       NPV Accuracy</span></span>
-<span><span class="co">#&gt; 1  1.0000   1.0000</span></span>
-<span><span class="co">#&gt; 2  0.8958   0.9067</span></span>
-<span><span class="co">#&gt; 3  0.8949   0.9050</span></span>
-<span><span class="co">#&gt; 4  0.8925   0.9033</span></span>
-<span><span class="co">#&gt; 5  0.8983   0.9083</span></span>
-<span><span class="co">#&gt; 6  0.8983   0.9083</span></span>
-<span><span class="co">#&gt; 7  0.9540   0.9508</span></span>
-<span><span class="co">#&gt; 8  0.9491   0.9450</span></span>
-<span><span class="co">#&gt; 9  0.9530   0.9492</span></span>
-<span><span class="co">#&gt; 10 0.9502   0.9483</span></span>
-<span><span class="co">#&gt; 11 0.9443   0.9408</span></span>
-<span><span class="co">#&gt; 12 0.9684   0.8767</span></span>
-<span><span class="co">#&gt; 13 0.9690   0.8900</span></span>
-<span><span class="co">#&gt; 14 0.9733   0.8883</span></span>
-<span><span class="co">#&gt; 15 0.9775   0.8808</span></span>
-<span><span class="co">#&gt; 16 0.9793   0.9042</span></span>
-<span><span class="co">#&gt; 17 0.9663   0.9258</span></span></code></pre></div>
+<span><span class="co">#&gt;       NPV Accuracy Balanced Accuracy</span></span>
+<span><span class="co">#&gt; 1  1.0000   1.0000            1.0000</span></span>
+<span><span class="co">#&gt; 2  0.8898   0.9000            0.7663</span></span>
+<span><span class="co">#&gt; 3  0.8899   0.9008            0.7668</span></span>
+<span><span class="co">#&gt; 4  0.8943   0.9000            0.7750</span></span>
+<span><span class="co">#&gt; 5  0.9079   0.9183            0.8085</span></span>
+<span><span class="co">#&gt; 6  0.8983   0.9083            0.7861</span></span>
+<span><span class="co">#&gt; 7  0.9539   0.9483            0.9017</span></span>
+<span><span class="co">#&gt; 8  0.9519   0.9458            0.8973</span></span>
+<span><span class="co">#&gt; 9  0.9529   0.9467            0.8992</span></span>
+<span><span class="co">#&gt; 10 0.9487   0.9383            0.8881</span></span>
+<span><span class="co">#&gt; 11 0.9547   0.9467            0.9021</span></span>
+<span><span class="co">#&gt; 12 0.9715   0.9000            0.9003</span></span>
+<span><span class="co">#&gt; 13 0.9689   0.8875            0.8895</span></span>
+<span><span class="co">#&gt; 14 0.9689   0.8883            0.8900</span></span>
+<span><span class="co">#&gt; 15 0.9743   0.8858            0.8957</span></span>
+<span><span class="co">#&gt; 16 0.9684   0.8767            0.8826</span></span>
+<span><span class="co">#&gt; 17 0.9663   0.9258            0.9079</span></span></code></pre></div>
 <p>Both tables are built the same way, so they line up row for row with
 the derivation table above.</p>
 </div>
@@ -401,12 +401,15 @@ the derivation table above.</p>
 hierarchical rule is the most specific and the least sensitive, the
 three-of-six rule the most sensitive and the least specific, and the
 four-of-six and ICD-11 rules fall between them. What changes with the
-sample is the balance of errors. Sensitivity and specificity move only
-modestly, because they are properties of the rule, while the predictive
-values shift with prevalence: in the lower-prevalence community sample
-the positive predictive value of every definition falls and the negative
-predictive value rises, so a positive result there is less likely to
-mark a true case than in the clinic.</p>
+sample is the absolute level of performance. The positive predictive
+value of every definition falls in the lower-prevalence community
+sample, so a positive result there is less likely to mark a true case
+than in the clinic. Sensitivity also drops, most visibly for the strict
+hierarchical rule, because the community sample’s symptom profiles are
+milder, while specificity holds or rises. These shifts are exactly what
+external validation is meant to reveal, and they are why a definition
+should not be transported across settings on its derivation performance
+alone.</p>
 <p>The agreement on core symptoms in the figure and the performance of
 every definition in the two tables were obtained without moving a single
 patient record between the sites. In a full collaboration the second

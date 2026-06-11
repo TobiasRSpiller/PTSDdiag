@@ -1,5 +1,77 @@
 # Changelog
 
+## PTSDdiag 0.3.5
+
+### New features
+
+- New `score_by = "balanced_accuracy"` optimization criterion: maximises
+  balanced accuracy, the mean of sensitivity and specificity
+  (equivalently, minimises FN/P + FP/N). Available in
+  [`optimize_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations.md),
+  [`optimize_combinations_clusters()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations_clusters.md),
+  [`compare_optimizations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/compare_optimizations.md),
+  [`holdout_validation()`](https://tobiasrspiller.github.io/PTSDdiag/reference/holdout_validation.md),
+  and
+  [`cross_validation()`](https://tobiasrspiller.github.io/PTSDdiag/reference/cross_validation.md),
+  and accepted as metadata by
+  [`write_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/write_combinations.md).
+- A `Balanced Accuracy` column ((sensitivity + specificity) / 2) is now
+  reported by
+  [`summarize_ptsd_changes()`](https://tobiasrspiller.github.io/PTSDdiag/reference/summarize_ptsd_changes.md)
+  (as `balanced_accuracy`),
+  [`create_readable_summary()`](https://tobiasrspiller.github.io/PTSDdiag/reference/create_readable_summary.md)
+  (so `res$summary`, the holdout/cross-validation summaries, and
+  [`evaluate_definitions()`](https://tobiasrspiller.github.io/PTSDdiag/reference/evaluate_definitions.md)
+  show it),
+  [`summarize_top_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/summarize_top_combinations.md),
+  [`compare_diagnostic_systems()`](https://tobiasrspiller.github.io/PTSDdiag/reference/compare_diagnostic_systems.md),
+  and the cross-validation `combinations_summary` (as
+  `Balanced_Accuracy`). This makes the reported metric match the
+  quantity the new default optimizes.
+
+### Behavior changes
+
+- All optimization and validation functions now default to
+  `score_by = "balanced_accuracy"` (was `"accuracy"`). In imbalanced
+  samples (the bundled clinical data is about 94% PTSD-positive) plain
+  accuracy is dominated by the majority class; balanced accuracy weighs
+  performance in the diagnosed and non-diagnosed groups equally. Pass
+  `score_by = "accuracy"` to reproduce results from earlier versions.
+- `score_by = "balanced_accuracy"` requires both diagnosed and
+  non-diagnosed cases under the reference criterion; data where every
+  case falls in one class now stops with an informative error suggesting
+  `"accuracy"` or `"sensitivity"`.
+- [`create_readable_summary()`](https://tobiasrspiller.github.io/PTSDdiag/reference/create_readable_summary.md)
+  now requires a `balanced_accuracy` column in its input. Data frames
+  produced by
+  [`summarize_ptsd_changes()`](https://tobiasrspiller.github.io/PTSDdiag/reference/summarize_ptsd_changes.md)
+  carry it automatically; hand-built inputs need the additional column.
+
+### Documentation
+
+- All vignettes demonstrate `score_by = "balanced_accuracy"` as the
+  standard outcome, and the Getting started vignette explains the choice
+  among the three criteria.
+- Vignettes now run on a uniform 250-row subset of the bundled data, so
+  building the package (and the CI checks) is several times faster. The
+  Getting started vignette previously optimized on all 5,000 rows.
+- Removed leftover editorial text from the Getting started vignette, and
+  the PCL-5 total score is now computed on a descriptive copy so the
+  optimizer’s “total column detected” warning no longer appears in the
+  rendered vignette. Fixed typos across the comparison, validation, and
+  multi-site vignettes.
+- README article links point to the current vignettes (the previous
+  links referenced articles removed in 0.3.1).
+- Examples use the same uniform 250-row subset with compact search
+  spaces so that CRAN’s `--run-donttest` checks stay fast.
+
+### Internal
+
+- Structural tests now run on compact search spaces and reuse expensive
+  comparison objects, cutting the test-suite runtime from about five
+  minutes to under a minute without losing coverage; the canonical
+  6-of-4 searches are still exercised once per optimizer.
+
 ## PTSDdiag 0.3.3
 
 ### Bug fixes

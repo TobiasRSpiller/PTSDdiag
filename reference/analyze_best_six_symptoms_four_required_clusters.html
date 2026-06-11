@@ -19,7 +19,7 @@ each DSM-5 criterion cluster.'><meta property="og:image" content="https://tobias
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -66,7 +66,7 @@ each DSM-5 criterion cluster.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">analyze_best_six_symptoms_four_required_clusters</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  score_by <span class="op">=</span> <span class="st">"accuracy"</span>,</span>
+<span>  score_by <span class="op">=</span> <span class="st">"balanced_accuracy"</span>,</span>
 <span>  DT <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -89,8 +89,11 @@ each DSM-5 criterion cluster.</p>
 
 <dt id="arg-score-by">score_by<a class="anchor" aria-label="anchor" href="#arg-score-by"></a></dt>
 <dd><p>Character string specifying optimization criterion:</p>
-<ul><li><p>"accuracy": Minimize total misclassifications (FP + FN, i.e.
-    maximise overall accuracy). Default.</p></li>
+<ul><li><p>"balanced_accuracy": Maximise balanced accuracy, the mean of
+    sensitivity and specificity. Robust when one diagnostic class is much
+    more common than the other. Default.</p></li>
+<li><p>"accuracy": Minimize total misclassifications (FP + FN, i.e.
+    maximise overall accuracy).</p></li>
 <li><p>"sensitivity": Minimize false negatives only (i.e. maximise
     sensitivity relative to the full DSM-5-TR diagnosis).</p></li>
 </ul></dd>
@@ -125,8 +128,10 @@ plain data.frame.</p></dd>
 <li><p>Cluster 2 (C) - Avoidance: Items 6-7</p></li>
 <li><p>Cluster 3 (D) - Negative alterations in cognitions and mood: Items 8-14</p></li>
 <li><p>Cluster 4 (E) - Alterations in arousal and reactivity: Items 15-20</p></li>
-</ul><p>Optimization can be based on either:</p>
-<ul><li><p>Minimizing false cases (both false positives and false negatives)</p></li>
+</ul><p>Optimization can be based on:</p>
+<ul><li><p>Maximizing balanced accuracy, the mean of sensitivity and
+  specificity (the default)</p></li>
+<li><p>Minimizing false cases (both false positives and false negatives)</p></li>
 <li><p>Minimizing only false negatives (newly non-diagnosed cases)</p></li>
 </ul></div>
     <div class="section level2">
@@ -137,67 +142,163 @@ plain data.frame.</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Create example data</span></span></span>
-<span class="r-in"><span><span class="va">ptsd_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">4</span>, <span class="fl">200</span>, replace<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">20</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ptsd_data</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"symptom_"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># This deprecated wrapper always runs the full 6-symptom hierarchical</span></span></span>
+<span class="r-in"><span><span class="co"># search, so its example uses a 50-row subset to stay fast</span></span></span>
+<span class="r-in"><span><span class="va">ptsd_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="rename_ptsd_columns.html">rename_ptsd_columns</a></span><span class="op">(</span><span class="va">simulated_ptsd</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">50</span>, <span class="op">]</span>,</span></span>
+<span class="r-in"><span>                                 id_col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"patient_id"</span>, <span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="co"># Find best hierarchical combinations minimizing false cases</span></span></span>
-<span class="r-in"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">analyze_best_six_symptoms_four_required_clusters</span><span class="op">(</span><span class="va">ptsd_data</span>, score_by <span class="op">=</span> <span class="st">"accuracy"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Find best hierarchical combinations with the default balanced-accuracy</span></span></span>
+<span class="r-in"><span><span class="co"># criterion</span></span></span>
+<span class="r-in"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">analyze_best_six_symptoms_four_required_clusters</span><span class="op">(</span><span class="va">ptsd_data</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`analyze_best_six_symptoms_four_required_clusters()` was deprecated in PTSDdiag</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> 0.2.1.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Please use `optimize_combinations_clusters()` instead.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Generated 13685 valid cluster-constrained combinations</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 13685 combinations. Best: 4, 6, 7, 11, 12, 15</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■                        </span>  24% | ETA:  3s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■                </span>  50% | ETA:  2s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ </span> 100% | ETA:  0s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 13685 combinations. Best: 5, 6, 7, 11, 15, 16 (31 additional tied)</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Get symptom numbers</span></span></span>
 <span class="r-in"><span><span class="va">results</span><span class="op">$</span><span class="va">best_symptoms</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  4  6  7 11 12 15</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  5  6  7 11 15 16</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[2]]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  1  4  6  8 11 15</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  5  6  7 11 15 20</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[3]]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  1  5  6  8 11 15</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  5  6  7 13 15 16</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># View raw comparison data</span></span></span>
 <span class="r-in"><span><span class="va">results</span><span class="op">$</span><span class="va">diagnosis_comparison</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    PTSD_orig symptom_4_6_7_11_12_15 symptom_1_4_6_8_11_15 symptom_1_5_6_8_11_15</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       TRUE                   TRUE                  TRUE                  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       TRUE                   TRUE                  TRUE                  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       TRUE                  FALSE                 FALSE                 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4       TRUE                   TRUE                 FALSE                 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5       TRUE                   TRUE                  TRUE                  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6      FALSE                  FALSE                 FALSE                 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7      FALSE                  FALSE                 FALSE                 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8       TRUE                   TRUE                  TRUE                  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9       TRUE                   TRUE                  TRUE                  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10      TRUE                   TRUE                  TRUE                  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    patient_id age    sex PTSD_orig symptom_5_6_7_11_15_16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       P0001  48   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       P0002  29   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       P0003  44   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       P0004  41 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5       P0005  34   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6       P0006  18   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7       P0007  33   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8       P0008  30 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9       P0009  43 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10      P0010  36 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11      P0011  37 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12      P0012  33   male      TRUE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13      P0013  39 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14      P0014  39   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15      P0015  18 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16      P0016  58 female     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17      P0017  49 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18      P0018  45 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19      P0019  32 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20      P0020  50   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21      P0021  38   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22      P0022  40 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23      P0023  25   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24      P0024  60 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25      P0025  43 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26      P0026  65   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27      P0027  63   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28      P0028  43 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29      P0029  50 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30      P0030  63   male     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31      P0031  36   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32      P0032  44   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33      P0033  39   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34      P0034  46   male      TRUE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35      P0035  44 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36      P0036  56   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37      P0037  49   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38      P0038  31 female     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 39      P0039  49 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 40      P0040  32 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 41      P0041  28 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 42      P0042  51 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 43      P0043  28 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 44      P0044  46 female     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 45      P0045  32 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 46      P0046  59   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 47      P0047  51   male      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 48      P0048  37 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 49      P0049  52   male     FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 50      P0050  47 female      TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    symptom_5_6_7_11_15_20 symptom_5_6_7_13_15_16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                    TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                    TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                    TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                    TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                    TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                    TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7                    TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8                    TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9                    TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11                   TRUE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12                  FALSE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16                  FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30                  FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34                  FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38                  FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 39                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 40                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 41                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 42                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 43                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 44                  FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 45                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 46                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 47                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 48                   TRUE                   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 49                  FALSE                  FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 50                   TRUE                   TRUE</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># View summary statistics</span></span></span>
 <span class="r-in"><span><span class="va">results</span><span class="op">$</span><span class="va">summary</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 Scenario combination_id rank Total Diagnosed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1              PTSD_orig           &lt;NA&gt;   NA         8 (80%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 symptom_4_6_7_11_12_15 4_6_7_11_12_15    1         7 (70%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  symptom_1_4_6_8_11_15  1_4_6_8_11_15    2         6 (60%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  symptom_1_5_6_8_11_15  1_5_6_8_11_15    3         6 (60%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1              PTSD_orig           &lt;NA&gt;   NA        45 (90%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 symptom_5_6_7_11_15_16 5_6_7_11_15_16    1        43 (86%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 symptom_5_6_7_11_15_20 5_6_7_11_15_20    2        43 (86%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 symptom_5_6_7_13_15_16 5_6_7_13_15_16    3        43 (86%)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Total Non-Diagnosed True Positive True Negative Newly Diagnosed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1             2 (20%)             8             2               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2             3 (30%)             7             2               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3             4 (40%)             6             2               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4             4 (40%)             6             2               0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1             5 (10%)            45             5               0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2             7 (14%)            43             5               0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3             7 (14%)            43             5               0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4             7 (14%)            43             5               0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity PPV    NPV</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                   0         10           0       1.000           1   1 1.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                   1          9           1       0.875           1   1 0.6667</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3                   2          8           2       0.750           1   1 0.5000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4                   2          8           2       0.750           1   1 0.5000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Accuracy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      1.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      0.9</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3      0.8</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4      0.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                   0         50           0      1.0000           1   1 1.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                   2         48           2      0.9556           1   1 0.7143</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                   2         48           2      0.9556           1   1 0.7143</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                   2         48           2      0.9556           1   1 0.7143</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Accuracy Balanced Accuracy</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     1.00            1.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     0.96            0.9778</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3     0.96            0.9778</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4     0.96            0.9778</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

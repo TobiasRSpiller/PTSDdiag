@@ -62,21 +62,27 @@ continues to reflect data-driven symptom selection. Set
 
 ``` r
 # \donttest{
-ptsd_data <- rename_ptsd_columns(simulated_ptsd,
-                                  id_col = c("patient_id", "age", "sex"))
-comp <- compare_optimizations(ptsd_data, n_top = 5, show_progress = FALSE)
-#> ℹ Generated 13685 valid cluster-constrained combinations
-#> ℹ Evaluated 13685 combinations. Best: 1, 6, 8, 11, 17, 19 (1 additional tied)
-#> ℹ Evaluated 38760 combinations. Best: 6, 7, 9, 16, 17, 19
-#> ℹ Evaluated 38760 combinations. Best: 5, 6, 7, 8, 10, 12
+# Use a 250-row subset and a small 4-symptom search to keep the example
+# fast; omit `scenarios` to run the three default rules
+ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+                                 id_col = c("patient_id", "age", "sex"))
+comp <- compare_optimizations(
+  ptsd_data,
+  scenarios = list(
+    "3/4 Non-hierarchical" = list(n_symptoms = 4, n_required = 3,
+                                  hierarchical = FALSE)
+  ),
+  include_icd11 = TRUE, n_top = 5, show_progress = FALSE
+)
+#> ℹ Evaluated 4845 combinations. Best: 6, 7, 12, 17
 freq <- symptom_frequency(comp)
 head(freq)
-#>   Symptom         Approach Count RelFreq
-#> 1       1 4/6 Hierarchical     5       1
-#> 2       2 4/6 Hierarchical     0       0
-#> 3       3 4/6 Hierarchical     0       0
-#> 4       4 4/6 Hierarchical     0       0
-#> 5       5 4/6 Hierarchical     0       0
-#> 6       6 4/6 Hierarchical     5       1
+#>   Symptom             Approach Count RelFreq
+#> 1       1 3/4 Non-hierarchical     0     0.0
+#> 2       2 3/4 Non-hierarchical     0     0.0
+#> 3       3 3/4 Non-hierarchical     0     0.0
+#> 4       4 3/4 Non-hierarchical     2     0.4
+#> 5       5 3/4 Non-hierarchical     0     0.0
+#> 6       6 3/4 Non-hierarchical     5     1.0
 # }
 ```

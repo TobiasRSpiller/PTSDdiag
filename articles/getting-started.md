@@ -71,13 +71,15 @@ names(simulated_ptsd)[1:6]
 #> [6] "S3"
 ```
 
-We pass the three demographic columns to `id_col`. They stay attached to
-every participant through the rest of the workflow, which is what later
-lets us describe the sample without a separate merge.
+To keep this vignette quick to build we work with a 250-row subset; the
+workflow is identical on the full dataset. We pass the three demographic
+columns to `id_col`. They stay attached to every participant through the
+rest of the workflow, which is what later lets us describe the sample
+without a separate merge.
 
 ``` r
 
-ptsd <- rename_ptsd_columns(simulated_ptsd,
+ptsd <- rename_ptsd_columns(simulated_ptsd[1:250, ],
                             id_col = c("patient_id", "age", "sex"))
 names(ptsd)[1:6]
 #> [1] "patient_id" "age"        "sex"        "symptom_1"  "symptom_2" 
@@ -107,28 +109,31 @@ symptom counted as present at a score of 2 or higher.
 ``` r
 
 ptsd <- ptsd %>%
-  create_ptsd_diagnosis_nonbinarized() %>%
-  calculate_ptsd_total()
+  create_ptsd_diagnosis_nonbinarized()
 ```
 
 [`calculate_ptsd_total()`](https://tobiasrspiller.github.io/PTSDdiag/reference/calculate_ptsd_total.md)
-adds the PCL-5 sum score (range 0–80), a severity index we will use to
-describe the sample. In this clinical-style dataset, 94% of participants
-meet the full criteria.
+adds the PCL-5 sum score (range 0–80), a severity index we use to
+describe the sample. We compute it on a separate descriptive copy rather
+than in the analysis data, because the optimization functions expect
+only the 20 items next to identifiers and the reference diagnosis and
+warn when a total-score column is present.
+
+``` r
+
+desc <- calculate_ptsd_total(ptsd)
+mean(desc$total)
+#> [1] 58.224
+```
+
+In this clinical-style sample, the mean PCL-5 total is 58.2 points and
+93% of participants meet the full criteria.
 
 ``` r
 
 mean(ptsd$PTSD_orig) * 100
-#> [1] 94.2
+#> [1] 92.8
 ```
-
-Here is the rewritten section. All prose now sits before the code, the
-example is framed as a four-of-six definition that ignores the cluster
-structure, the combination count is given explicitly, the `score_by`
-choice is explained with both options and a rationale, and `n_top` and
-`show_progress` are covered. No dashes used.
-
-------------------------------------------------------------------------
 
 ## Identifying a symptom subset
 
@@ -147,14 +152,20 @@ six selected symptoms are present (scored 2 or higher), and then ranks
 the combinations by how often their decision disagrees with `PTSD_orig`.
 
 Before running the search we choose the metric to optimize through the
-`score_by` argument. Two options are available. Setting it to
-`"accuracy"` minimizes the total number of misclassifications, counting
-false positives and false negatives equally. Setting it to
-`"sensitivity"` minimizes false negatives only, which prioritizes not
-missing participants who meet the full criteria, at the cost of more
-false positives. In this example we optimize for accuracy, because our
-aim is a simplified definition that agrees with the full DSM-5-TR
-diagnosis overall rather than one tuned toward a single type of error.
+`score_by` argument. Three options are available. The default,
+`"balanced_accuracy"`, maximizes the mean of sensitivity and
+specificity, so participants who meet the full criteria and participants
+who do not carry equal weight. Setting it to `"accuracy"` instead
+minimizes the total number of misclassifications, and `"sensitivity"`
+minimizes false negatives only, which prioritizes not missing
+participants who meet the full criteria at the cost of more false
+positives. We use balanced accuracy here, and recommend it as the
+standard choice, because diagnostic samples are rarely balanced: in this
+sample 93% of participants meet the full criteria, so a rule that simply
+diagnosed everyone would already reach 93% accuracy while being useless
+for ruling anyone out. Balanced accuracy cannot be gamed this way,
+because it scores performance in the diagnosed and the non-diagnosed
+group separately.
 
 Two further arguments shape the output. `n_top = 3` returns the three
 best scoring subsets rather than a single winner, so that near optimal
@@ -170,70 +181,67 @@ res <- optimize_combinations(
   n_symptoms    = 6,
   n_required    = 4,
   n_top         = 3,
-  score_by      = "accuracy",
+  score_by      = "balanced_accuracy",
   show_progress = FALSE
 )
-#> Warning: "total" column detected. This function should only be used with raw symptom
-#> scores.
-#> "total" column detected. This function should only be used with raw symptom
-#> scores.
 res$best_symptoms
 #> [[1]]
-#> [1]  6  7  9 16 17 19
+#> [1]  6  7  8 11 13 17
 #> 
 #> [[2]]
-#> [1]  4  6  7  9 17 19
+#> [1]  6  7 10 11 13 15
 #> 
 #> [[3]]
-#> [1]  4  6  7  9 12 17
+#> [1]  4  6  7  8 11 17
 ```
 
 ## Diagnostic performance metrics
 
-The optimization minimizes the total number of misclassified
-participants, but a single error count hides the kind of error being
-made, and the two kinds carry different costs. A false negative is a
-participant who meets the full DSM-5-TR criteria yet falls below the
-simplified rule; a false positive is the reverse. Sensitivity and
-specificity quantify these two error rates separately and are properties
-of the rule itself, largely stable across samples. Positive and negative
-predictive values translate the rule to a particular setting: because
-they depend on how common PTSD is, the same six-symptom definition
-yields different predictive values in a specialty clinic than in a
-community survey. Accuracy, the overall share of participants classified
-the same way as the full criteria, is the single number
-`score_by = "accuracy"` optimized for. Reporting all of these, alongside
-the underlying counts, is what lets a reader judge whether a simplified
-definition is adequate for their purpose.
+The optimization maximizes one number, but a single score hides the kind
+of error being made, and the two kinds carry different costs. A false
+negative is a participant who meets the full DSM-5-TR criteria yet falls
+below the simplified rule; a false positive is the reverse. Sensitivity
+and specificity quantify these two error rates separately and are
+properties of the rule itself rather than of the sample’s prevalence.
+Positive and negative predictive values translate the rule to a
+particular setting: because they depend on how common PTSD is, the same
+six-symptom definition yields different predictive values in a specialty
+clinic than in a community survey. Balanced accuracy, the mean of
+sensitivity and specificity, is the single number the default
+`score_by = "balanced_accuracy"` optimized for; plain accuracy, the
+overall share of participants classified the same way as the full
+criteria, is reported alongside it. Reporting all of these, together
+with the underlying counts, is what lets a reader judge whether a
+simplified definition is adequate for their purpose.
 
 [`optimize_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations.md)
 returns these metrics for the reference diagnosis and each top
-combination in `res$summary`, including an `Accuracy` column. This is
-the diagnostic-performance table.
+combination in `res$summary`, including `Accuracy` and
+`Balanced Accuracy` columns. This is the diagnostic-performance table.
 
 ``` r
 
 res$summary
-#>                 Scenario combination_id rank Total Diagnosed
-#> 1              PTSD_orig           <NA>   NA    4710 (94.2%)
-#> 2 symptom_6_7_9_16_17_19 6_7_9_16_17_19    1   4678 (93.56%)
-#> 3  symptom_4_6_7_9_17_19  4_6_7_9_17_19    2    4685 (93.7%)
-#> 4  symptom_4_6_7_9_12_17  4_6_7_9_12_17    3   4681 (93.62%)
+#>                  Scenario  combination_id rank Total Diagnosed
+#> 1               PTSD_orig            <NA>   NA     232 (92.8%)
+#> 2  symptom_6_7_8_11_13_17  6_7_8_11_13_17    1       230 (92%)
+#> 3 symptom_6_7_10_11_13_15 6_7_10_11_13_15    2       230 (92%)
+#> 4   symptom_4_6_7_8_11_17   4_6_7_8_11_17    3     229 (91.6%)
 #>   Total Non-Diagnosed True Positive True Negative Newly Diagnosed
-#> 1          290 (5.8%)          4710           290               0
-#> 2         322 (6.44%)          4598           210              80
-#> 3          315 (6.3%)          4601           206              84
-#> 4         319 (6.38%)          4598           207              83
+#> 1           18 (7.2%)           232            18               0
+#> 2             20 (8%)           229            17               1
+#> 3             20 (8%)           229            17               1
+#> 4           21 (8.4%)           228            17               1
 #>   Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV
-#> 1                   0       5000           0      1.0000      1.0000 1.0000
-#> 2                 112       4808         192      0.9762      0.7241 0.9829
-#> 3                 109       4807         193      0.9769      0.7103 0.9821
-#> 4                 112       4805         195      0.9762      0.7138 0.9823
-#>      NPV Accuracy
-#> 1 1.0000   1.0000
-#> 2 0.6522   0.9616
-#> 3 0.6540   0.9614
-#> 4 0.6489   0.9610
+#> 1                   0        250           0      1.0000      1.0000 1.0000
+#> 2                   3        246           4      0.9871      0.9444 0.9957
+#> 3                   3        246           4      0.9871      0.9444 0.9957
+#> 4                   4        245           5      0.9828      0.9444 0.9956
+#>      NPV Accuracy Balanced Accuracy
+#> 1 1.0000    1.000            1.0000
+#> 2 0.8500    0.984            0.9658
+#> 3 0.8500    0.984            0.9658
+#> 4 0.8095    0.980            0.9636
 ```
 
 ## Where next

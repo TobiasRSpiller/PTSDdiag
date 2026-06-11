@@ -61,6 +61,10 @@ criterion:
 - accuracy: Proportion of cases classified the same as the baseline
   criterion ((true positives + true negatives) / total)
 
+- balanced_accuracy: Mean of sensitivity and specificity ((sensitivity +
+  specificity) / 2), robust to imbalanced prevalence of the baseline
+  diagnosis
+
 ## Details
 
 The function calculates multiple diagnostic metrics comparing each
@@ -114,8 +118,8 @@ diagnostic_metrics
 #> PTSD_orig   1.0000000 1.0000000 1.0000000                57
 #> PTSD_alt1   0.5348837 0.5652174 0.4259259                46
 #> PTSD_alt2   0.3953488 0.4901961 0.3469388                51
-#>           non_diagnosed_percent accuracy
-#> PTSD_orig                    43     1.00
-#> PTSD_alt1                    54     0.49
-#> PTSD_alt2                    49     0.42
+#>           non_diagnosed_percent accuracy balanced_accuracy
+#> PTSD_orig                    43     1.00         1.0000000
+#> PTSD_alt1                    54     0.49         0.4955120
+#> PTSD_alt2                    49     0.42         0.4169727
 ```

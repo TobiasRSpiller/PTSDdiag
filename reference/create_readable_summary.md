@@ -47,8 +47,8 @@ A formatted data.frame (or a
 
 - False Cases: Total misclassified cases
 
-- Sensitivity, Specificity, PPV, NPV, Accuracy: Diagnostic accuracy
-  metrics (4 decimals)
+- Sensitivity, Specificity, PPV, NPV, Accuracy, Balanced Accuracy:
+  Diagnostic accuracy metrics (4 decimals)
 
 ## Details
 
@@ -80,7 +80,7 @@ print(readable_summary)
 #>   Newly Diagnosed Newly Non-Diagnosed True Cases False Cases Sensitivity
 #> 1               0                   0        100           0      1.0000
 #> 2              29                  20         51          49      0.5918
-#>   Specificity PPV    NPV Accuracy
-#> 1      1.0000 1.0 1.0000     1.00
-#> 2      0.4314 0.5 0.5238     0.51
+#>   Specificity PPV    NPV Accuracy Balanced Accuracy
+#> 1      1.0000 1.0 1.0000     1.00            1.0000
+#> 2      0.4314 0.5 0.5238     0.51            0.5116
 ```

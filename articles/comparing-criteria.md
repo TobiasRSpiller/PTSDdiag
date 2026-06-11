@@ -23,7 +23,7 @@ These rules are:
   This preserves the polythetic structure of the full criteria.
 - **Four of six symptoms, without the cluster requirement.** The same
   number of symptoms, but any six symptoms may be chosen, not requiring
-  the cluster structre.
+  the cluster structure.
 - **Three of six symptoms, without the cluster requirement.** A lower
   threshold on six symptoms, more resembling the ICD-11 definition of
   PTSD.
@@ -42,27 +42,31 @@ vignette. As there, we keep `patient_id`, `age`, and `sex` attached with
 ## Running the comparison in one call
 
 [`compare_optimizations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/compare_optimizations.md)
-evaluates the three scenario outlined above and returns one object that
+evaluates the three scenarios outlined above and returns one object that
 holds the per-scenario results. We request the three default optimized
 rules, add ICD-11 with `include_icd11 = TRUE`, and keep the ten best
-combinations per optimized rule with `n_top = 10`. The
-`score_by = "accuracy"` argument ranks combinations by total agreement
-with the full diagnosis. To keep the vignette fast we use a 500-row
-subset of the bundled data.
+combinations per optimized rule with `n_top = 10`. The default
+`score_by = "balanced_accuracy"` ranks combinations by the mean of
+sensitivity and specificity, so the high prevalence of the clinical
+sample cannot dominate the ranking; the [Getting
+started](https://tobiasrspiller.github.io/PTSDdiag/articles/getting-started.md)
+vignette discusses this choice and the `"accuracy"` and `"sensitivity"`
+alternatives. To keep the vignette fast we use a 250-row subset of the
+bundled data.
 
 ``` r
 
 library(PTSDdiag)
 
 data("simulated_ptsd")
-ptsd <- rename_ptsd_columns(simulated_ptsd[1:500, ],
+ptsd <- rename_ptsd_columns(simulated_ptsd[1:250, ],
                             id_col = c("patient_id", "age", "sex"))
 
 comp <- compare_optimizations(
   ptsd,
   n_top         = 10,
   include_icd11 = TRUE,
-  score_by      = "accuracy",
+  score_by      = "balanced_accuracy",
   show_progress = FALSE
 )
 print(comp)
@@ -83,40 +87,42 @@ shown.
 Each row carries the approach label, the rank within that approach, the
 symptom combination, the four cell counts against the full diagnosis
 (TP, FN, FP, TN), and the derived rates: sensitivity, specificity, PPV,
-NPV, and accuracy. Accuracy is (TP + TN) divided by the sample size, the
-quantity that `score_by = "accuracy"` optimized for, so it is the
-natural headline number when these definitions are compared.
+NPV, accuracy, and balanced accuracy. Balanced accuracy is the mean of
+sensitivity and specificity, the quantity that the default
+`score_by = "balanced_accuracy"` optimized for, so it is the natural
+headline number when these definitions are compared; plain accuracy,
+(TP + TN) divided by the sample size, is reported alongside it.
 
 ``` r
 
 tbl <- summarize_top_combinations(comp, top_n = 10, as_percent = TRUE)
 head(tbl, 12)
-#>                Approach Rank            Combination  TP FN FP TN Sensitivity
-#> 1      4/6 Hierarchical    1 symptom_1_6_7_11_16_17 411 54  0 35    88.38710
-#> 2      4/6 Hierarchical    2 symptom_1_6_7_11_16_19 411 54  1 34    88.38710
-#> 3      4/6 Hierarchical    3 symptom_4_6_7_11_16_19 410 55  0 35    88.17204
-#> 4      4/6 Hierarchical    4 symptom_1_6_7_11_15_17 409 56  0 35    87.95699
-#> 5      4/6 Hierarchical    5 symptom_1_4_6_11_16_19 410 55  1 34    88.17204
-#> 6      4/6 Hierarchical    6 symptom_1_6_7_11_17_20 409 56  0 35    87.95699
-#> 7      4/6 Hierarchical    7 symptom_4_6_7_11_17_19 410 55  1 34    88.17204
-#> 8      4/6 Hierarchical    8 symptom_4_6_7_11_17_20 410 55  1 34    88.17204
-#> 9      4/6 Hierarchical    9 symptom_4_6_7_11_18_19 409 56  0 35    87.95699
-#> 10     4/6 Hierarchical   10 symptom_4_6_7_11_18_20 409 56  0 35    87.95699
-#> 11 4/6 Non-hierarchical    1  symptom_1_3_6_7_11_15 460  5  8 27    98.92473
-#> 12 4/6 Non-hierarchical    2  symptom_3_5_6_7_11_15 457  8  6 29    98.27957
-#>    Specificity       PPV      NPV Accuracy
-#> 1    100.00000 100.00000 39.32584     89.2
-#> 2     97.14286  99.75728 38.63636     89.0
-#> 3    100.00000 100.00000 38.88889     89.0
-#> 4    100.00000 100.00000 38.46154     88.8
-#> 5     97.14286  99.75669 38.20225     88.8
-#> 6    100.00000 100.00000 38.46154     88.8
-#> 7     97.14286  99.75669 38.20225     88.8
-#> 8     97.14286  99.75669 38.20225     88.8
-#> 9    100.00000 100.00000 38.46154     88.8
-#> 10   100.00000 100.00000 38.46154     88.8
-#> 11    77.14286  98.29060 84.37500     97.4
-#> 12    82.85714  98.70410 78.37838     97.2
+#>                Approach Rank             Combination  TP FN FP TN Sensitivity
+#> 1      4/6 Hierarchical    1  symptom_1_6_7_13_15_17 213 19  0 18    91.81034
+#> 2      4/6 Hierarchical    2  symptom_1_3_7_13_15_17 213 19  0 18    91.81034
+#> 3      4/6 Hierarchical    3  symptom_1_3_6_13_16_19 213 19  0 18    91.81034
+#> 4      4/6 Hierarchical    4   symptom_1_4_6_7_11_17 213 19  0 18    91.81034
+#> 5      4/6 Hierarchical    5  symptom_1_6_7_11_15_17 212 20  0 18    91.37931
+#> 6      4/6 Hierarchical    6  symptom_1_6_7_11_15_18 212 20  0 18    91.37931
+#> 7      4/6 Hierarchical    7  symptom_1_3_6_13_15_17 212 20  0 18    91.37931
+#> 8      4/6 Hierarchical    8  symptom_1_6_7_13_15_18 212 20  0 18    91.37931
+#> 9      4/6 Hierarchical    9  symptom_1_3_7_13_15_18 212 20  0 18    91.37931
+#> 10     4/6 Hierarchical   10  symptom_1_4_7_13_15_17 212 20  0 18    91.37931
+#> 11 4/6 Non-hierarchical    1  symptom_6_7_8_11_13_17 229  3  1 17    98.70690
+#> 12 4/6 Non-hierarchical    2 symptom_6_7_10_11_13_15 229  3  1 17    98.70690
+#>    Specificity       PPV      NPV Accuracy Balanced Accuracy
+#> 1    100.00000 100.00000 48.64865     92.4          95.90517
+#> 2    100.00000 100.00000 48.64865     92.4          95.90517
+#> 3    100.00000 100.00000 48.64865     92.4          95.90517
+#> 4    100.00000 100.00000 48.64865     92.4          95.90517
+#> 5    100.00000 100.00000 47.36842     92.0          95.68966
+#> 6    100.00000 100.00000 47.36842     92.0          95.68966
+#> 7    100.00000 100.00000 47.36842     92.0          95.68966
+#> 8    100.00000 100.00000 47.36842     92.0          95.68966
+#> 9    100.00000 100.00000 47.36842     92.0          95.68966
+#> 10   100.00000 100.00000 47.36842     92.0          95.68966
+#> 11    94.44444  99.56522 85.00000     98.4          96.57567
+#> 12    94.44444  99.56522 85.00000     98.4          96.57567
 ```
 
 ## Core symptoms across definitions
@@ -160,26 +166,26 @@ knitr::kable(
 
 | Symptom | 4/6 Hierarchical | 4/6 Non-hierarchical | 3/6 Non-hierarchical | ICD-11 | OVERALL |
 |---:|---:|---:|---:|---:|---:|
-| 1 | 5 | 4 | 3 | 1 | 12 |
-| 2 | 0 | 0 | 6 | 1 | 6 |
-| 3 | 0 | 5 | 0 | 1 | 5 |
-| 4 | 6 | 0 | 3 | 0 | 9 |
-| 5 | 0 | 7 | 2 | 0 | 9 |
-| 6 | 10 | 10 | 10 | 1 | 30 |
-| 7 | 9 | 10 | 3 | 1 | 22 |
-| 8 | 0 | 2 | 2 | 0 | 4 |
-| 9 | 0 | 0 | 0 | 0 | 0 |
-| 10 | 0 | 0 | 3 | 0 | 3 |
-| 11 | 10 | 9 | 6 | 0 | 25 |
-| 12 | 0 | 2 | 2 | 0 | 4 |
-| 13 | 0 | 1 | 2 | 0 | 3 |
+| 1 | 10 | 0 | 0 | 1 | 10 |
+| 2 | 0 | 0 | 1 | 1 | 1 |
+| 3 | 4 | 0 | 1 | 1 | 5 |
+| 4 | 2 | 2 | 7 | 0 | 11 |
+| 5 | 0 | 0 | 1 | 0 | 1 |
+| 6 | 7 | 10 | 8 | 1 | 25 |
+| 7 | 8 | 10 | 10 | 1 | 28 |
+| 8 | 0 | 4 | 1 | 0 | 5 |
+| 9 | 0 | 0 | 1 | 0 | 1 |
+| 10 | 0 | 3 | 2 | 0 | 5 |
+| 11 | 3 | 10 | 2 | 0 | 15 |
+| 12 | 0 | 3 | 6 | 0 | 9 |
+| 13 | 7 | 4 | 3 | 0 | 14 |
 | 14 | 0 | 0 | 0 | 0 | 0 |
-| 15 | 1 | 7 | 9 | 0 | 17 |
-| 16 | 4 | 1 | 2 | 0 | 7 |
-| 17 | 5 | 1 | 0 | 1 | 6 |
-| 18 | 2 | 0 | 0 | 1 | 2 |
-| 19 | 5 | 0 | 7 | 0 | 12 |
-| 20 | 3 | 1 | 0 | 0 | 4 |
+| 15 | 8 | 4 | 10 | 0 | 22 |
+| 16 | 1 | 3 | 3 | 0 | 7 |
+| 17 | 6 | 4 | 0 | 1 | 10 |
+| 18 | 3 | 3 | 0 | 1 | 6 |
+| 19 | 1 | 0 | 4 | 0 | 5 |
+| 20 | 0 | 0 | 0 | 0 | 0 |
 
 Number of times each PCL-5 item is selected among the top combinations -
 ICD-11 not included {.table}
@@ -191,7 +197,7 @@ optimized rule (`type = "optimize"`, with `n_symptoms`, `n_required`,
 and `hierarchical`) or a fixed criterion (`type = "fixed"`, with
 `criterion = "icd11"`, `"caps5"`, or a logical diagnosis vector you
 supply). This is how you vary the subset size, supply custom clusters,
-or benchmark against a criterion you have already derived from an other
+or benchmark against a criterion you have already derived from another
 dataset (also see [Validating abbreviated symptom
 definitions](https://tobiasrspiller.github.io/PTSDdiag/articles/validation.md))
 
@@ -205,7 +211,7 @@ my_scenarios <- list(
 )
 
 compare_optimizations(ptsd, scenarios = my_scenarios, n_top = 10,
-                      score_by = "accuracy", show_progress = FALSE)
+                      score_by = "balanced_accuracy", show_progress = FALSE)
 ```
 
 ## See also

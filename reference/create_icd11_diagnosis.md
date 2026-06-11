@@ -97,7 +97,7 @@ create_readable_summary(metrics)
 #>   Newly Diagnosed Newly Non-Diagnosed True Cases False Cases Sensitivity
 #> 1               0                   0       5000           0      1.0000
 #> 2              29                 161       4810         190      0.9658
-#>   Specificity    PPV    NPV Accuracy
-#> 1         1.0 1.0000 1.0000    1.000
-#> 2         0.9 0.9937 0.6185    0.962
+#>   Specificity    PPV    NPV Accuracy Balanced Accuracy
+#> 1         1.0 1.0000 1.0000    1.000            1.0000
+#> 2         0.9 0.9937 0.6185    0.962            0.9329
 ```

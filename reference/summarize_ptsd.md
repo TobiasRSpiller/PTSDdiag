@@ -53,5 +53,5 @@ sample_data <- data.frame(
 summary_stats <- summarize_ptsd(sample_data)
 print(summary_stats)
 #>   mean_total sd_total n_diagnosed
-#> 1      40.89 22.96545          56
+#> 1      39.77 24.66497          49
 ```

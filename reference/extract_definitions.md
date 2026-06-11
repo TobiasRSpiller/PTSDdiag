@@ -59,64 +59,36 @@ sample.
 
 ``` r
 # \donttest{
-ptsd <- rename_ptsd_columns(simulated_ptsd[1:300, ],
+# Use a 250-row subset and a small 4-symptom search to keep the example
+# fast; omit `scenarios` to run the three default rules
+ptsd <- rename_ptsd_columns(simulated_ptsd[1:250, ],
                             id_col = c("patient_id", "age", "sex"))
-comp <- compare_optimizations(ptsd, n_top = 10, show_progress = FALSE)
-#> ℹ Generated 13685 valid cluster-constrained combinations
-#> ℹ Evaluated 13685 combinations. Best: 1, 6, 7, 11, 15, 17 (3 additional tied)
-#> ℹ Evaluated 38760 combinations. Best: 5, 6, 7, 10, 13, 20 (2 additional tied)
-#> ℹ Evaluated 38760 combinations. Best: 2, 6, 7, 8, 10, 15 (8 additional tied)
+comp <- compare_optimizations(
+  ptsd,
+  scenarios = list(
+    "3/4 Non-hierarchical" = list(n_symptoms = 4, n_required = 3,
+                                  hierarchical = FALSE)
+  ),
+  n_top = 10, show_progress = FALSE
+)
+#> ℹ Evaluated 4845 combinations. Best: 6, 7, 12, 17
 definitions <- extract_definitions(comp, n = 5)
 lapply(definitions, function(d) d$symptoms)
-#> $`4/6 Hierarchical`
-#> $`4/6 Hierarchical`[[1]]
-#> [1]  1  6  7 11 15 17
+#> $`3/4 Non-hierarchical`
+#> $`3/4 Non-hierarchical`[[1]]
+#> [1]  6  7 12 17
 #> 
-#> $`4/6 Hierarchical`[[2]]
-#> [1]  1  6  7 11 15 18
+#> $`3/4 Non-hierarchical`[[2]]
+#> [1]  4  6  7 12
 #> 
-#> $`4/6 Hierarchical`[[3]]
-#> [1]  1  4  6  7 11 17
+#> $`3/4 Non-hierarchical`[[3]]
+#> [1]  4  6  7 19
 #> 
-#> $`4/6 Hierarchical`[[4]]
-#> [1]  1  5  6  7 11 17
+#> $`3/4 Non-hierarchical`[[4]]
+#> [1]  6  7 12 13
 #> 
-#> $`4/6 Hierarchical`[[5]]
-#> [1]  1  4  6 11 15 18
-#> 
-#> 
-#> $`4/6 Non-hierarchical`
-#> $`4/6 Non-hierarchical`[[1]]
-#> [1]  5  6  7 10 13 20
-#> 
-#> $`4/6 Non-hierarchical`[[2]]
-#> [1]  5  6  7 11 13 20
-#> 
-#> $`4/6 Non-hierarchical`[[3]]
-#> [1]  6  7 10 13 15 18
-#> 
-#> $`4/6 Non-hierarchical`[[4]]
-#> [1]  2  5  6  7 12 19
-#> 
-#> $`4/6 Non-hierarchical`[[5]]
-#> [1]  2  6  7 11 12 19
-#> 
-#> 
-#> $`3/6 Non-hierarchical`
-#> $`3/6 Non-hierarchical`[[1]]
-#> [1]  2  6  7  8 10 15
-#> 
-#> $`3/6 Non-hierarchical`[[2]]
-#> [1]  2  6 10 11 15 16
-#> 
-#> $`3/6 Non-hierarchical`[[3]]
-#> [1]  2  6 10 11 15 19
-#> 
-#> $`3/6 Non-hierarchical`[[4]]
-#> [1]  6  7  8 10 11 19
-#> 
-#> $`3/6 Non-hierarchical`[[5]]
-#> [1]  6  7  8 10 15 18
+#> $`3/4 Non-hierarchical`[[5]]
+#> [1]  6  7 12 15
 #> 
 #> 
 # }

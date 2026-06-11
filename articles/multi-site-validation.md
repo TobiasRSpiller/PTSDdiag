@@ -10,9 +10,9 @@ Collaborations across clinics, registries, or countries are often bound
 by privacy rules and data-use agreements that forbid moving patient
 records between sites. Hence, pooling data is often not possible.
 However, as a simplified definition is fully described by the symptom
-indices it uses and the number required, optimization can take palace a
-one site and validation at another without sharing the original data but
-only symptom sets constituting the new definitions.
+indices it uses and the number required, optimization can take place at
+one site and validation at another without sharing the original data,
+only the symptom sets constituting the new definitions.
 
 In this vignette, one site has data from the veterans with a high PTSD
 prevalence and another has population data with a low PTSD prevalence.
@@ -29,8 +29,8 @@ the 20 PCL-5 items in their standard order, scored 0 to 4, with no
 missing values, plus any identifier columns named in `id_col`. The full
 contract is in the [Getting
 started](https://tobiasrspiller.github.io/PTSDdiag/articles/getting-started.md)
-vignette. For this vignette, we subset the veteran sample to keep the
-optimization fast.
+vignette. For this vignette, we subset the veteran sample to 250 rows to
+keep the optimization fast.
 
 ## Site 1: deriving the definition in the veteran sample
 
@@ -45,13 +45,13 @@ library(PTSDdiag)
 library(dplyr)
 
 data("simulated_ptsd")
-vet <- rename_ptsd_columns(simulated_ptsd[1:500, ],
+vet <- rename_ptsd_columns(simulated_ptsd[1:250, ],
                            id_col = c("patient_id", "age", "sex"))
 
 comp_vet <- compare_optimizations(
   vet,
   n_top         = 10,
-  score_by      = "accuracy",
+  score_by      = "balanced_accuracy",
   show_progress = FALSE
 )
 ```
@@ -96,53 +96,53 @@ definitions <- extract_definitions(comp_vet, n = 5)
 lapply(definitions, function(d) d$symptoms)
 #> $`4/6 Hierarchical`
 #> $`4/6 Hierarchical`[[1]]
-#> [1]  1  6  7 11 16 17
+#> [1]  1  6  7 13 15 17
 #> 
 #> $`4/6 Hierarchical`[[2]]
-#> [1]  1  6  7 11 16 19
+#> [1]  1  3  7 13 15 17
 #> 
 #> $`4/6 Hierarchical`[[3]]
-#> [1]  4  6  7 11 16 19
+#> [1]  1  3  6 13 16 19
 #> 
 #> $`4/6 Hierarchical`[[4]]
-#> [1]  1  6  7 11 15 17
+#> [1]  1  4  6  7 11 17
 #> 
 #> $`4/6 Hierarchical`[[5]]
-#> [1]  1  4  6 11 16 19
+#> [1]  1  6  7 11 15 17
 #> 
 #> 
 #> $`4/6 Non-hierarchical`
 #> $`4/6 Non-hierarchical`[[1]]
-#> [1]  1  3  6  7 11 15
+#> [1]  6  7  8 11 13 17
 #> 
 #> $`4/6 Non-hierarchical`[[2]]
-#> [1]  3  5  6  7 11 15
+#> [1]  6  7 10 11 13 15
 #> 
 #> $`4/6 Non-hierarchical`[[3]]
-#> [1]  5  6  7 11 15 16
+#> [1]  4  6  7  8 11 17
 #> 
 #> $`4/6 Non-hierarchical`[[4]]
-#> [1]  1  5  6  7 11 15
+#> [1]  4  6  7 10 11 15
 #> 
 #> $`4/6 Non-hierarchical`[[5]]
-#> [1]  3  5  6  7 12 15
+#> [1]  6  7  8 11 13 18
 #> 
 #> 
 #> $`3/6 Non-hierarchical`
 #> $`3/6 Non-hierarchical`[[1]]
-#> [1]  2  6  7  8 10 15
+#> [1]  3  6  7 11 15 16
 #> 
 #> $`3/6 Non-hierarchical`[[2]]
-#> [1]  4  6 11 15 16 19
+#> [1]  4  6  7 12 15 19
 #> 
 #> $`3/6 Non-hierarchical`[[3]]
-#> [1]  5  6  7  8 10 15
+#> [1]  4  6  7 13 15 19
 #> 
 #> $`3/6 Non-hierarchical`[[4]]
-#> [1]  6  7 10 11 15 19
+#> [1]  6  7 10 12 15 19
 #> 
 #> $`3/6 Non-hierarchical`[[5]]
-#> [1]  6 11 12 15 16 19
+#> [1]  2  6  7  8 10 15
 ```
 
 This object is everything the other site needs, and it holds nothing but
@@ -173,78 +173,78 @@ patients, the baseline the other site will be read against.
 ``` r
 
 evaluate_definitions(vet, definitions, include_icd11 = TRUE)
-#>                                        Scenario Total Diagnosed
-#> 1                                     PTSD_orig       465 (93%)
-#> 2        4/6 Hierarchical (1, 6, 7, 11, 16, 17)     411 (82.2%)
-#> 3        4/6 Hierarchical (1, 6, 7, 11, 16, 19)     412 (82.4%)
-#> 4        4/6 Hierarchical (4, 6, 7, 11, 16, 19)       410 (82%)
-#> 5        4/6 Hierarchical (1, 6, 7, 11, 15, 17)     409 (81.8%)
-#> 6        4/6 Hierarchical (1, 4, 6, 11, 16, 19)     411 (82.2%)
-#> 7     4/6 Non-hierarchical (1, 3, 6, 7, 11, 15)     468 (93.6%)
-#> 8     4/6 Non-hierarchical (3, 5, 6, 7, 11, 15)     463 (92.6%)
-#> 9    4/6 Non-hierarchical (5, 6, 7, 11, 15, 16)     461 (92.2%)
-#> 10    4/6 Non-hierarchical (1, 5, 6, 7, 11, 15)     466 (93.2%)
-#> 11    4/6 Non-hierarchical (3, 5, 6, 7, 12, 15)     464 (92.8%)
-#> 12    3/6 Non-hierarchical (2, 6, 7, 8, 10, 15)     477 (95.4%)
-#> 13  3/6 Non-hierarchical (4, 6, 11, 15, 16, 19)     483 (96.6%)
-#> 14    3/6 Non-hierarchical (5, 6, 7, 8, 10, 15)     479 (95.8%)
-#> 15  3/6 Non-hierarchical (6, 7, 10, 11, 15, 19)     481 (96.2%)
-#> 16 3/6 Non-hierarchical (6, 11, 12, 15, 16, 19)     481 (96.2%)
-#> 17                                       ICD-11     453 (90.6%)
+#>                                       Scenario Total Diagnosed
+#> 1                                    PTSD_orig     232 (92.8%)
+#> 2       4/6 Hierarchical (1, 6, 7, 13, 15, 17)     213 (85.2%)
+#> 3       4/6 Hierarchical (1, 3, 7, 13, 15, 17)     213 (85.2%)
+#> 4       4/6 Hierarchical (1, 3, 6, 13, 16, 19)     213 (85.2%)
+#> 5        4/6 Hierarchical (1, 4, 6, 7, 11, 17)     213 (85.2%)
+#> 6       4/6 Hierarchical (1, 6, 7, 11, 15, 17)     212 (84.8%)
+#> 7   4/6 Non-hierarchical (6, 7, 8, 11, 13, 17)       230 (92%)
+#> 8  4/6 Non-hierarchical (6, 7, 10, 11, 13, 15)       230 (92%)
+#> 9    4/6 Non-hierarchical (4, 6, 7, 8, 11, 17)     229 (91.6%)
+#> 10  4/6 Non-hierarchical (4, 6, 7, 10, 11, 15)     229 (91.6%)
+#> 11  4/6 Non-hierarchical (6, 7, 8, 11, 13, 18)     229 (91.6%)
+#> 12  3/6 Non-hierarchical (3, 6, 7, 11, 15, 16)     237 (94.8%)
+#> 13  3/6 Non-hierarchical (4, 6, 7, 12, 15, 19)     237 (94.8%)
+#> 14  3/6 Non-hierarchical (4, 6, 7, 13, 15, 19)     237 (94.8%)
+#> 15 3/6 Non-hierarchical (6, 7, 10, 12, 15, 19)     237 (94.8%)
+#> 16   3/6 Non-hierarchical (2, 6, 7, 8, 10, 15)     236 (94.4%)
+#> 17                                      ICD-11     226 (90.4%)
 #>    Total Non-Diagnosed True Positive True Negative Newly Diagnosed
-#> 1              35 (7%)           465            35               0
-#> 2           89 (17.8%)           411            35               0
-#> 3           88 (17.6%)           411            34               1
-#> 4             90 (18%)           410            35               0
-#> 5           91 (18.2%)           409            35               0
-#> 6           89 (17.8%)           410            34               1
-#> 7            32 (6.4%)           460            27               8
-#> 8            37 (7.4%)           457            29               6
-#> 9            39 (7.8%)           456            30               5
-#> 10           34 (6.8%)           458            27               8
-#> 11           36 (7.2%)           457            28               7
-#> 12           23 (4.6%)           462            20              15
-#> 13           17 (3.4%)           465            17              18
-#> 14           21 (4.2%)           463            19              16
-#> 15           19 (3.8%)           464            18              17
-#> 16           19 (3.8%)           464            18              17
-#> 17           47 (9.4%)           448            30               5
+#> 1            18 (7.2%)           232            18               0
+#> 2           37 (14.8%)           213            18               0
+#> 3           37 (14.8%)           213            18               0
+#> 4           37 (14.8%)           213            18               0
+#> 5           37 (14.8%)           213            18               0
+#> 6           38 (15.2%)           212            18               0
+#> 7              20 (8%)           229            17               1
+#> 8              20 (8%)           229            17               1
+#> 9            21 (8.4%)           228            17               1
+#> 10           21 (8.4%)           228            17               1
+#> 11           21 (8.4%)           228            17               1
+#> 12           13 (5.2%)           232            13               5
+#> 13           13 (5.2%)           232            13               5
+#> 14           13 (5.2%)           232            13               5
+#> 15           13 (5.2%)           232            13               5
+#> 16           14 (5.6%)           231            13               5
+#> 17           24 (9.6%)           224            16               2
 #>    Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV
-#> 1                    0        500           0      1.0000      1.0000 1.0000
-#> 2                   54        446          54      0.8839      1.0000 1.0000
-#> 3                   54        445          55      0.8839      0.9714 0.9976
-#> 4                   55        445          55      0.8817      1.0000 1.0000
-#> 5                   56        444          56      0.8796      1.0000 1.0000
-#> 6                   55        444          56      0.8817      0.9714 0.9976
-#> 7                    5        487          13      0.9892      0.7714 0.9829
-#> 8                    8        486          14      0.9828      0.8286 0.9870
-#> 9                    9        486          14      0.9806      0.8571 0.9892
-#> 10                   7        485          15      0.9849      0.7714 0.9828
-#> 11                   8        485          15      0.9828      0.8000 0.9849
-#> 12                   3        482          18      0.9935      0.5714 0.9686
-#> 13                   0        482          18      1.0000      0.4857 0.9627
-#> 14                   2        482          18      0.9957      0.5429 0.9666
-#> 15                   1        482          18      0.9978      0.5143 0.9647
-#> 16                   1        482          18      0.9978      0.5143 0.9647
-#> 17                  17        478          22      0.9634      0.8571 0.9890
-#>       NPV Accuracy
-#> 1  1.0000    1.000
-#> 2  0.3933    0.892
-#> 3  0.3864    0.890
-#> 4  0.3889    0.890
-#> 5  0.3846    0.888
-#> 6  0.3820    0.888
-#> 7  0.8438    0.974
-#> 8  0.7838    0.972
-#> 9  0.7692    0.972
-#> 10 0.7941    0.970
-#> 11 0.7778    0.970
-#> 12 0.8696    0.964
-#> 13 1.0000    0.964
-#> 14 0.9048    0.964
-#> 15 0.9474    0.964
-#> 16 0.9474    0.964
-#> 17 0.6383    0.956
+#> 1                    0        250           0      1.0000      1.0000 1.0000
+#> 2                   19        231          19      0.9181      1.0000 1.0000
+#> 3                   19        231          19      0.9181      1.0000 1.0000
+#> 4                   19        231          19      0.9181      1.0000 1.0000
+#> 5                   19        231          19      0.9181      1.0000 1.0000
+#> 6                   20        230          20      0.9138      1.0000 1.0000
+#> 7                    3        246           4      0.9871      0.9444 0.9957
+#> 8                    3        246           4      0.9871      0.9444 0.9957
+#> 9                    4        245           5      0.9828      0.9444 0.9956
+#> 10                   4        245           5      0.9828      0.9444 0.9956
+#> 11                   4        245           5      0.9828      0.9444 0.9956
+#> 12                   0        245           5      1.0000      0.7222 0.9789
+#> 13                   0        245           5      1.0000      0.7222 0.9789
+#> 14                   0        245           5      1.0000      0.7222 0.9789
+#> 15                   0        245           5      1.0000      0.7222 0.9789
+#> 16                   1        244           6      0.9957      0.7222 0.9788
+#> 17                   8        240          10      0.9655      0.8889 0.9912
+#>       NPV Accuracy Balanced Accuracy
+#> 1  1.0000    1.000            1.0000
+#> 2  0.4865    0.924            0.9591
+#> 3  0.4865    0.924            0.9591
+#> 4  0.4865    0.924            0.9591
+#> 5  0.4865    0.924            0.9591
+#> 6  0.4737    0.920            0.9569
+#> 7  0.8500    0.984            0.9658
+#> 8  0.8500    0.984            0.9658
+#> 9  0.8095    0.980            0.9636
+#> 10 0.8095    0.980            0.9636
+#> 11 0.8095    0.980            0.9636
+#> 12 1.0000    0.980            0.8611
+#> 13 1.0000    0.980            0.8611
+#> 14 1.0000    0.980            0.8611
+#> 15 1.0000    0.980            0.8611
+#> 16 0.9286    0.976            0.8590
+#> 17 0.6667    0.960            0.9272
 ```
 
 The first row is the full DSM-5-TR diagnosis itself, the reference.
@@ -269,78 +269,78 @@ genpop <- rename_ptsd_columns(
 )
 
 evaluate_definitions(genpop, definitions, include_icd11 = TRUE)
-#>                                        Scenario Total Diagnosed
-#> 1                                     PTSD_orig       252 (21%)
-#> 2        4/6 Hierarchical (1, 6, 7, 11, 16, 17)       144 (12%)
-#> 3        4/6 Hierarchical (1, 6, 7, 11, 16, 19)       144 (12%)
-#> 4        4/6 Hierarchical (4, 6, 7, 11, 16, 19)    140 (11.67%)
-#> 5        4/6 Hierarchical (1, 6, 7, 11, 15, 17)    148 (12.33%)
-#> 6        4/6 Hierarchical (1, 4, 6, 11, 16, 19)    148 (12.33%)
-#> 7     4/6 Non-hierarchical (1, 3, 6, 7, 11, 15)    221 (18.42%)
-#> 8     4/6 Non-hierarchical (3, 5, 6, 7, 11, 15)    218 (18.17%)
-#> 9    4/6 Non-hierarchical (5, 6, 7, 11, 15, 16)    221 (18.42%)
-#> 10    4/6 Non-hierarchical (1, 5, 6, 7, 11, 15)       216 (18%)
-#> 11    4/6 Non-hierarchical (3, 5, 6, 7, 12, 15)    213 (17.75%)
-#> 12    3/6 Non-hierarchical (2, 6, 7, 8, 10, 15)    346 (28.83%)
-#> 13  3/6 Non-hierarchical (4, 6, 11, 15, 16, 19)     330 (27.5%)
-#> 14    3/6 Non-hierarchical (5, 6, 7, 8, 10, 15)    340 (28.33%)
-#> 15  3/6 Non-hierarchical (6, 7, 10, 11, 15, 19)    357 (29.75%)
-#> 16 3/6 Non-hierarchical (6, 11, 12, 15, 16, 19)    331 (27.58%)
-#> 17                                       ICD-11    279 (23.25%)
+#>                                       Scenario Total Diagnosed
+#> 1                                    PTSD_orig       252 (21%)
+#> 2       4/6 Hierarchical (1, 6, 7, 13, 15, 17)     138 (11.5%)
+#> 3       4/6 Hierarchical (1, 3, 7, 13, 15, 17)    137 (11.42%)
+#> 4       4/6 Hierarchical (1, 3, 6, 13, 16, 19)     150 (12.5%)
+#> 5        4/6 Hierarchical (1, 4, 6, 7, 11, 17)    158 (13.17%)
+#> 6       4/6 Hierarchical (1, 6, 7, 11, 15, 17)    148 (12.33%)
+#> 7   4/6 Non-hierarchical (6, 7, 8, 11, 13, 17)    224 (18.67%)
+#> 8  4/6 Non-hierarchical (6, 7, 10, 11, 13, 15)    223 (18.58%)
+#> 9    4/6 Non-hierarchical (4, 6, 7, 8, 11, 17)    224 (18.67%)
+#> 10  4/6 Non-hierarchical (4, 6, 7, 10, 11, 15)    226 (18.83%)
+#> 11  4/6 Non-hierarchical (6, 7, 8, 11, 13, 18)       228 (19%)
+#> 12  3/6 Non-hierarchical (3, 6, 7, 11, 15, 16)    322 (26.83%)
+#> 13  3/6 Non-hierarchical (4, 6, 7, 12, 15, 19)    333 (27.75%)
+#> 14  3/6 Non-hierarchical (4, 6, 7, 13, 15, 19)    332 (27.67%)
+#> 15 3/6 Non-hierarchical (6, 7, 10, 12, 15, 19)    345 (28.75%)
+#> 16   3/6 Non-hierarchical (2, 6, 7, 8, 10, 15)    346 (28.83%)
+#> 17                                      ICD-11    279 (23.25%)
 #>    Total Non-Diagnosed True Positive True Negative Newly Diagnosed
 #> 1            948 (79%)           252           948               0
-#> 2           1056 (88%)           142           946               2
-#> 3           1056 (88%)           141           945               3
-#> 4        1060 (88.33%)           138           946               2
-#> 5        1052 (87.67%)           145           945               3
+#> 2         1062 (88.5%)           135           945               3
+#> 3        1063 (88.58%)           135           946               2
+#> 4         1050 (87.5%)           141           939               9
+#> 5        1042 (86.83%)           156           946               2
 #> 6        1052 (87.67%)           145           945               3
-#> 7         979 (81.58%)           207           934              14
-#> 8         982 (81.83%)           202           932              16
-#> 9         979 (81.58%)           206           933              15
-#> 10           984 (82%)           203           935              13
-#> 11        987 (82.25%)           197           932              16
-#> 12        854 (71.17%)           225           827             121
-#> 13         870 (72.5%)           225           843             105
-#> 14        860 (71.67%)           229           837             111
-#> 15        843 (70.25%)           233           824             124
-#> 16        869 (72.42%)           234           851              97
+#> 7         976 (81.33%)           207           931              17
+#> 8         977 (81.42%)           205           930              18
+#> 9         976 (81.33%)           206           930              18
+#> 10        974 (81.17%)           202           924              24
+#> 11           972 (81%)           208           928              20
+#> 12        878 (73.17%)           227           853              95
+#> 13        867 (72.25%)           225           840             108
+#> 14        868 (72.33%)           225           841             107
+#> 15        855 (71.25%)           230           833             115
+#> 16        854 (71.17%)           225           827             121
 #> 17        921 (76.75%)           221           890              58
 #>    Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV
 #> 1                    0       1200           0      1.0000      1.0000 1.0000
-#> 2                  110       1088         112      0.5635      0.9979 0.9861
-#> 3                  111       1086         114      0.5595      0.9968 0.9792
-#> 4                  114       1084         116      0.5476      0.9979 0.9857
-#> 5                  107       1090         110      0.5754      0.9968 0.9797
+#> 2                  117       1080         120      0.5357      0.9968 0.9783
+#> 3                  117       1081         119      0.5357      0.9979 0.9854
+#> 4                  111       1080         120      0.5595      0.9905 0.9400
+#> 5                   96       1102          98      0.6190      0.9979 0.9873
 #> 6                  107       1090         110      0.5754      0.9968 0.9797
-#> 7                   45       1141          59      0.8214      0.9852 0.9367
-#> 8                   50       1134          66      0.8016      0.9831 0.9266
-#> 9                   46       1139          61      0.8175      0.9842 0.9321
-#> 10                  49       1138          62      0.8056      0.9863 0.9398
-#> 11                  55       1129          71      0.7817      0.9831 0.9249
-#> 12                  27       1052         148      0.8929      0.8724 0.6503
-#> 13                  27       1068         132      0.8929      0.8892 0.6818
-#> 14                  23       1066         134      0.9087      0.8829 0.6735
-#> 15                  19       1057         143      0.9246      0.8692 0.6527
-#> 16                  18       1085         115      0.9286      0.8977 0.7069
+#> 7                   45       1138          62      0.8214      0.9821 0.9241
+#> 8                   47       1135          65      0.8135      0.9810 0.9193
+#> 9                   46       1136          64      0.8175      0.9810 0.9196
+#> 10                  50       1126          74      0.8016      0.9747 0.8938
+#> 11                  44       1136          64      0.8254      0.9789 0.9123
+#> 12                  25       1080         120      0.9008      0.8998 0.7050
+#> 13                  27       1065         135      0.8929      0.8861 0.6757
+#> 14                  27       1066         134      0.8929      0.8871 0.6777
+#> 15                  22       1063         137      0.9127      0.8787 0.6667
+#> 16                  27       1052         148      0.8929      0.8724 0.6503
 #> 17                  31       1111          89      0.8770      0.9388 0.7921
-#>       NPV Accuracy
-#> 1  1.0000   1.0000
-#> 2  0.8958   0.9067
-#> 3  0.8949   0.9050
-#> 4  0.8925   0.9033
-#> 5  0.8983   0.9083
-#> 6  0.8983   0.9083
-#> 7  0.9540   0.9508
-#> 8  0.9491   0.9450
-#> 9  0.9530   0.9492
-#> 10 0.9502   0.9483
-#> 11 0.9443   0.9408
-#> 12 0.9684   0.8767
-#> 13 0.9690   0.8900
-#> 14 0.9733   0.8883
-#> 15 0.9775   0.8808
-#> 16 0.9793   0.9042
-#> 17 0.9663   0.9258
+#>       NPV Accuracy Balanced Accuracy
+#> 1  1.0000   1.0000            1.0000
+#> 2  0.8898   0.9000            0.7663
+#> 3  0.8899   0.9008            0.7668
+#> 4  0.8943   0.9000            0.7750
+#> 5  0.9079   0.9183            0.8085
+#> 6  0.8983   0.9083            0.7861
+#> 7  0.9539   0.9483            0.9017
+#> 8  0.9519   0.9458            0.8973
+#> 9  0.9529   0.9467            0.8992
+#> 10 0.9487   0.9383            0.8881
+#> 11 0.9547   0.9467            0.9021
+#> 12 0.9715   0.9000            0.9003
+#> 13 0.9689   0.8875            0.8895
+#> 14 0.9689   0.8883            0.8900
+#> 15 0.9743   0.8858            0.8957
+#> 16 0.9684   0.8767            0.8826
+#> 17 0.9663   0.9258            0.9079
 ```
 
 Both tables are built the same way, so they line up row for row with the
@@ -352,12 +352,15 @@ Each definition keeps its character across the two samples: the
 hierarchical rule is the most specific and the least sensitive, the
 three-of-six rule the most sensitive and the least specific, and the
 four-of-six and ICD-11 rules fall between them. What changes with the
-sample is the balance of errors. Sensitivity and specificity move only
-modestly, because they are properties of the rule, while the predictive
-values shift with prevalence: in the lower-prevalence community sample
-the positive predictive value of every definition falls and the negative
-predictive value rises, so a positive result there is less likely to
-mark a true case than in the clinic.
+sample is the absolute level of performance. The positive predictive
+value of every definition falls in the lower-prevalence community
+sample, so a positive result there is less likely to mark a true case
+than in the clinic. Sensitivity also drops, most visibly for the strict
+hierarchical rule, because the community sample’s symptom profiles are
+milder, while specificity holds or rises. These shifts are exactly what
+external validation is meant to reveal, and they are why a definition
+should not be transported across settings on its derivation performance
+alone.
 
 The agreement on core symptoms in the figure and the performance of
 every definition in the two tables were obtained without moving a single

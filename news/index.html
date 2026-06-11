@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,34 @@
       <small>Source: <a href="https://github.com/TobiasRSpiller/PTSDdiag/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.5" id="ptsddiag-035">PTSDdiag 0.3.5<a class="anchor" aria-label="anchor" href="#ptsddiag-035"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-3-5">New features<a class="anchor" aria-label="anchor" href="#new-features-0-3-5"></a></h3>
+<ul><li>New <code>score_by = "balanced_accuracy"</code> optimization criterion: maximises balanced accuracy, the mean of sensitivity and specificity (equivalently, minimises FN/P + FP/N). Available in <code><a href="../reference/optimize_combinations.html">optimize_combinations()</a></code>, <code><a href="../reference/optimize_combinations_clusters.html">optimize_combinations_clusters()</a></code>, <code><a href="../reference/compare_optimizations.html">compare_optimizations()</a></code>, <code><a href="../reference/holdout_validation.html">holdout_validation()</a></code>, and <code><a href="../reference/cross_validation.html">cross_validation()</a></code>, and accepted as metadata by <code><a href="../reference/write_combinations.html">write_combinations()</a></code>.</li>
+<li>A <code>Balanced Accuracy</code> column ((sensitivity + specificity) / 2) is now reported by <code><a href="../reference/summarize_ptsd_changes.html">summarize_ptsd_changes()</a></code> (as <code>balanced_accuracy</code>), <code><a href="../reference/create_readable_summary.html">create_readable_summary()</a></code> (so <code>res$summary</code>, the holdout/cross-validation summaries, and <code><a href="../reference/evaluate_definitions.html">evaluate_definitions()</a></code> show it), <code><a href="../reference/summarize_top_combinations.html">summarize_top_combinations()</a></code>, <code><a href="../reference/compare_diagnostic_systems.html">compare_diagnostic_systems()</a></code>, and the cross-validation <code>combinations_summary</code> (as <code>Balanced_Accuracy</code>). This makes the reported metric match the quantity the new default optimizes.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="behavior-changes-0-3-5">Behavior changes<a class="anchor" aria-label="anchor" href="#behavior-changes-0-3-5"></a></h3>
+<ul><li>All optimization and validation functions now default to <code>score_by = "balanced_accuracy"</code> (was <code>"accuracy"</code>). In imbalanced samples (the bundled clinical data is about 94% PTSD-positive) plain accuracy is dominated by the majority class; balanced accuracy weighs performance in the diagnosed and non-diagnosed groups equally. Pass <code>score_by = "accuracy"</code> to reproduce results from earlier versions.</li>
+<li>
+<code>score_by = "balanced_accuracy"</code> requires both diagnosed and non-diagnosed cases under the reference criterion; data where every case falls in one class now stops with an informative error suggesting <code>"accuracy"</code> or <code>"sensitivity"</code>.</li>
+<li>
+<code><a href="../reference/create_readable_summary.html">create_readable_summary()</a></code> now requires a <code>balanced_accuracy</code> column in its input. Data frames produced by <code><a href="../reference/summarize_ptsd_changes.html">summarize_ptsd_changes()</a></code> carry it automatically; hand-built inputs need the additional column.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-0-3-5">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-3-5"></a></h3>
+<ul><li>All vignettes demonstrate <code>score_by = "balanced_accuracy"</code> as the standard outcome, and the Getting started vignette explains the choice among the three criteria.</li>
+<li>Vignettes now run on a uniform 250-row subset of the bundled data, so building the package (and the CI checks) is several times faster. The Getting started vignette previously optimized on all 5,000 rows.</li>
+<li>Removed leftover editorial text from the Getting started vignette, and the PCL-5 total score is now computed on a descriptive copy so the optimizer’s “total column detected” warning no longer appears in the rendered vignette. Fixed typos across the comparison, validation, and multi-site vignettes.</li>
+<li>README article links point to the current vignettes (the previous links referenced articles removed in 0.3.1).</li>
+<li>Examples use the same uniform 250-row subset with compact search spaces so that CRAN’s <code>--run-donttest</code> checks stay fast.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="internal-0-3-5">Internal<a class="anchor" aria-label="anchor" href="#internal-0-3-5"></a></h3>
+<ul><li>Structural tests now run on compact search spaces and reuse expensive comparison objects, cutting the test-suite runtime from about five minutes to under a minute without losing coverage; the canonical 6-of-4 searches are still exercised once per optimizer.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.3" id="ptsddiag-033">PTSDdiag 0.3.3<a class="anchor" aria-label="anchor" href="#ptsddiag-033"></a></h2>
 <div class="section level3">

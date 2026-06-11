@@ -14,7 +14,7 @@ optimize_combinations_clusters(
   n_symptoms = 6,
   n_required = 4,
   n_top = 3,
-  score_by = "accuracy",
+  score_by = "balanced_accuracy",
   clusters,
   DT = FALSE,
   show_progress = TRUE
@@ -59,8 +59,12 @@ optimize_combinations_clusters(
 
   Character string specifying optimization criterion:
 
+  - "balanced_accuracy": Maximise balanced accuracy, the mean of
+    sensitivity and specificity. Robust when one diagnostic class is
+    much more common than the other. Default.
+
   - "accuracy": Minimize total misclassifications (FP + FN, i.e.
-    maximise overall accuracy). Default.
+    maximise overall accuracy).
 
   - "sensitivity": Minimize false negatives only (i.e. maximise
     sensitivity relative to the full DSM-5-TR diagnosis).
@@ -131,7 +135,10 @@ structure. For PCL-5, the standard clusters are:
 
 - Cluster E (Alterations in arousal and reactivity): Items 15-20
 
-Optimization can be based on either:
+Optimization can be based on:
+
+- Maximizing balanced accuracy, the mean of sensitivity and specificity
+  (the default)
 
 - Minimizing false cases (both false positives and false negatives)
 
@@ -140,51 +147,53 @@ Optimization can be based on either:
 ## Examples
 
 ``` r
-# Create example data
-ptsd_data <- data.frame(matrix(sample(0:4, 200, replace=TRUE), ncol=20))
-names(ptsd_data) <- paste0("symptom_", 1:20)
+# Use a 250-row subset of the bundled data to keep the example fast
+ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+                                 id_col = c("patient_id", "age", "sex"))
 
 # \donttest{
-# Find best hierarchical combinations with PCL-5 clusters
+# Find best hierarchical combinations with PCL-5 clusters (a 5-symptom
+# search keeps the example fast; the classic rule uses n_symptoms = 6,
+# n_required = 4)
 pcl5_clusters <- list(B = 1:5, C = 6:7, D = 8:14, E = 15:20)
-results <- optimize_combinations_clusters(ptsd_data, n_symptoms = 6,
-             n_required = 4, score_by = "accuracy", clusters = pcl5_clusters)
-#> ℹ Generated 13685 valid cluster-constrained combinations
-#> ℹ Evaluated 13685 combinations. Best: 1, 6, 8, 10, 17, 19 (7 additional tied)
+results <- optimize_combinations_clusters(ptsd_data, n_symptoms = 5,
+             n_required = 3, score_by = "balanced_accuracy",
+             clusters = pcl5_clusters)
+#> ℹ Generated 3360 valid cluster-constrained combinations
+#> Evaluating combinations ■■■■■■■■                          22% | ETA:  4s
+#> Evaluating combinations ■■■■■■■■                          24% | ETA:  3s
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      91% | ETA:  0s
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
+#> ℹ Evaluated 3360 combinations. Best: 1, 6, 7, 11, 17
 
 # Get symptom numbers
 results$best_symptoms
 #> [[1]]
-#> [1]  1  6  8 10 17 19
+#> [1]  1  6  7 11 17
 #> 
 #> [[2]]
-#> [1]  1  6  8 10 17 20
+#> [1]  1  7 13 15 17
 #> 
 #> [[3]]
-#> [1]  1  6 12 14 17 19
+#> [1]  1  4  6 11 17
 #> 
 
 # View summary statistics
 results$summary
-#>                  Scenario  combination_id rank Total Diagnosed
-#> 1               PTSD_orig            <NA>   NA         8 (80%)
-#> 2  symptom_1_6_8_10_17_19  1_6_8_10_17_19    1         6 (60%)
-#> 3  symptom_1_6_8_10_17_20  1_6_8_10_17_20    2         6 (60%)
-#> 4 symptom_1_6_12_14_17_19 1_6_12_14_17_19    3         6 (60%)
-#>   Total Non-Diagnosed True Positive True Negative Newly Diagnosed
-#> 1             2 (20%)             8             2               0
-#> 2             4 (40%)             6             2               0
-#> 3             4 (40%)             6             2               0
-#> 4             4 (40%)             6             2               0
-#>   Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity PPV NPV
-#> 1                   0         10           0        1.00           1   1 1.0
-#> 2                   2          8           2        0.75           1   1 0.5
-#> 3                   2          8           2        0.75           1   1 0.5
-#> 4                   2          8           2        0.75           1   1 0.5
-#>   Accuracy
-#> 1      1.0
-#> 2      0.8
-#> 3      0.8
-#> 4      0.8
+#>               Scenario combination_id rank Total Diagnosed Total Non-Diagnosed
+#> 1            PTSD_orig           <NA>   NA     232 (92.8%)           18 (7.2%)
+#> 2  symptom_1_6_7_11_17    1_6_7_11_17    1     206 (82.4%)          44 (17.6%)
+#> 3 symptom_1_7_13_15_17   1_7_13_15_17    2       205 (82%)            45 (18%)
+#> 4  symptom_1_4_6_11_17    1_4_6_11_17    3       205 (82%)            45 (18%)
+#>   True Positive True Negative Newly Diagnosed Newly Non-Diagnosed True Cases
+#> 1           232            18               0                   0        250
+#> 2           206            18               0                  26        224
+#> 3           205            18               0                  27        223
+#> 4           205            18               0                  27        223
+#>   False Cases Sensitivity Specificity PPV    NPV Accuracy Balanced Accuracy
+#> 1           0      1.0000           1   1 1.0000    1.000            1.0000
+#> 2          26      0.8879           1   1 0.4091    0.896            0.9440
+#> 3          27      0.8836           1   1 0.4000    0.892            0.9418
+#> 4          27      0.8836           1   1 0.4000    0.892            0.9418
 # }
 ```

@@ -86,24 +86,24 @@ sample_data$patient_id <- sprintf("P%03d", seq_len(nrow(sample_data)))
 with_id <- rename_ptsd_columns(sample_data, id_col = "patient_id")
 head(with_id)
 #>   patient_id symptom_1 symptom_2 symptom_3 symptom_4 symptom_5 symptom_6
-#> 1       P001         1         4         3         3         1         1
-#> 2       P002         2         0         0         3         0         0
-#> 3       P003         0         2         4         1         1         2
-#> 4       P004         1         0         0         1         1         2
-#> 5       P005         1         2         3         4         4         3
-#> 6       P006         0         1         2         0         3         1
+#> 1       P001         0         2         3         1         3         0
+#> 2       P002         4         3         2         2         2         1
+#> 3       P003         0         1         2         0         1         1
+#> 4       P004         1         4         0         2         2         2
+#> 5       P005         2         4         4         1         3         4
+#> 6       P006         0         1         4         3         2         4
 #>   symptom_7 symptom_8 symptom_9 symptom_10 symptom_11 symptom_12 symptom_13
-#> 1         2         3         3          1          3          1          1
-#> 2         0         2         4          4          4          1          1
-#> 3         0         3         2          0          3          1          2
-#> 4         4         2         2          2          1          3          2
-#> 5         3         4         1          2          1          2          0
-#> 6         1         0         1          0          1          1          3
+#> 1         0         2         2          3          0          2          0
+#> 2         0         0         4          1          4          0          4
+#> 3         2         0         0          1          4          2          1
+#> 4         0         3         0          1          3          3          3
+#> 5         3         3         1          3          4          2          4
+#> 6         2         0         2          4          0          4          2
 #>   symptom_14 symptom_15 symptom_16 symptom_17 symptom_18 symptom_19 symptom_20
-#> 1          2          4          3          2          0          2          4
-#> 2          1          1          2          1          4          3          3
-#> 3          0          0          1          1          4          2          1
-#> 4          3          0          1          1          2          0          0
-#> 5          1          4          1          1          3          3          4
-#> 6          1          2          2          4          4          1          1
+#> 1          2          2          2          4          3          0          4
+#> 2          4          3          3          4          3          2          1
+#> 3          2          0          2          2          3          0          3
+#> 4          0          4          4          1          3          3          3
+#> 5          0          0          4          2          4          0          2
+#> 6          0          0          2          2          2          0          0
 ```

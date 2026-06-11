@@ -9,7 +9,7 @@ Trains the model on a portion of the data and evaluates performance on the held-
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,7 +52,7 @@ Trains the model on a portion of the data and evaluates performance on the held-
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">holdout_validation</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
 <span>  train_ratio <span class="op">=</span> <span class="fl">0.7</span>,</span>
-<span>  score_by <span class="op">=</span> <span class="st">"accuracy"</span>,</span>
+<span>  score_by <span class="op">=</span> <span class="st">"balanced_accuracy"</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">123</span>,</span>
 <span>  n_symptoms <span class="op">=</span> <span class="fl">6</span>,</span>
 <span>  n_required <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -81,8 +81,11 @@ diagnoses can be joined back to the original dataframe.</p></dd>
 
 
 <dt id="arg-score-by">score_by<a class="anchor" aria-label="anchor" href="#arg-score-by"></a></dt>
-<dd><p>Character string specifying optimization criterion:</p><ul><li><p>"accuracy": Minimize total misclassifications (FP + FN, i.e.
-    maximise overall accuracy). Default.</p></li>
+<dd><p>Character string specifying optimization criterion:</p><ul><li><p>"balanced_accuracy": Maximise balanced accuracy, the mean of
+    sensitivity and specificity. Robust when one diagnostic class is
+    much more common than the other. Default.</p></li>
+<li><p>"accuracy": Minimize total misclassifications (FP + FN, i.e.
+    maximise overall accuracy).</p></li>
 <li><p>"sensitivity": Minimize false negatives only (i.e. maximise
     sensitivity relative to the full DSM-5-TR diagnosis).</p></li>
 </ul></dd>
@@ -141,69 +144,57 @@ plain data.frames. The <span class="pkg">DT</span> package must be installed whe
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Create sample data</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">sample_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">4</span>, <span class="fl">20</span> <span class="op">*</span> <span class="fl">200</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>         nrow <span class="op">=</span> <span class="fl">200</span>,</span></span>
-<span class="r-in"><span>         ncol <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">sample_data</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"symptom_"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Use a 250-row subset of the bundled data to keep the example fast</span></span></span>
+<span class="r-in"><span><span class="va">ptsd_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="rename_ptsd_columns.html">rename_ptsd_columns</a></span><span class="op">(</span><span class="va">simulated_ptsd</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">250</span>, <span class="op">]</span>,</span></span>
+<span class="r-in"><span>                                 id_col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"patient_id"</span>, <span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="co"># Perform holdout validation</span></span></span>
-<span class="r-in"><span><span class="va">validation_results</span> <span class="op">&lt;-</span> <span class="fu">holdout_validation</span><span class="op">(</span><span class="va">sample_data</span>, train_ratio <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Training on 140 observations, testing on 60</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■                         </span>  19% | ETA:  4s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■                        </span>  22% | ETA:  4s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■■■     </span>  85% | ETA:  1s</span>
+<span class="r-in"><span><span class="co"># Validate a compact 3-of-5 definition (a 5-symptom search keeps the</span></span></span>
+<span class="r-in"><span><span class="co"># example fast; use n_symptoms = 6, n_required = 4 for the classic rule)</span></span></span>
+<span class="r-in"><span><span class="va">validation_results</span> <span class="op">&lt;-</span> <span class="fu">holdout_validation</span><span class="op">(</span><span class="va">ptsd_data</span>, train_ratio <span class="op">=</span> <span class="fl">0.7</span>,</span></span>
+<span class="r-in"><span>                                         n_symptoms <span class="op">=</span> <span class="fl">5</span>, n_required <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Training on 175 observations, testing on 75</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 15504 combinations. Best: 4, 6, 7, 12, 16</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Generated 3360 valid cluster-constrained combinations</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■                      </span>  31% | ETA:  2s</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■        </span>  76% | ETA:  1s</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ </span> 100% | ETA:  0s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 2, 6, 7, 8, 15, 16 (2 additional tied)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Generated 13685 valid cluster-constrained combinations</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■                          </span>  16% | ETA:  5s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■             </span>  59% | ETA:  3s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Evaluating combinations <span style="color: #00BB00;">■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ </span> 100% | ETA:  0s</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 13685 combinations. Best: 1, 5, 7, 9, 16, 17 (1 additional tied)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 3360 combinations. Best: 1, 6, 7, 11, 17</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Holdout validation complete</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Access results</span></span></span>
 <span class="r-in"><span><span class="va">validation_results</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 Scenario combination_id rank Total Diagnosed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1              PTSD_orig           &lt;NA&gt;   NA     52 (86.67%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  symptom_2_6_7_8_15_16  2_6_7_8_15_16    1        36 (60%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  symptom_6_7_8_9_15_16  6_7_8_9_15_16    2        39 (65%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 symptom_6_7_8_11_15_18 6_7_8_11_15_18    3     35 (58.33%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Total Non-Diagnosed True Positive True Negative Newly Diagnosed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          8 (13.33%)            52             8               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2            24 (40%)            35             7               1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3            21 (35%)            38             7               1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4         25 (41.67%)            35             8               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                   0         60           0      1.0000       1.000 1.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                  17         42          18      0.6731       0.875 0.9722</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3                  14         45          15      0.7308       0.875 0.9744</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4                  17         43          17      0.6731       1.000 1.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      NPV Accuracy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1.0000   1.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.2917   0.7000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.3333   0.7500</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 0.3200   0.7167</span>
-<span class="r-in"><span><span class="va">validation_results</span><span class="op">$</span><span class="va">with_clusters</span><span class="op">$</span><span class="va">summary</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                Scenario combination_id rank Total Diagnosed Total Non-Diagnosed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1             PTSD_orig           &lt;NA&gt;   NA     52 (86.67%)          8 (13.33%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 symptom_1_5_7_9_16_17  1_5_7_9_16_17    1        12 (20%)            48 (80%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 symptom_1_5_7_9_17_20  1_5_7_9_17_20    2        12 (20%)            48 (80%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 symptom_4_5_7_8_15_16  4_5_7_8_15_16    3        18 (30%)            42 (70%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               Scenario combination_id rank Total Diagnosed Total Non-Diagnosed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1            PTSD_orig           &lt;NA&gt;   NA     73 (97.33%)           2 (2.67%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  symptom_4_6_7_12_16    4_6_7_12_16    1        72 (96%)              3 (4%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  symptom_4_6_7_11_16    4_6_7_11_16    2     74 (98.67%)           1 (1.33%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 symptom_6_7_11_12_16   6_7_11_12_16    3     74 (98.67%)           1 (1.33%)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   True Positive True Negative Newly Diagnosed Newly Non-Diagnosed True Cases</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1            52             8               0                   0         60</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2            12             8               0                  40         20</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3            12             8               0                  40         20</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4            18             8               0                  34         26</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   False Cases Sensitivity Specificity PPV    NPV Accuracy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1           0      1.0000           1   1 1.0000   1.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          40      0.2308           1   1 0.1667   0.3333</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3          40      0.2308           1   1 0.1667   0.3333</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4          34      0.3462           1   1 0.1905   0.4333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1            73             2               0                   0         75</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2            72             2               0                   1         74</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3            73             1               1                   0         74</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4            73             1               1                   0         74</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   False Cases Sensitivity Specificity    PPV    NPV Accuracy Balanced Accuracy</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           0      1.0000         1.0 1.0000 1.0000   1.0000            1.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           1      0.9863         1.0 1.0000 0.6667   0.9867            0.9932</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           1      1.0000         0.5 0.9865 1.0000   0.9867            0.7500</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           1      1.0000         0.5 0.9865 1.0000   0.9867            0.7500</span>
+<span class="r-in"><span><span class="va">validation_results</span><span class="op">$</span><span class="va">with_clusters</span><span class="op">$</span><span class="va">summary</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              Scenario combination_id rank Total Diagnosed Total Non-Diagnosed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           PTSD_orig           &lt;NA&gt;   NA     73 (97.33%)           2 (2.67%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 symptom_1_6_7_11_17    1_6_7_11_17    1     65 (86.67%)         10 (13.33%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 symptom_1_6_7_11_18    1_6_7_11_18    2     61 (81.33%)         14 (18.67%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 symptom_1_6_7_13_19    1_6_7_13_19    3     65 (86.67%)         10 (13.33%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   True Positive True Negative Newly Diagnosed Newly Non-Diagnosed True Cases</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1            73             2               0                   0         75</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2            65             2               0                   8         67</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3            61             2               0                  12         63</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4            65             2               0                   8         67</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   False Cases Sensitivity Specificity PPV    NPV Accuracy Balanced Accuracy</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           0      1.0000           1   1 1.0000   1.0000            1.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           8      0.8904           1   1 0.2000   0.8933            0.9452</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3          12      0.8356           1   1 0.1429   0.8400            0.9178</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           8      0.8904           1   1 0.2000   0.8933            0.9452</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

@@ -9,7 +9,7 @@ generalization performance and identify stable symptom combinations.
 cross_validation(
   data,
   k = 5,
-  score_by = "accuracy",
+  score_by = "balanced_accuracy",
   seed = 123,
   n_symptoms = 6,
   n_required = 4,
@@ -38,8 +38,12 @@ cross_validation(
 
   Character string specifying optimization criterion:
 
+  - "balanced_accuracy": Maximise balanced accuracy, the mean of
+    sensitivity and specificity. Robust when one diagnostic class is
+    much more common than the other. Default.
+
   - "accuracy": Minimize total misclassifications (FP + FN, i.e.
-    maximise overall accuracy). Default.
+    maximise overall accuracy).
 
   - "sensitivity": Minimize false negatives only (i.e. maximise
     sensitivity relative to the full DSM-5-TR diagnosis).
@@ -132,132 +136,91 @@ especially inside RStudio.
 ## Examples
 
 ``` r
-# Create sample data
-set.seed(42)
-sample_data <- data.frame(
-  matrix(sample(0:4, 20 * 200, replace = TRUE),
-         nrow = 200,
-         ncol = 20)
-)
-colnames(sample_data) <- paste0("symptom_", 1:20)
+# Use a 250-row subset of the bundled data to keep the example fast
+ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+                                 id_col = c("patient_id", "age", "sex"))
 
 # \donttest{
-# Perform 5-fold cross-validation
-cv_results <- cross_validation(sample_data, k = 5)
-#> ℹ Evaluated 38760 combinations. Best: 3, 6, 7, 8, 16, 19
-#> ℹ Generated 13685 valid cluster-constrained combinations
-#> ℹ Evaluated 13685 combinations. Best: 4, 5, 7, 8, 15, 16
-#> ℹ Evaluated 38760 combinations. Best: 3, 6, 7, 8, 11, 16
-#> ℹ Generated 13685 valid cluster-constrained combinations
-#> ℹ Evaluated 13685 combinations. Best: 3, 5, 6, 13, 15, 16
-#> ℹ Evaluated 38760 combinations. Best: 2, 6, 7, 8, 15, 16
-#> ℹ Generated 13685 valid cluster-constrained combinations
-#> ℹ Evaluated 13685 combinations. Best: 3, 4, 7, 8, 15, 16 (1 additional tied)
-#> ℹ Evaluated 38760 combinations. Best: 6, 7, 8, 9, 15, 16 (2 additional tied)
-#> ℹ Generated 13685 valid cluster-constrained combinations
-#> ℹ Evaluated 13685 combinations. Best: 4, 5, 7, 8, 15, 16
-#> ℹ Evaluated 38760 combinations. Best: 6, 7, 8, 9, 15, 16
-#> ℹ Generated 13685 valid cluster-constrained combinations
-#> ℹ Evaluated 13685 combinations. Best: 2, 4, 6, 8, 17, 20
+# 3-fold cross-validation of a compact 3-of-4 definition (a 4-symptom
+# search keeps the example fast; use n_symptoms = 6, n_required = 4 for
+# the classic rule)
+cv_results <- cross_validation(ptsd_data, k = 3,
+                               n_symptoms = 4, n_required = 3)
+#> ℹ Evaluated 4845 combinations. Best: 1, 5, 6, 7 (12 additional tied)
+#> ℹ Generated 420 valid cluster-constrained combinations
+#> ℹ Evaluated 420 combinations. Best: 1, 7, 13, 19
+#> ℹ Evaluated 4845 combinations. Best: 6, 7, 12, 17
+#> ℹ Generated 420 valid cluster-constrained combinations
+#> ℹ Evaluated 420 combinations. Best: 1, 6, 11, 17 (2 additional tied)
+#> ℹ Evaluated 4845 combinations. Best: 4, 6, 7, 12 (5 additional tied)
+#> ℹ Generated 420 valid cluster-constrained combinations
+#> ℹ Evaluated 420 combinations. Best: 1, 6, 11, 17 (3 additional tied)
 
 # View summary for each fold
 cv_results$without_clusters$summary_by_fold
-#>      Split               Scenario Total Diagnosed Total Non-Diagnosed
-#> 1  Split 1              PTSD_orig     31 (75.61%)         10 (24.39%)
-#> 2  Split 1  symptom_3_6_7_8_16_19     25 (60.98%)         16 (39.02%)
-#> 3  Split 1   symptom_3_6_7_8_9_11     28 (68.29%)         13 (31.71%)
-#> 4  Split 1  symptom_3_6_7_8_11_17     24 (58.54%)         17 (41.46%)
-#> 5  Split 2              PTSD_orig      31 (77.5%)           9 (22.5%)
-#> 6  Split 2  symptom_3_6_7_8_11_16        26 (65%)            14 (35%)
-#> 7  Split 2  symptom_2_6_7_8_12_16      19 (47.5%)          21 (52.5%)
-#> 8  Split 2 symptom_6_7_8_12_16_17        18 (45%)            22 (55%)
-#> 9  Split 3              PTSD_orig      31 (77.5%)           9 (22.5%)
-#> 10 Split 3  symptom_2_6_7_8_15_16        20 (50%)            20 (50%)
-#> 11 Split 3  symptom_3_6_7_8_15_16        20 (50%)            20 (50%)
-#> 12 Split 3  symptom_6_7_8_9_15_16      25 (62.5%)          15 (37.5%)
-#> 13 Split 4              PTSD_orig      31 (77.5%)           9 (22.5%)
-#> 14 Split 4  symptom_6_7_8_9_15_16        26 (65%)            14 (35%)
-#> 15 Split 4 symptom_6_7_8_11_15_18        24 (60%)            16 (40%)
-#> 16 Split 4 symptom_6_7_8_11_16_18        22 (55%)            18 (45%)
-#> 17 Split 5              PTSD_orig     30 (76.92%)          9 (23.08%)
-#> 18 Split 5  symptom_6_7_8_9_15_16     21 (53.85%)         18 (46.15%)
-#> 19 Split 5 symptom_6_7_8_11_15_18     22 (56.41%)         17 (43.59%)
-#> 20 Split 5 symptom_6_7_8_15_16_17     23 (58.97%)         16 (41.03%)
-#>    True Positive True Negative Newly Diagnosed Newly Non-Diagnosed True Cases
-#> 1             31            10               0                   0         41
-#> 2             21             6               4                  10         27
-#> 3             24             6               4                   7         30
-#> 4             22             8               2                   9         30
-#> 5             31             9               0                   0         40
-#> 6             23             6               3                   8         29
-#> 7             18             8               1                  13         26
-#> 8             18             9               0                  13         27
-#> 9             31             9               0                   0         40
-#> 10            18             7               2                  13         25
-#> 11            18             7               2                  13         25
-#> 12            23             7               2                   8         30
-#> 13            31             9               0                   0         40
-#> 14            24             7               2                   7         31
-#> 15            22             7               2                   9         29
-#> 16            20             7               2                  11         27
-#> 17            30             9               0                   0         39
-#> 18            20             8               1                  10         28
-#> 19            21             8               1                   9         29
-#> 20            21             7               2                   9         28
-#>    False Cases Sensitivity Specificity    PPV    NPV Accuracy combination_id
-#> 1            0      1.0000      1.0000 1.0000 1.0000   1.0000           <NA>
-#> 2           14      0.6774      0.6000 0.8400 0.3750   0.6585  3_6_7_8_16_19
-#> 3           11      0.7742      0.6000 0.8571 0.4615   0.7317   3_6_7_8_9_11
-#> 4           11      0.7097      0.8000 0.9167 0.4706   0.7317  3_6_7_8_11_17
-#> 5            0      1.0000      1.0000 1.0000 1.0000   1.0000           <NA>
-#> 6           11      0.7419      0.6667 0.8846 0.4286   0.7250  3_6_7_8_11_16
-#> 7           14      0.5806      0.8889 0.9474 0.3810   0.6500  2_6_7_8_12_16
-#> 8           13      0.5806      1.0000 1.0000 0.4091   0.6750 6_7_8_12_16_17
-#> 9            0      1.0000      1.0000 1.0000 1.0000   1.0000           <NA>
-#> 10          15      0.5806      0.7778 0.9000 0.3500   0.6250  2_6_7_8_15_16
-#> 11          15      0.5806      0.7778 0.9000 0.3500   0.6250  3_6_7_8_15_16
-#> 12          10      0.7419      0.7778 0.9200 0.4667   0.7500  6_7_8_9_15_16
-#> 13           0      1.0000      1.0000 1.0000 1.0000   1.0000           <NA>
-#> 14           9      0.7742      0.7778 0.9231 0.5000   0.7750  6_7_8_9_15_16
-#> 15          11      0.7097      0.7778 0.9167 0.4375   0.7250 6_7_8_11_15_18
-#> 16          13      0.6452      0.7778 0.9091 0.3889   0.6750 6_7_8_11_16_18
-#> 17           0      1.0000      1.0000 1.0000 1.0000   1.0000           <NA>
-#> 18          11      0.6667      0.8889 0.9524 0.4444   0.7179  6_7_8_9_15_16
-#> 19          10      0.7000      0.8889 0.9545 0.4706   0.7436 6_7_8_11_15_18
-#> 20          11      0.7000      0.7778 0.9130 0.4375   0.7179 6_7_8_15_16_17
-#>    rank
-#> 1    NA
-#> 2     1
-#> 3     2
-#> 4     3
-#> 5    NA
-#> 6     1
-#> 7     2
-#> 8     3
-#> 9    NA
-#> 10    1
-#> 11    2
-#> 12    3
-#> 13   NA
-#> 14    1
-#> 15    2
-#> 16    3
-#> 17   NA
-#> 18    1
-#> 19    2
-#> 20    3
+#>      Split          Scenario Total Diagnosed Total Non-Diagnosed True Positive
+#> 1  Split 1         PTSD_orig     79 (94.05%)           5 (5.95%)            79
+#> 2  Split 1   symptom_1_5_6_7     80 (95.24%)           4 (4.76%)            77
+#> 3  Split 1   symptom_1_6_7_9     80 (95.24%)           4 (4.76%)            78
+#> 4  Split 1  symptom_1_6_7_12     81 (96.43%)           3 (3.57%)            78
+#> 5  Split 2         PTSD_orig     78 (93.98%)           5 (6.02%)            78
+#> 6  Split 2 symptom_6_7_12_17     76 (91.57%)           7 (8.43%)            76
+#> 7  Split 2  symptom_4_6_7_12     76 (91.57%)           7 (8.43%)            76
+#> 8  Split 2 symptom_6_7_12_15     75 (90.36%)           8 (9.64%)            75
+#> 9  Split 3         PTSD_orig     75 (90.36%)           8 (9.64%)            75
+#> 10 Split 3  symptom_4_6_7_12     72 (86.75%)         11 (13.25%)            72
+#> 11 Split 3  symptom_4_6_7_17     73 (87.95%)         10 (12.05%)            72
+#> 12 Split 3  symptom_4_6_7_19     71 (85.54%)         12 (14.46%)            71
+#>    True Negative Newly Diagnosed Newly Non-Diagnosed True Cases False Cases
+#> 1              5               0                   0         84           0
+#> 2              2               3                   2         79           5
+#> 3              3               2                   1         81           3
+#> 4              2               3                   1         80           4
+#> 5              5               0                   0         83           0
+#> 6              5               0                   2         81           2
+#> 7              5               0                   2         81           2
+#> 8              5               0                   3         80           3
+#> 9              8               0                   0         83           0
+#> 10             8               0                   3         80           3
+#> 11             7               1                   3         79           4
+#> 12             8               0                   4         79           4
+#>    Sensitivity Specificity    PPV    NPV Accuracy Balanced Accuracy
+#> 1       1.0000       1.000 1.0000 1.0000   1.0000            1.0000
+#> 2       0.9747       0.400 0.9625 0.5000   0.9405            0.6873
+#> 3       0.9873       0.600 0.9750 0.7500   0.9643            0.7937
+#> 4       0.9873       0.400 0.9630 0.6667   0.9524            0.6937
+#> 5       1.0000       1.000 1.0000 1.0000   1.0000            1.0000
+#> 6       0.9744       1.000 1.0000 0.7143   0.9759            0.9872
+#> 7       0.9744       1.000 1.0000 0.7143   0.9759            0.9872
+#> 8       0.9615       1.000 1.0000 0.6250   0.9639            0.9808
+#> 9       1.0000       1.000 1.0000 1.0000   1.0000            1.0000
+#> 10      0.9600       1.000 1.0000 0.7273   0.9639            0.9800
+#> 11      0.9600       0.875 0.9863 0.7000   0.9518            0.9175
+#> 12      0.9467       1.000 1.0000 0.6667   0.9518            0.9733
+#>    combination_id rank
+#> 1            <NA>   NA
+#> 2         1_5_6_7    1
+#> 3         1_6_7_9    2
+#> 4        1_6_7_12    3
+#> 5            <NA>   NA
+#> 6       6_7_12_17    1
+#> 7        4_6_7_12    2
+#> 8       6_7_12_15    3
+#> 9            <NA>   NA
+#> 10       4_6_7_12    1
+#> 11       4_6_7_17    2
+#> 12       4_6_7_19    3
 
 # View combinations that appeared multiple times
 cv_results$without_clusters$combinations_summary
-#> # A tibble: 3 × 16
+#> # A tibble: 2 × 17
 #>   Scenario    combination_id Splits_Appeared Total_Diagnosed Total_Non_Diagnosed
 #>   <chr>       <chr>                    <int> <chr>           <chr>              
-#> 1 PTSD_orig   NA                           5 30.8 (77.01%)   9.2 (22.99%)       
-#> 2 symptom_6_… 6_7_8_11_15_18               2 23 (58.2%)      16.5 (41.8%)       
-#> 3 symptom_6_… 6_7_8_9_15_16                3 24 (60.45%)     15.67 (39.55%)     
-#> # ℹ 11 more variables: True_Positive <dbl>, True_Negative <dbl>,
+#> 1 PTSD_orig   NA                           3 77.33 (92.8%)   6 (7.2%)           
+#> 2 symptom_4_… 4_6_7_12                     2 74 (89.16%)     9 (10.84%)         
+#> # ℹ 12 more variables: True_Positive <dbl>, True_Negative <dbl>,
 #> #   Newly_Diagnosed <dbl>, Newly_Non_Diagnosed <dbl>, True_Cases <dbl>,
 #> #   False_Cases <dbl>, Sensitivity <dbl>, Specificity <dbl>, PPV <dbl>,
-#> #   NPV <dbl>, Accuracy <dbl>
+#> #   NPV <dbl>, Accuracy <dbl>, Balanced_Accuracy <dbl>
 # }
 ```

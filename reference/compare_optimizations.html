@@ -15,7 +15,7 @@ and also supports adding fixed criteria such as ICD-11 to the comparison."><meta
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,7 +63,7 @@ and also supports adding fixed criteria such as ICD-11 to the comparison.</p>
 <span>  scenarios <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  include_icd11 <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  n_top <span class="op">=</span> <span class="fl">10</span>,</span>
-<span>  score_by <span class="op">=</span> <span class="st">"accuracy"</span>,</span>
+<span>  score_by <span class="op">=</span> <span class="st">"balanced_accuracy"</span>,</span>
 <span>  clusters <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  show_progress <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -112,10 +112,11 @@ combination regardless of <code>n_top</code>.</p></dd>
 
 
 <dt id="arg-score-by">score_by<a class="anchor" aria-label="anchor" href="#arg-score-by"></a></dt>
-<dd><p>Character. Optimization criterion: <code>"accuracy"</code>
-(minimise FP + FN) or <code>"sensitivity"</code> (minimise FN only). Applied
-to optimize scenarios that do not override it. Default
-<code>"accuracy"</code>.</p></dd>
+<dd><p>Character. Optimization criterion:
+<code>"balanced_accuracy"</code> (maximise the mean of sensitivity and
+specificity), <code>"accuracy"</code> (minimise FP + FN), or
+<code>"sensitivity"</code> (minimise FN only). Applied to optimize scenarios
+that do not override it. Default <code>"balanced_accuracy"</code>.</p></dd>
 
 
 <dt id="arg-clusters">clusters<a class="anchor" aria-label="anchor" href="#arg-clusters"></a></dt>
@@ -173,63 +174,48 @@ diagnoses can be joined back to demographics.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">ptsd_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="rename_ptsd_columns.html">rename_ptsd_columns</a></span><span class="op">(</span><span class="va">simulated_ptsd</span>,</span></span>
-<span class="r-in"><span>                                  id_col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"patient_id"</span>, <span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Use a 250-row subset of the bundled data to keep the example fast</span></span></span>
+<span class="r-in"><span><span class="va">ptsd_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="rename_ptsd_columns.html">rename_ptsd_columns</a></span><span class="op">(</span><span class="va">simulated_ptsd</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">250</span>, <span class="op">]</span>,</span></span>
+<span class="r-in"><span>                                 id_col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"patient_id"</span>, <span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="co"># Three preprint scenarios + ICD-11 in one call</span></span></span>
-<span class="r-in"><span><span class="va">comp</span> <span class="op">&lt;-</span> <span class="fu">compare_optimizations</span><span class="op">(</span><span class="va">ptsd_data</span>, n_top <span class="op">=</span> <span class="fl">5</span>, include_icd11 <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
-<span class="r-in"><span>                              show_progress <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Generated 13685 valid cluster-constrained combinations</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 13685 combinations. Best: 1, 6, 8, 11, 17, 19 (1 additional tied)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 6, 7, 9, 16, 17, 19</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 5, 6, 7, 8, 10, 12</span>
+<span class="r-in"><span><span class="co"># A compact optimized rule plus ICD-11 (a small 4-symptom search keeps</span></span></span>
+<span class="r-in"><span><span class="co"># the example fast; omit `scenarios` to run the three default rules)</span></span></span>
+<span class="r-in"><span><span class="va">comp</span> <span class="op">&lt;-</span> <span class="fu">compare_optimizations</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">ptsd_data</span>,</span></span>
+<span class="r-in"><span>  scenarios <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="st">"3/4 Non-hierarchical"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n_symptoms <span class="op">=</span> <span class="fl">4</span>, n_required <span class="op">=</span> <span class="fl">3</span>,</span></span>
+<span class="r-in"><span>                                  hierarchical <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  include_icd11 <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  n_top <span class="op">=</span> <span class="fl">5</span>,</span></span>
+<span class="r-in"><span>  show_progress <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 4845 combinations. Best: 6, 7, 12, 17</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">comp</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">PTSDdiag multi-scenario comparison</span> <span style="color: #00BBBB;">──────────────────────────────────────────</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Input rows: <span style="color: #0000BB;">5000</span>.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Scenarios: <span style="color: #0000BB;">4</span>.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Input rows: <span style="color: #0000BB;">250</span>.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scenarios: <span style="color: #0000BB;">2</span>.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> • <span style="font-weight: bold;">4/6 Hierarchical</span> [optimize]: best = 1, 6, 8, 11, 17, 19 (1 tied)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> • <span style="font-weight: bold;">4/6 Non-hierarchical</span> [optimize]: best = 6, 7, 9, 16, 17, 19</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> • <span style="font-weight: bold;">3/6 Non-hierarchical</span> [optimize]: best = 5, 6, 7, 8, 10, 12</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> • <span style="font-weight: bold;">3/4 Non-hierarchical</span> [optimize]: best = 6, 7, 12, 17</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> • <span style="font-weight: bold;">ICD-11</span> [fixed]: symptoms 1, 2, 3, 6, 7, 17, 18</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Manuscript Table 2</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="summarize_top_combinations.html">summarize_top_combinations</a></span><span class="op">(</span><span class="va">comp</span>, as_percent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                Approach Rank            Combination   TP  FN  FP  TN</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      4/6 Hierarchical    1 symptom_1_6_8_11_17_19 4113 597  12 278</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      4/6 Hierarchical    2 symptom_1_6_7_11_17_19 4107 603   6 284</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3      4/6 Hierarchical    3 symptom_1_6_7_11_17_20 4105 605   6 284</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4      4/6 Hierarchical    4 symptom_1_6_8_11_15_17 4106 604   8 282</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5      4/6 Hierarchical    5 symptom_1_6_8_11_17_20 4111 599  13 277</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  4/6 Non-hierarchical    1 symptom_6_7_9_16_17_19 4598 112  80 210</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  4/6 Non-hierarchical    2  symptom_4_6_7_9_17_19 4601 109  84 206</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8  4/6 Non-hierarchical    3  symptom_4_6_7_9_12_17 4598 112  83 207</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  4/6 Non-hierarchical    4 symptom_4_6_7_15_17_19 4611  99  96 194</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 4/6 Non-hierarchical    5  symptom_5_6_7_8_11_20 4600 110  85 205</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11 3/6 Non-hierarchical    1  symptom_5_6_7_8_10_12 4689  21 153 137</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12 3/6 Non-hierarchical    2   symptom_5_6_7_8_9_10 4682  28 150 140</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13 3/6 Non-hierarchical    3  symptom_4_6_7_8_11_14 4687  23 156 134</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14 3/6 Non-hierarchical    4  symptom_6_7_8_9_11_19 4691  19 160 130</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15 3/6 Non-hierarchical    5  symptom_6_7_8_9_11_20 4696  14 165 125</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16               ICD-11    1             PTSD_icd11 4549 161  29 261</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Sensitivity Specificity      PPV      NPV Accuracy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     87.32484    95.86207 99.70909 31.77143    87.82</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2     87.19745    97.93103 99.85412 32.01804    87.82</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3     87.15499    97.93103 99.85405 31.94601    87.78</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4     87.17622    97.24138 99.80554 31.82844    87.76</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5     87.28238    95.51724 99.68477 31.62100    87.76</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6     97.62208    72.41379 98.28987 65.21739    96.16</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7     97.68577    71.03448 98.20704 65.39683    96.14</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8     97.62208    71.37931 98.22687 64.89028    96.10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9     97.89809    66.89655 97.96048 66.21160    96.10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10    97.66454    70.68966 98.18570 65.07937    96.10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11    99.55414    47.24138 96.84015 86.70886    96.52</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12    99.40552    48.27586 96.89570 83.33333    96.44</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13    99.51168    46.20690 96.77886 85.35032    96.42</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14    99.59660    44.82759 96.70171 87.24832    96.42</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15    99.70276    43.10345 96.60564 89.92806    96.42</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16    96.58174    90.00000 99.36654 61.84834    96.20</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               Approach Rank       Combination  TP FN FP TN Sensitivity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 3/4 Non-hierarchical    1 symptom_6_7_12_17 227  5  0 18    97.84483</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 3/4 Non-hierarchical    2  symptom_4_6_7_12 226  6  0 18    97.41379</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 3/4 Non-hierarchical    3  symptom_4_6_7_19 225  7  0 18    96.98276</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 3/4 Non-hierarchical    4 symptom_6_7_12_13 225  7  0 18    96.98276</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 3/4 Non-hierarchical    5 symptom_6_7_12_15 225  7  0 18    96.98276</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6               ICD-11    1        PTSD_icd11 224  8  2 16    96.55172</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Specificity       PPV      NPV Accuracy Balanced Accuracy</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   100.00000 100.00000 78.26087     98.0          98.92241</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   100.00000 100.00000 75.00000     97.6          98.70690</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   100.00000 100.00000 72.00000     97.2          98.49138</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   100.00000 100.00000 72.00000     97.2          98.49138</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   100.00000 100.00000 72.00000     97.2          98.49138</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6    88.88889  99.11504 66.66667     96.0          92.72031</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

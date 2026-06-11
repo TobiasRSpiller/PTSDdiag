@@ -15,7 +15,7 @@ the definitions were derived from."><meta property="og:image" content="https://t
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -88,8 +88,8 @@ criterion as a benchmark row.</p></dd>
     <p>A formatted performance table (see
   <code><a href="create_readable_summary.html">create_readable_summary</a></code>): one row for the full DSM-5-TR
   reference, one per definition (labelled by rule and symptom set), and one
-  for ICD-11 when included. Includes Sensitivity, Specificity, PPV, NPV, and
-  Accuracy.</p>
+  for ICD-11 when included. Includes Sensitivity, Specificity, PPV, NPV,
+  Accuracy, and Balanced Accuracy.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -110,63 +110,39 @@ scored against the full DSM-5-TR diagnosis with
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="va">ptsd</span> <span class="op">&lt;-</span> <span class="fu"><a href="rename_ptsd_columns.html">rename_ptsd_columns</a></span><span class="op">(</span><span class="va">simulated_ptsd</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">300</span>, <span class="op">]</span>,</span></span>
+<span class="r-in"><span><span class="co"># Use a 250-row subset and a small 4-symptom search to keep the example</span></span></span>
+<span class="r-in"><span><span class="co"># fast; omit `scenarios` to run the three default rules</span></span></span>
+<span class="r-in"><span><span class="va">ptsd</span> <span class="op">&lt;-</span> <span class="fu"><a href="rename_ptsd_columns.html">rename_ptsd_columns</a></span><span class="op">(</span><span class="va">simulated_ptsd</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">250</span>, <span class="op">]</span>,</span></span>
 <span class="r-in"><span>                            id_col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"patient_id"</span>, <span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">comp</span> <span class="op">&lt;-</span> <span class="fu"><a href="compare_optimizations.html">compare_optimizations</a></span><span class="op">(</span><span class="va">ptsd</span>, n_top <span class="op">=</span> <span class="fl">10</span>, show_progress <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Generated 13685 valid cluster-constrained combinations</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 13685 combinations. Best: 1, 6, 7, 11, 15, 17 (3 additional tied)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 5, 6, 7, 10, 13, 20 (2 additional tied)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 2, 6, 7, 8, 10, 15 (8 additional tied)</span>
+<span class="r-in"><span><span class="va">comp</span> <span class="op">&lt;-</span> <span class="fu"><a href="compare_optimizations.html">compare_optimizations</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">ptsd</span>,</span></span>
+<span class="r-in"><span>  scenarios <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="st">"3/4 Non-hierarchical"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n_symptoms <span class="op">=</span> <span class="fl">4</span>, n_required <span class="op">=</span> <span class="fl">3</span>,</span></span>
+<span class="r-in"><span>                                  hierarchical <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  n_top <span class="op">=</span> <span class="fl">10</span>, show_progress <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Evaluated 4845 combinations. Best: 6, 7, 12, 17</span>
 <span class="r-in"><span><span class="va">definitions</span> <span class="op">&lt;-</span> <span class="fu"><a href="extract_definitions.html">extract_definitions</a></span><span class="op">(</span><span class="va">comp</span>, n <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">evaluate_definitions</span><span class="op">(</span><span class="va">ptsd</span>, <span class="va">definitions</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                       Scenario Total Diagnosed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                    PTSD_orig    277 (92.33%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       4/6 Hierarchical (1, 6, 7, 11, 15, 17)    250 (83.33%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       4/6 Hierarchical (1, 6, 7, 11, 15, 18)    250 (83.33%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4        4/6 Hierarchical (1, 4, 6, 7, 11, 17)       252 (84%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   4/6 Non-hierarchical (5, 6, 7, 10, 13, 20)    277 (92.33%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6   4/6 Non-hierarchical (5, 6, 7, 11, 13, 20)    277 (92.33%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  4/6 Non-hierarchical (6, 7, 10, 13, 15, 18)    277 (92.33%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8    3/6 Non-hierarchical (2, 6, 7, 8, 10, 15)    283 (94.33%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  3/6 Non-hierarchical (2, 6, 10, 11, 15, 16)       285 (95%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 3/6 Non-hierarchical (2, 6, 10, 11, 15, 19)       285 (95%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11                                      ICD-11       270 (90%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Total Non-Diagnosed True Positive True Negative Newly Diagnosed</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1           23 (7.67%)           277            23               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          50 (16.67%)           250            23               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3          50 (16.67%)           250            23               0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4             48 (16%)           251            22               1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5           23 (7.67%)           274            20               3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6           23 (7.67%)           274            20               3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7           23 (7.67%)           274            20               3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8           17 (5.67%)           276            16               7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9              15 (5%)           277            15               8</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10             15 (5%)           277            15               8</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11            30 (10%)           268            21               2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                    0        300           0      1.0000      1.0000 1.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                   27        273          27      0.9025      1.0000 1.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3                   27        273          27      0.9025      1.0000 1.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4                   26        273          27      0.9061      0.9565 0.9960</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5                    3        294           6      0.9892      0.8696 0.9892</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6                    3        294           6      0.9892      0.8696 0.9892</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7                    3        294           6      0.9892      0.8696 0.9892</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8                    1        292           8      0.9964      0.6957 0.9753</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9                    0        292           8      1.0000      0.6522 0.9719</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10                   0        292           8      1.0000      0.6522 0.9719</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11                   9        289          11      0.9675      0.9130 0.9926</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       NPV Accuracy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1.0000   1.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.4600   0.9100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.4600   0.9100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.4583   0.9100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  0.8696   0.9800</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  0.8696   0.9800</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  0.8696   0.9800</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8  0.9412   0.9733</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  1.0000   0.9733</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10 1.0000   0.9733</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11 0.7000   0.9633</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                              Scenario Total Diagnosed Total Non-Diagnosed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                           PTSD_orig     232 (92.8%)           18 (7.2%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 3/4 Non-hierarchical (6, 7, 12, 17)     227 (90.8%)           23 (9.2%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  3/4 Non-hierarchical (4, 6, 7, 12)     226 (90.4%)           24 (9.6%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  3/4 Non-hierarchical (4, 6, 7, 19)       225 (90%)            25 (10%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                              ICD-11     226 (90.4%)           24 (9.6%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   True Positive True Negative Newly Diagnosed Newly Non-Diagnosed True Cases</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           232            18               0                   0        250</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           227            18               0                   5        245</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           226            18               0                   6        244</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           225            18               0                   7        243</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5           224            16               2                   8        240</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   False Cases Sensitivity Specificity    PPV    NPV Accuracy Balanced Accuracy</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           0      1.0000      1.0000 1.0000 1.0000    1.000            1.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           5      0.9784      1.0000 1.0000 0.7826    0.980            0.9892</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           6      0.9741      1.0000 1.0000 0.7500    0.976            0.9871</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           7      0.9698      1.0000 1.0000 0.7200    0.972            0.9849</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5          10      0.9655      0.8889 0.9912 0.6667    0.960            0.9272</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

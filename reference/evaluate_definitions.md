@@ -39,7 +39,7 @@ A formatted performance table (see
 [`create_readable_summary`](https://tobiasrspiller.github.io/PTSDdiag/reference/create_readable_summary.md)):
 one row for the full DSM-5-TR reference, one per definition (labelled by
 rule and symptom set), and one for ICD-11 when included. Includes
-Sensitivity, Specificity, PPV, NPV, and Accuracy.
+Sensitivity, Specificity, PPV, NPV, Accuracy, and Balanced Accuracy.
 
 ## Details
 
@@ -63,62 +63,38 @@ and
 
 ``` r
 # \donttest{
-ptsd <- rename_ptsd_columns(simulated_ptsd[1:300, ],
+# Use a 250-row subset and a small 4-symptom search to keep the example
+# fast; omit `scenarios` to run the three default rules
+ptsd <- rename_ptsd_columns(simulated_ptsd[1:250, ],
                             id_col = c("patient_id", "age", "sex"))
-comp <- compare_optimizations(ptsd, n_top = 10, show_progress = FALSE)
-#> ℹ Generated 13685 valid cluster-constrained combinations
-#> ℹ Evaluated 13685 combinations. Best: 1, 6, 7, 11, 15, 17 (3 additional tied)
-#> ℹ Evaluated 38760 combinations. Best: 5, 6, 7, 10, 13, 20 (2 additional tied)
-#> ℹ Evaluated 38760 combinations. Best: 2, 6, 7, 8, 10, 15 (8 additional tied)
+comp <- compare_optimizations(
+  ptsd,
+  scenarios = list(
+    "3/4 Non-hierarchical" = list(n_symptoms = 4, n_required = 3,
+                                  hierarchical = FALSE)
+  ),
+  n_top = 10, show_progress = FALSE
+)
+#> ℹ Evaluated 4845 combinations. Best: 6, 7, 12, 17
 definitions <- extract_definitions(comp, n = 3)
 evaluate_definitions(ptsd, definitions)
-#>                                       Scenario Total Diagnosed
-#> 1                                    PTSD_orig    277 (92.33%)
-#> 2       4/6 Hierarchical (1, 6, 7, 11, 15, 17)    250 (83.33%)
-#> 3       4/6 Hierarchical (1, 6, 7, 11, 15, 18)    250 (83.33%)
-#> 4        4/6 Hierarchical (1, 4, 6, 7, 11, 17)       252 (84%)
-#> 5   4/6 Non-hierarchical (5, 6, 7, 10, 13, 20)    277 (92.33%)
-#> 6   4/6 Non-hierarchical (5, 6, 7, 11, 13, 20)    277 (92.33%)
-#> 7  4/6 Non-hierarchical (6, 7, 10, 13, 15, 18)    277 (92.33%)
-#> 8    3/6 Non-hierarchical (2, 6, 7, 8, 10, 15)    283 (94.33%)
-#> 9  3/6 Non-hierarchical (2, 6, 10, 11, 15, 16)       285 (95%)
-#> 10 3/6 Non-hierarchical (2, 6, 10, 11, 15, 19)       285 (95%)
-#> 11                                      ICD-11       270 (90%)
-#>    Total Non-Diagnosed True Positive True Negative Newly Diagnosed
-#> 1           23 (7.67%)           277            23               0
-#> 2          50 (16.67%)           250            23               0
-#> 3          50 (16.67%)           250            23               0
-#> 4             48 (16%)           251            22               1
-#> 5           23 (7.67%)           274            20               3
-#> 6           23 (7.67%)           274            20               3
-#> 7           23 (7.67%)           274            20               3
-#> 8           17 (5.67%)           276            16               7
-#> 9              15 (5%)           277            15               8
-#> 10             15 (5%)           277            15               8
-#> 11            30 (10%)           268            21               2
-#>    Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV
-#> 1                    0        300           0      1.0000      1.0000 1.0000
-#> 2                   27        273          27      0.9025      1.0000 1.0000
-#> 3                   27        273          27      0.9025      1.0000 1.0000
-#> 4                   26        273          27      0.9061      0.9565 0.9960
-#> 5                    3        294           6      0.9892      0.8696 0.9892
-#> 6                    3        294           6      0.9892      0.8696 0.9892
-#> 7                    3        294           6      0.9892      0.8696 0.9892
-#> 8                    1        292           8      0.9964      0.6957 0.9753
-#> 9                    0        292           8      1.0000      0.6522 0.9719
-#> 10                   0        292           8      1.0000      0.6522 0.9719
-#> 11                   9        289          11      0.9675      0.9130 0.9926
-#>       NPV Accuracy
-#> 1  1.0000   1.0000
-#> 2  0.4600   0.9100
-#> 3  0.4600   0.9100
-#> 4  0.4583   0.9100
-#> 5  0.8696   0.9800
-#> 6  0.8696   0.9800
-#> 7  0.8696   0.9800
-#> 8  0.9412   0.9733
-#> 9  1.0000   0.9733
-#> 10 1.0000   0.9733
-#> 11 0.7000   0.9633
+#>                              Scenario Total Diagnosed Total Non-Diagnosed
+#> 1                           PTSD_orig     232 (92.8%)           18 (7.2%)
+#> 2 3/4 Non-hierarchical (6, 7, 12, 17)     227 (90.8%)           23 (9.2%)
+#> 3  3/4 Non-hierarchical (4, 6, 7, 12)     226 (90.4%)           24 (9.6%)
+#> 4  3/4 Non-hierarchical (4, 6, 7, 19)       225 (90%)            25 (10%)
+#> 5                              ICD-11     226 (90.4%)           24 (9.6%)
+#>   True Positive True Negative Newly Diagnosed Newly Non-Diagnosed True Cases
+#> 1           232            18               0                   0        250
+#> 2           227            18               0                   5        245
+#> 3           226            18               0                   6        244
+#> 4           225            18               0                   7        243
+#> 5           224            16               2                   8        240
+#>   False Cases Sensitivity Specificity    PPV    NPV Accuracy Balanced Accuracy
+#> 1           0      1.0000      1.0000 1.0000 1.0000    1.000            1.0000
+#> 2           5      0.9784      1.0000 1.0000 0.7826    0.980            0.9892
+#> 3           6      0.9741      1.0000 1.0000 0.7500    0.976            0.9871
+#> 4           7      0.9698      1.0000 1.0000 0.7200    0.972            0.9849
+#> 5          10      0.9655      0.8889 0.9912 0.6667    0.960            0.9272
 # }
 ```

@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -105,9 +105,10 @@ sensitivity and specificity are stable.</p>
 <p><code><a href="../reference/holdout_validation.html">holdout_validation()</a></code> partitions the sample into a
 training set and a test set, derives the top combinations on the
 training set, and reports their performance on the held-out test set. We
-optimize by sensitivity here, which directs the search to minimize
-missed cases. To keep the vignette fast we work with a 250-row subset of
-the bundled data.</p>
+optimize by balanced accuracy, the package default, which weighs
+performance in the diagnosed and the non-diagnosed group equally; the <a href="getting-started.html">Getting started</a> vignette explains this
+choice. To keep the vignette fast we work with a 250-row subset of the
+bundled data.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tobiasrspiller.github.io/PTSDdiag/">PTSDdiag</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
@@ -122,42 +123,43 @@ the bundled data.</p>
 <span>  n_symptoms  <span class="op">=</span> <span class="fl">6</span>,</span>
 <span>  n_required  <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  n_top       <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>  score_by    <span class="op">=</span> <span class="st">"sensitivity"</span>,</span>
+<span>  score_by    <span class="op">=</span> <span class="st">"balanced_accuracy"</span>,</span>
 <span>  seed        <span class="op">=</span> <span class="fl">42</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">ho</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">best_combinations</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
-<span><span class="co">#&gt; [1]  1  5  6  7 12 20</span></span>
+<span><span class="co">#&gt; [1]  2  6  7 11 12 15</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[2]]</span></span>
-<span><span class="co">#&gt; [1]  1  6 10 12 13 19</span></span>
+<span><span class="co">#&gt; [1]  2  6  7 11 12 19</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[3]]</span></span>
-<span><span class="co">#&gt; [1]  1  6 10 12 13 20</span></span>
+<span><span class="co">#&gt; [1]  2  6  7 11 12 20</span></span>
 <span><span class="va">ho</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary</span></span>
-<span><span class="co">#&gt;                  Scenario  combination_id rank Total Diagnosed</span></span>
-<span><span class="co">#&gt; 1               PTSD_orig            &lt;NA&gt;   NA     67 (89.33%)</span></span>
-<span><span class="co">#&gt; 2   symptom_1_5_6_7_12_20   1_5_6_7_12_20    1        69 (92%)</span></span>
-<span><span class="co">#&gt; 3 symptom_1_6_10_12_13_19 1_6_10_12_13_19    2     71 (94.67%)</span></span>
-<span><span class="co">#&gt; 4 symptom_1_6_10_12_13_20 1_6_10_12_13_20    3     70 (93.33%)</span></span>
+<span><span class="co">#&gt;                 Scenario combination_id rank Total Diagnosed</span></span>
+<span><span class="co">#&gt; 1              PTSD_orig           &lt;NA&gt;   NA     67 (89.33%)</span></span>
+<span><span class="co">#&gt; 2 symptom_2_6_7_11_12_15 2_6_7_11_12_15    1        69 (92%)</span></span>
+<span><span class="co">#&gt; 3 symptom_2_6_7_11_12_19 2_6_7_11_12_19    2        69 (92%)</span></span>
+<span><span class="co">#&gt; 4 symptom_2_6_7_11_12_20 2_6_7_11_12_20    3     68 (90.67%)</span></span>
 <span><span class="co">#&gt;   Total Non-Diagnosed True Positive True Negative Newly Diagnosed</span></span>
 <span><span class="co">#&gt; 1          8 (10.67%)            67             8               0</span></span>
 <span><span class="co">#&gt; 2              6 (8%)            67             6               2</span></span>
-<span><span class="co">#&gt; 3           4 (5.33%)            67             4               4</span></span>
-<span><span class="co">#&gt; 4           5 (6.67%)            65             3               5</span></span>
-<span><span class="co">#&gt;   Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV NPV</span></span>
-<span><span class="co">#&gt; 1                   0         75           0      1.0000       1.000 1.0000 1.0</span></span>
-<span><span class="co">#&gt; 2                   0         73           2      1.0000       0.750 0.9710 1.0</span></span>
-<span><span class="co">#&gt; 3                   0         71           4      1.0000       0.500 0.9437 1.0</span></span>
-<span><span class="co">#&gt; 4                   2         68           7      0.9701       0.375 0.9286 0.6</span></span>
-<span><span class="co">#&gt;   Accuracy</span></span>
-<span><span class="co">#&gt; 1   1.0000</span></span>
-<span><span class="co">#&gt; 2   0.9733</span></span>
-<span><span class="co">#&gt; 3   0.9467</span></span>
-<span><span class="co">#&gt; 4   0.9067</span></span></code></pre></div>
-<p><code>score_by = "sensitivity"</code> minimizes false negatives, the
-conservative choice when missing a true case is the costlier error;
-<code>score_by = "accuracy"</code> would minimize total
+<span><span class="co">#&gt; 3              6 (8%)            67             6               2</span></span>
+<span><span class="co">#&gt; 4           7 (9.33%)            65             5               3</span></span>
+<span><span class="co">#&gt;   Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV</span></span>
+<span><span class="co">#&gt; 1                   0         75           0      1.0000       1.000 1.0000</span></span>
+<span><span class="co">#&gt; 2                   0         73           2      1.0000       0.750 0.9710</span></span>
+<span><span class="co">#&gt; 3                   0         73           2      1.0000       0.750 0.9710</span></span>
+<span><span class="co">#&gt; 4                   2         70           5      0.9701       0.625 0.9559</span></span>
+<span><span class="co">#&gt;      NPV Accuracy Balanced Accuracy</span></span>
+<span><span class="co">#&gt; 1 1.0000   1.0000            1.0000</span></span>
+<span><span class="co">#&gt; 2 1.0000   0.9733            0.8750</span></span>
+<span><span class="co">#&gt; 3 1.0000   0.9733            0.8750</span></span>
+<span><span class="co">#&gt; 4 0.7143   0.9333            0.7976</span></span></code></pre></div>
+<p><code>score_by = "balanced_accuracy"</code> maximizes the mean of
+sensitivity and specificity; <code>score_by = "sensitivity"</code>
+remains the conservative alternative when missing a true case is the
+costlier error, and <code>score_by = "accuracy"</code> minimizes total
 misclassification. The <code>seed</code> argument makes the split
 reproducible.</p>
 <p><code><a href="../reference/cross_validation.html">cross_validation()</a></code> extends the same logic to k folds,
@@ -171,80 +173,80 @@ in <code>combinations_summary</code>.</p>
 <span>  n_symptoms <span class="op">=</span> <span class="fl">6</span>,</span>
 <span>  n_required <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  n_top      <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>  score_by   <span class="op">=</span> <span class="st">"sensitivity"</span>,</span>
+<span>  score_by   <span class="op">=</span> <span class="st">"balanced_accuracy"</span>,</span>
 <span>  seed       <span class="op">=</span> <span class="fl">42</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">cv</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">summary_by_fold</span></span>
-<span><span class="co">#&gt;      Split               Scenario Total Diagnosed Total Non-Diagnosed</span></span>
-<span><span class="co">#&gt; 1  Split 1              PTSD_orig     78 (92.86%)           6 (7.14%)</span></span>
-<span><span class="co">#&gt; 2  Split 1   symptom_1_3_6_7_9_13     78 (92.86%)           6 (7.14%)</span></span>
-<span><span class="co">#&gt; 3  Split 1  symptom_1_3_6_7_11_13     78 (92.86%)           6 (7.14%)</span></span>
-<span><span class="co">#&gt; 4  Split 1  symptom_1_5_6_7_12_20     80 (95.24%)           4 (4.76%)</span></span>
-<span><span class="co">#&gt; 5  Split 2              PTSD_orig     78 (93.98%)           5 (6.02%)</span></span>
-<span><span class="co">#&gt; 6  Split 2  symptom_1_3_5_6_12_15     78 (93.98%)           5 (6.02%)</span></span>
-<span><span class="co">#&gt; 7  Split 2 symptom_1_3_5_12_15_17     77 (92.77%)           6 (7.23%)</span></span>
-<span><span class="co">#&gt; 8  Split 2 symptom_1_3_6_11_12_15     78 (93.98%)           5 (6.02%)</span></span>
-<span><span class="co">#&gt; 9  Split 3              PTSD_orig     76 (91.57%)           7 (8.43%)</span></span>
-<span><span class="co">#&gt; 10 Split 3  symptom_1_3_6_8_11_20     77 (92.77%)           6 (7.23%)</span></span>
-<span><span class="co">#&gt; 11 Split 3 symptom_1_3_6_11_12_20     79 (95.18%)           4 (4.82%)</span></span>
-<span><span class="co">#&gt; 12 Split 3 symptom_1_3_6_11_15_20     78 (93.98%)           5 (6.02%)</span></span>
+<span><span class="co">#&gt;      Split                Scenario Total Diagnosed Total Non-Diagnosed</span></span>
+<span><span class="co">#&gt; 1  Split 1               PTSD_orig     78 (92.86%)           6 (7.14%)</span></span>
+<span><span class="co">#&gt; 2  Split 1  symptom_2_6_7_11_12_15     80 (95.24%)           4 (4.76%)</span></span>
+<span><span class="co">#&gt; 3  Split 1  symptom_2_6_7_11_12_19     80 (95.24%)           4 (4.76%)</span></span>
+<span><span class="co">#&gt; 4  Split 1  symptom_2_6_7_11_12_16     78 (92.86%)           6 (7.14%)</span></span>
+<span><span class="co">#&gt; 5  Split 2               PTSD_orig     78 (93.98%)           5 (6.02%)</span></span>
+<span><span class="co">#&gt; 6  Split 2  symptom_6_7_8_11_13_17     75 (90.36%)           8 (9.64%)</span></span>
+<span><span class="co">#&gt; 7  Split 2 symptom_6_7_11_12_16_17     74 (89.16%)          9 (10.84%)</span></span>
+<span><span class="co">#&gt; 8  Split 2    symptom_2_4_6_7_9_12     76 (91.57%)           7 (8.43%)</span></span>
+<span><span class="co">#&gt; 9  Split 3               PTSD_orig     76 (91.57%)           7 (8.43%)</span></span>
+<span><span class="co">#&gt; 10 Split 3  symptom_3_6_7_18_19_20     79 (95.18%)           4 (4.82%)</span></span>
+<span><span class="co">#&gt; 11 Split 3   symptom_3_4_6_7_12_20     76 (91.57%)           7 (8.43%)</span></span>
+<span><span class="co">#&gt; 12 Split 3  symptom_3_4_6_12_15_16     77 (92.77%)           6 (7.23%)</span></span>
 <span><span class="co">#&gt;    True Positive True Negative Newly Diagnosed Newly Non-Diagnosed True Cases</span></span>
 <span><span class="co">#&gt; 1             78             6               0                   0         84</span></span>
-<span><span class="co">#&gt; 2             77             5               1                   1         82</span></span>
-<span><span class="co">#&gt; 3             77             5               1                   1         82</span></span>
-<span><span class="co">#&gt; 4             78             4               2                   0         82</span></span>
+<span><span class="co">#&gt; 2             78             4               2                   0         82</span></span>
+<span><span class="co">#&gt; 3             78             4               2                   0         82</span></span>
+<span><span class="co">#&gt; 4             77             5               1                   1         82</span></span>
 <span><span class="co">#&gt; 5             78             5               0                   0         83</span></span>
-<span><span class="co">#&gt; 6             77             4               1                   1         81</span></span>
-<span><span class="co">#&gt; 7             76             4               1                   2         80</span></span>
-<span><span class="co">#&gt; 8             77             4               1                   1         81</span></span>
+<span><span class="co">#&gt; 6             75             5               0                   3         80</span></span>
+<span><span class="co">#&gt; 7             74             5               0                   4         79</span></span>
+<span><span class="co">#&gt; 8             74             3               2                   4         77</span></span>
 <span><span class="co">#&gt; 9             76             7               0                   0         83</span></span>
-<span><span class="co">#&gt; 10            73             3               4                   3         76</span></span>
-<span><span class="co">#&gt; 11            75             3               4                   1         78</span></span>
-<span><span class="co">#&gt; 12            74             3               4                   2         77</span></span>
-<span><span class="co">#&gt;    False Cases Sensitivity Specificity    PPV    NPV Accuracy combination_id</span></span>
-<span><span class="co">#&gt; 1            0      1.0000      1.0000 1.0000 1.0000   1.0000           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 2            2      0.9872      0.8333 0.9872 0.8333   0.9762   1_3_6_7_9_13</span></span>
-<span><span class="co">#&gt; 3            2      0.9872      0.8333 0.9872 0.8333   0.9762  1_3_6_7_11_13</span></span>
-<span><span class="co">#&gt; 4            2      1.0000      0.6667 0.9750 1.0000   0.9762  1_5_6_7_12_20</span></span>
-<span><span class="co">#&gt; 5            0      1.0000      1.0000 1.0000 1.0000   1.0000           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 6            2      0.9872      0.8000 0.9872 0.8000   0.9759  1_3_5_6_12_15</span></span>
-<span><span class="co">#&gt; 7            3      0.9744      0.8000 0.9870 0.6667   0.9639 1_3_5_12_15_17</span></span>
-<span><span class="co">#&gt; 8            2      0.9872      0.8000 0.9872 0.8000   0.9759 1_3_6_11_12_15</span></span>
-<span><span class="co">#&gt; 9            0      1.0000      1.0000 1.0000 1.0000   1.0000           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 10           7      0.9605      0.4286 0.9481 0.5000   0.9157  1_3_6_8_11_20</span></span>
-<span><span class="co">#&gt; 11           5      0.9868      0.4286 0.9494 0.7500   0.9398 1_3_6_11_12_20</span></span>
-<span><span class="co">#&gt; 12           6      0.9737      0.4286 0.9487 0.6000   0.9277 1_3_6_11_15_20</span></span>
-<span><span class="co">#&gt;    rank</span></span>
-<span><span class="co">#&gt; 1    NA</span></span>
-<span><span class="co">#&gt; 2     1</span></span>
-<span><span class="co">#&gt; 3     2</span></span>
-<span><span class="co">#&gt; 4     3</span></span>
-<span><span class="co">#&gt; 5    NA</span></span>
-<span><span class="co">#&gt; 6     1</span></span>
-<span><span class="co">#&gt; 7     2</span></span>
-<span><span class="co">#&gt; 8     3</span></span>
-<span><span class="co">#&gt; 9    NA</span></span>
-<span><span class="co">#&gt; 10    1</span></span>
-<span><span class="co">#&gt; 11    2</span></span>
-<span><span class="co">#&gt; 12    3</span></span>
+<span><span class="co">#&gt; 10            74             2               5                   2         76</span></span>
+<span><span class="co">#&gt; 11            73             4               3                   3         77</span></span>
+<span><span class="co">#&gt; 12            74             4               3                   2         78</span></span>
+<span><span class="co">#&gt;    False Cases Sensitivity Specificity    PPV    NPV Accuracy Balanced Accuracy</span></span>
+<span><span class="co">#&gt; 1            0      1.0000      1.0000 1.0000 1.0000   1.0000            1.0000</span></span>
+<span><span class="co">#&gt; 2            2      1.0000      0.6667 0.9750 1.0000   0.9762            0.8333</span></span>
+<span><span class="co">#&gt; 3            2      1.0000      0.6667 0.9750 1.0000   0.9762            0.8333</span></span>
+<span><span class="co">#&gt; 4            2      0.9872      0.8333 0.9872 0.8333   0.9762            0.9103</span></span>
+<span><span class="co">#&gt; 5            0      1.0000      1.0000 1.0000 1.0000   1.0000            1.0000</span></span>
+<span><span class="co">#&gt; 6            3      0.9615      1.0000 1.0000 0.6250   0.9639            0.9808</span></span>
+<span><span class="co">#&gt; 7            4      0.9487      1.0000 1.0000 0.5556   0.9518            0.9744</span></span>
+<span><span class="co">#&gt; 8            6      0.9487      0.6000 0.9737 0.4286   0.9277            0.7744</span></span>
+<span><span class="co">#&gt; 9            0      1.0000      1.0000 1.0000 1.0000   1.0000            1.0000</span></span>
+<span><span class="co">#&gt; 10           7      0.9737      0.2857 0.9367 0.5000   0.9157            0.6297</span></span>
+<span><span class="co">#&gt; 11           6      0.9605      0.5714 0.9605 0.5714   0.9277            0.7660</span></span>
+<span><span class="co">#&gt; 12           5      0.9737      0.5714 0.9610 0.6667   0.9398            0.7726</span></span>
+<span><span class="co">#&gt;     combination_id rank</span></span>
+<span><span class="co">#&gt; 1             &lt;NA&gt;   NA</span></span>
+<span><span class="co">#&gt; 2   2_6_7_11_12_15    1</span></span>
+<span><span class="co">#&gt; 3   2_6_7_11_12_19    2</span></span>
+<span><span class="co">#&gt; 4   2_6_7_11_12_16    3</span></span>
+<span><span class="co">#&gt; 5             &lt;NA&gt;   NA</span></span>
+<span><span class="co">#&gt; 6   6_7_8_11_13_17    1</span></span>
+<span><span class="co">#&gt; 7  6_7_11_12_16_17    2</span></span>
+<span><span class="co">#&gt; 8     2_4_6_7_9_12    3</span></span>
+<span><span class="co">#&gt; 9             &lt;NA&gt;   NA</span></span>
+<span><span class="co">#&gt; 10  3_6_7_18_19_20    1</span></span>
+<span><span class="co">#&gt; 11   3_4_6_7_12_20    2</span></span>
+<span><span class="co">#&gt; 12  3_4_6_12_15_16    3</span></span>
 <span><span class="va">cv</span><span class="op">$</span><span class="va">without_clusters</span><span class="op">$</span><span class="va">combinations_summary</span>  <span class="co"># NULL if no combination repeats</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 16</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 17</span></span></span>
 <span><span class="co">#&gt;   Scenario  combination_id Splits_Appeared Total_Diagnosed Total_Non_Diagnosed</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> PTSD_orig <span style="color: #BB0000;">NA</span>                           3 77.33 (92.8%)   6 (7.2%)           </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 11 more variables: True_Positive &lt;dbl&gt;, True_Negative &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 12 more variables: True_Positive &lt;dbl&gt;, True_Negative &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   Newly_Diagnosed &lt;dbl&gt;, Newly_Non_Diagnosed &lt;dbl&gt;, True_Cases &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   False_Cases &lt;dbl&gt;, Sensitivity &lt;dbl&gt;, Specificity &lt;dbl&gt;, PPV &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   NPV &lt;dbl&gt;, Accuracy &lt;dbl&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;">#   NPV &lt;dbl&gt;, Accuracy &lt;dbl&gt;, Balanced_Accuracy &lt;dbl&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="external-validation-in-a-second-cohort">External validation in a second cohort<a class="anchor" aria-label="anchor" href="#external-validation-in-a-second-cohort"></a>
 </h2>
-<p>To test generalizability of the definitions with based on fewer
-symptoms, one needs to test the derived defintions in a second,
-independent dataset. The package ships a second simulated dataset,
+<p>To test the generalizability of definitions based on fewer symptoms,
+one needs to evaluate the derived definitions in a second, independent
+dataset. The package ships a second simulated dataset,
 <code>simulated_ptsd_genpop</code>, whose PTSD prevalence is about 21%,
-well below the 94% of the inlcuded clinical sample. Deriving in the
+well below the 94% of the included clinical sample. Deriving in the
 clinical sample and validating in the community sample therefore probes
 exactly the prevalence shift described above. We again use a 250-row
 subset of each for speed.</p>
@@ -256,18 +258,18 @@ manual transcription.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"simulated_ptsd_genpop"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Derive in the clinical sample</span></span>
-<span><span class="va">deriv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/optimize_combinations.html">optimize_combinations</a></span><span class="op">(</span><span class="va">ptsd</span>, </span>
-<span>                               n_symptoms <span class="op">=</span> <span class="fl">6</span>, </span>
+<span><span class="va">deriv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/optimize_combinations.html">optimize_combinations</a></span><span class="op">(</span><span class="va">ptsd</span>,</span>
+<span>                               n_symptoms <span class="op">=</span> <span class="fl">6</span>,</span>
 <span>                               n_required <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>                               n_top <span class="op">=</span> <span class="fl">5</span>, </span>
-<span>                               score_by <span class="op">=</span> <span class="st">"accuracy"</span>,</span>
+<span>                               n_top <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                               score_by <span class="op">=</span> <span class="st">"balanced_accuracy"</span>,</span>
 <span>                               show_progress <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Export for reuse</span></span>
 <span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".json"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/write_combinations.html">write_combinations</a></span><span class="op">(</span><span class="va">deriv</span><span class="op">$</span><span class="va">best_symptoms</span>, <span class="va">tmp</span>, </span>
+<span><span class="fu"><a href="../reference/write_combinations.html">write_combinations</a></span><span class="op">(</span><span class="va">deriv</span><span class="op">$</span><span class="va">best_symptoms</span>, <span class="va">tmp</span>,</span>
 <span>                   n_required <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>                   score_by <span class="op">=</span> <span class="st">"accuracy"</span>,</span>
+<span>                   score_by <span class="op">=</span> <span class="st">"balanced_accuracy"</span>,</span>
 <span>                   description <span class="op">=</span> <span class="st">"Six-symptom, four-required definition"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># A second analyst reads the file and applies it to the community sample.</span></span>
@@ -283,35 +285,38 @@ manual transcription.</p>
 <span>                                      n_required <span class="op">=</span> <span class="va">spec</span><span class="op">$</span><span class="va">n_required</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/summarize_ptsd_changes.html">summarize_ptsd_changes</a></span><span class="op">(</span><span class="va">applied</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="../reference/create_readable_summary.html">create_readable_summary</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                 Scenario Total Diagnosed Total Non-Diagnosed True Positive</span></span>
-<span><span class="co">#&gt; 1              PTSD_orig      52 (20.8%)         198 (79.2%)            52</span></span>
-<span><span class="co">#&gt; 2 symptom_1_6_7_12_15_18        45 (18%)           205 (82%)            42</span></span>
-<span><span class="co">#&gt; 3 symptom_2_6_7_11_12_15        45 (18%)           205 (82%)            41</span></span>
-<span><span class="co">#&gt; 4 symptom_2_6_7_11_12_19      47 (18.8%)         203 (81.2%)            44</span></span>
-<span><span class="co">#&gt; 5 symptom_2_6_7_12_15_17        45 (18%)           205 (82%)            40</span></span>
-<span><span class="co">#&gt; 6  symptom_3_5_6_7_12_15      46 (18.4%)         204 (81.6%)            41</span></span>
+<span><span class="co">#&gt;                  Scenario Total Diagnosed Total Non-Diagnosed True Positive</span></span>
+<span><span class="co">#&gt; 1               PTSD_orig      52 (20.8%)         198 (79.2%)            52</span></span>
+<span><span class="co">#&gt; 2  symptom_6_7_8_11_13_17        45 (18%)           205 (82%)            42</span></span>
+<span><span class="co">#&gt; 3 symptom_6_7_10_11_13_15        45 (18%)           205 (82%)            43</span></span>
+<span><span class="co">#&gt; 4   symptom_4_6_7_8_11_17      43 (17.2%)         207 (82.8%)            41</span></span>
+<span><span class="co">#&gt; 5  symptom_4_6_7_10_11_15        45 (18%)           205 (82%)            42</span></span>
+<span><span class="co">#&gt; 6  symptom_6_7_8_11_13_18        45 (18%)           205 (82%)            42</span></span>
 <span><span class="co">#&gt;   True Negative Newly Diagnosed Newly Non-Diagnosed True Cases False Cases</span></span>
 <span><span class="co">#&gt; 1           198               0                   0        250           0</span></span>
 <span><span class="co">#&gt; 2           195               3                  10        237          13</span></span>
-<span><span class="co">#&gt; 3           194               4                  11        235          15</span></span>
-<span><span class="co">#&gt; 4           195               3                   8        239          11</span></span>
-<span><span class="co">#&gt; 5           193               5                  12        233          17</span></span>
-<span><span class="co">#&gt; 6           193               5                  11        234          16</span></span>
-<span><span class="co">#&gt;   Sensitivity Specificity    PPV    NPV Accuracy</span></span>
-<span><span class="co">#&gt; 1      1.0000      1.0000 1.0000 1.0000    1.000</span></span>
-<span><span class="co">#&gt; 2      0.8077      0.9848 0.9333 0.9512    0.948</span></span>
-<span><span class="co">#&gt; 3      0.7885      0.9798 0.9111 0.9463    0.940</span></span>
-<span><span class="co">#&gt; 4      0.8462      0.9848 0.9362 0.9606    0.956</span></span>
-<span><span class="co">#&gt; 5      0.7692      0.9747 0.8889 0.9415    0.932</span></span>
-<span><span class="co">#&gt; 6      0.7885      0.9747 0.8913 0.9461    0.936</span></span></code></pre></div>
-<p>Compare this table with the derivation performance. Sensitivity and
-specificity, which are properties of the rule, should remain close to
-their values in the clinical sample. The predictive values will move: in
-the lower-prevalence community sample, PPV falls and NPV rises, so a
-positive result from the same rule is less likely to correspond to a
-true case than it was in the clinic. This is not a failure of the rule
-but a property of applying any fixed criterion across settings with
-different PTSD prevalence rates.</p>
+<span><span class="co">#&gt; 3           196               2                   9        239          11</span></span>
+<span><span class="co">#&gt; 4           196               2                  11        237          13</span></span>
+<span><span class="co">#&gt; 5           195               3                  10        237          13</span></span>
+<span><span class="co">#&gt; 6           195               3                  10        237          13</span></span>
+<span><span class="co">#&gt;   Sensitivity Specificity    PPV    NPV Accuracy Balanced Accuracy</span></span>
+<span><span class="co">#&gt; 1      1.0000      1.0000 1.0000 1.0000    1.000            1.0000</span></span>
+<span><span class="co">#&gt; 2      0.8077      0.9848 0.9333 0.9512    0.948            0.8963</span></span>
+<span><span class="co">#&gt; 3      0.8269      0.9899 0.9556 0.9561    0.956            0.9084</span></span>
+<span><span class="co">#&gt; 4      0.7885      0.9899 0.9535 0.9469    0.948            0.8892</span></span>
+<span><span class="co">#&gt; 5      0.8077      0.9848 0.9333 0.9512    0.948            0.8963</span></span>
+<span><span class="co">#&gt; 6      0.8077      0.9848 0.9333 0.9512    0.948            0.8963</span></span></code></pre></div>
+<p>Compare this table with the derivation performance. The predictive
+values move with prevalence: in the lower-prevalence community sample,
+PPV falls and NPV rises, so a positive result from the same rule is less
+likely to correspond to a true case than it was in the clinic.
+Sensitivity and specificity are often more stable, but they are not
+immune to differences in case mix: here sensitivity is lower in the
+community sample, whose symptom profiles are milder than the clinic’s,
+while specificity is slightly higher. Neither shift is a failure of the
+rule; both are properties of applying any fixed criterion across
+settings that differ in prevalence and severity, and revealing them is
+exactly what external validation is for.</p>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>

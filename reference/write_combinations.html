@@ -13,7 +13,7 @@ workflows."><meta property="og:image" content="https://tobiasrspiller.github.io/
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -103,9 +103,9 @@ first combination.</p></dd>
 
 <dt id="arg-score-by">score_by<a class="anchor" aria-label="anchor" href="#arg-score-by"></a></dt>
 <dd><p>Character or <code>NULL</code>. The scoring criterion used during
-optimization (<code>"accuracy"</code> or <code>"sensitivity"</code>). Stored as
-metadata for reproducibility. If <code>NULL</code> (default), omitted from
-the file.</p></dd>
+optimization (<code>"balanced_accuracy"</code>, <code>"accuracy"</code>, or
+<code>"sensitivity"</code>). Stored as metadata for reproducibility. If
+<code>NULL</code> (default), omitted from the file.</p></dd>
 
 
 <dt id="arg-description">description<a class="anchor" aria-label="anchor" href="#arg-description"></a></dt>
@@ -152,9 +152,9 @@ to new data.</p></div>
 <span class="r-in"><span><span class="co"># Write to a temporary file</span></span></span>
 <span class="r-in"><span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".json"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">write_combinations</span><span class="op">(</span><span class="va">my_combos</span>, <span class="va">tmp</span>, n_required <span class="op">=</span> <span class="fl">4</span>,</span></span>
-<span class="r-in"><span>                   score_by <span class="op">=</span> <span class="st">"accuracy"</span>,</span></span>
+<span class="r-in"><span>                   score_by <span class="op">=</span> <span class="st">"balanced_accuracy"</span>,</span></span>
 <span class="r-in"><span>                   description <span class="op">=</span> <span class="st">"Example non-hierarchical combinations"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Combinations written to <span style="color: #0000BB;">/tmp/RtmpZGVfK3/file1a8d4d8adf9c.json</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Combinations written to <span style="color: #0000BB;">/tmp/RtmpYxrDd3/file1a8b60de62a0.json</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Can also pass a full optimization result directly:</span></span></span>
 <span class="r-in"><span><span class="co"># write_combinations(optimization_result, tmp, n_required = 4)</span></span></span>

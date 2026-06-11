@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -98,12 +98,12 @@ paired-instrument comparison requires.</p>
 <p>To analyse one instrument we standardise its 20 columns and park
 everything else, including the other instrument’s columns, in
 <code>id_col</code>, so <code>rename_*</code> sees exactly 20 item
-columns. We use a 500-row subset for speed.</p>
+columns. We use a 250-row subset for speed.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tobiasrspiller.github.io/PTSDdiag/">PTSDdiag</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"simulated_ptsd_genpop"</span><span class="op">)</span></span>
-<span><span class="va">gp</span>   <span class="op">&lt;-</span> <span class="va">simulated_ptsd_genpop</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">500</span>, <span class="op">]</span></span>
+<span><span class="va">gp</span>   <span class="op">&lt;-</span> <span class="va">simulated_ptsd_genpop</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">250</span>, <span class="op">]</span></span>
 <span><span class="va">demo</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"patient_id"</span>, <span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># PCL-5 view: rename S1..S20; carry the CAPS-5 columns through untouched</span></span>
@@ -122,7 +122,7 @@ single logical column, <code>PTSD_caps5</code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">caps5_dx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_caps5_diagnosis.html">create_caps5_diagnosis</a></span><span class="op">(</span><span class="va">caps5</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">caps5_dx</span><span class="op">$</span><span class="va">PTSD_caps5</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
-<span><span class="co">#&gt; [1] 20.4</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 20</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="comparing-the-pcl-5-and-caps-5-diagnoses">Comparing the PCL-5 and CAPS-5 diagnoses<a class="anchor" aria-label="anchor" href="#comparing-the-pcl-5-and-caps-5-diagnoses"></a>
@@ -131,9 +131,9 @@ single logical column, <code>PTSD_caps5</code>.</p>
 that scores each diagnostic system against a chosen reference. Setting
 <code>reference = "caps5"</code> makes the CAPS-5 the standard, so the
 PCL-5 diagnosis and ICD-11 are evaluated against it. Each row reports
-sensitivity, specificity, PPV, NPV, and accuracy against the reference,
-together with the counts of false positives, false negatives, and total
-misclassifications.</p>
+sensitivity, specificity, PPV, NPV, accuracy, and balanced accuracy
+against the reference, together with the counts of false positives,
+false negatives, and total misclassifications.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/compare_diagnostic_systems.html">compare_diagnostic_systems</a></span><span class="op">(</span></span>
 <span>  <span class="va">ptsd</span>,</span>
@@ -141,23 +141,24 @@ misclassifications.</p>
 <span>  icd11      <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  reference  <span class="op">=</span> <span class="st">"caps5"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;              system n_diagnosed pct_diagnosed sensitivity specificity   ppv</span></span>
-<span><span class="co">#&gt; 1 DSM-5-TR (CAPS-5)         102          20.4      1.0000      1.0000 1.000</span></span>
-<span><span class="co">#&gt; 2  DSM-5-TR (PCL-5)         105          21.0      0.6176      0.8945 0.600</span></span>
-<span><span class="co">#&gt; 3    ICD-11 (PCL-5)         113          22.6      0.5882      0.8668 0.531</span></span>
+<span><span class="co">#&gt;              system n_diagnosed pct_diagnosed sensitivity specificity    ppv</span></span>
+<span><span class="co">#&gt; 1 DSM-5-TR (CAPS-5)          50          20.0        1.00        1.00 1.0000</span></span>
+<span><span class="co">#&gt; 2  DSM-5-TR (PCL-5)          52          20.8        0.64        0.90 0.6154</span></span>
+<span><span class="co">#&gt; 3    ICD-11 (PCL-5)          58          23.2        0.60        0.86 0.5172</span></span>
 <span><span class="co">#&gt;      npv n_false_negative pct_false_negative n_false_positive</span></span>
 <span><span class="co">#&gt; 1 1.0000                0                0.0                0</span></span>
-<span><span class="co">#&gt; 2 0.9013               39                7.8               42</span></span>
-<span><span class="co">#&gt; 3 0.8915               42                8.4               53</span></span>
-<span><span class="co">#&gt;   pct_false_positive n_misclassified accuracy</span></span>
-<span><span class="co">#&gt; 1                0.0               0    1.000</span></span>
-<span><span class="co">#&gt; 2                8.4              81    0.838</span></span>
-<span><span class="co">#&gt; 3               10.6              95    0.810</span></span></code></pre></div>
+<span><span class="co">#&gt; 2 0.9091               18                7.2               20</span></span>
+<span><span class="co">#&gt; 3 0.8958               20                8.0               28</span></span>
+<span><span class="co">#&gt;   pct_false_positive n_misclassified accuracy balanced_accuracy</span></span>
+<span><span class="co">#&gt; 1                0.0               0    1.000              1.00</span></span>
+<span><span class="co">#&gt; 2                8.0              38    0.848              0.77</span></span>
+<span><span class="co">#&gt; 3               11.2              48    0.808              0.73</span></span></code></pre></div>
 <p>Because the two instruments are correlated here rather than random,
 the self-report PCL-5 diagnosis agrees substantially with the clinician
 CAPS-5 reference. Sensitivity is the share of CAPS-5-positive
-participants the PCL-5 rule also calls positive, and accuracy is the
-overall share classified the same way.</p>
+participants the PCL-5 rule also calls positive, accuracy is the overall
+share classified the same way, and balanced accuracy averages
+performance in the CAPS-5-positive and CAPS-5-negative groups.</p>
 </div>
 <div class="section level2">
 <h2 id="optimizing-against-the-caps-5-diagnosis">Optimizing against the CAPS-5 diagnosis<a class="anchor" aria-label="anchor" href="#optimizing-against-the-caps-5-diagnosis"></a>
@@ -178,29 +179,29 @@ vignette.</p>
 <span>                                  symptoms <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  n_top         <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>  score_by      <span class="op">=</span> <span class="st">"accuracy"</span>,</span>
+<span>  score_by      <span class="op">=</span> <span class="st">"balanced_accuracy"</span>,</span>
 <span>  show_progress <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generated 13685 valid cluster-constrained combinations</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Evaluated 13685 combinations. Best: 2, 6, 7, 10, 13, 18 (5 additional tied)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 7, 10, 11, 13, 15, 18 (1 additional tied)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Evaluated 13685 combinations. Best: 1, 5, 6, 7, 11, 18</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Evaluated 38760 combinations. Best: 7, 10, 11, 15, 18, 19</span></span>
 <span><span class="fu"><a href="../reference/summarize_top_combinations.html">summarize_top_combinations</a></span><span class="op">(</span><span class="va">comp</span>, top_n <span class="op">=</span> <span class="fl">3</span>, as_percent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt;               Approach Rank              Combination TP FN FP  TN Sensitivity</span></span>
-<span><span class="co">#&gt; 1     4/6 Hierarchical    1   symptom_2_6_7_10_13_18 74 31  1 394    70.47619</span></span>
-<span><span class="co">#&gt; 2     4/6 Hierarchical    2   symptom_3_4_6_10_13_18 73 32  0 395    69.52381</span></span>
-<span><span class="co">#&gt; 3     4/6 Hierarchical    3   symptom_1_4_6_11_13_18 73 32  0 395    69.52381</span></span>
-<span><span class="co">#&gt; 4 4/6 Non-hierarchical    1 symptom_7_10_11_13_15_18 91 14  5 390    86.66667</span></span>
-<span><span class="co">#&gt; 5 4/6 Non-hierarchical    2 symptom_7_10_11_15_18_19 91 14  5 390    86.66667</span></span>
-<span><span class="co">#&gt; 6 4/6 Non-hierarchical    3  symptom_3_7_10_15_18_19 91 14  6 389    86.66667</span></span>
-<span><span class="co">#&gt; 7   CAPS-5 (reference)    1  PTSD_CAPS.5..reference. 63 42 39 356    60.00000</span></span>
-<span><span class="co">#&gt;   Specificity       PPV      NPV Accuracy</span></span>
-<span><span class="co">#&gt; 1    99.74684  98.66667 92.70588     93.6</span></span>
-<span><span class="co">#&gt; 2   100.00000 100.00000 92.50585     93.6</span></span>
-<span><span class="co">#&gt; 3   100.00000 100.00000 92.50585     93.6</span></span>
-<span><span class="co">#&gt; 4    98.73418  94.79167 96.53465     96.2</span></span>
-<span><span class="co">#&gt; 5    98.73418  94.79167 96.53465     96.2</span></span>
-<span><span class="co">#&gt; 6    98.48101  93.81443 96.52605     96.0</span></span>
-<span><span class="co">#&gt; 7    90.12658  61.76471 89.44724     83.8</span></span></code></pre></div>
+<span><span class="co">#&gt; 1     4/6 Hierarchical    1    symptom_1_5_6_7_11_18 39 13  0 198    75.00000</span></span>
+<span><span class="co">#&gt; 2     4/6 Hierarchical    2   symptom_3_6_7_11_13_15 38 14  0 198    73.07692</span></span>
+<span><span class="co">#&gt; 3     4/6 Hierarchical    3    symptom_2_3_6_7_11_18 38 14  0 198    73.07692</span></span>
+<span><span class="co">#&gt; 4 4/6 Non-hierarchical    1 symptom_7_10_11_15_18_19 47  5  1 197    90.38462</span></span>
+<span><span class="co">#&gt; 5 4/6 Non-hierarchical    2  symptom_3_7_10_15_18_19 47  5  2 196    90.38462</span></span>
+<span><span class="co">#&gt; 6 4/6 Non-hierarchical    3  symptom_3_7_11_15_18_19 47  5  2 196    90.38462</span></span>
+<span><span class="co">#&gt; 7   CAPS-5 (reference)    1  PTSD_CAPS.5..reference. 32 20 18 180    61.53846</span></span>
+<span><span class="co">#&gt;   Specificity       PPV      NPV Accuracy Balanced Accuracy</span></span>
+<span><span class="co">#&gt; 1   100.00000 100.00000 93.83886     94.8          87.50000</span></span>
+<span><span class="co">#&gt; 2   100.00000 100.00000 93.39623     94.4          86.53846</span></span>
+<span><span class="co">#&gt; 3   100.00000 100.00000 93.39623     94.4          86.53846</span></span>
+<span><span class="co">#&gt; 4    99.49495  97.91667 97.52475     97.6          94.93978</span></span>
+<span><span class="co">#&gt; 5    98.98990  95.91837 97.51244     97.2          94.68726</span></span>
+<span><span class="co">#&gt; 6    98.98990  95.91837 97.51244     97.2          94.68726</span></span>
+<span><span class="co">#&gt; 7    90.90909  64.00000 90.00000     84.8          76.22378</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="interpreting-agreement-and-disagreement">Interpreting agreement and disagreement<a class="anchor" aria-label="anchor" href="#interpreting-agreement-and-disagreement"></a>
