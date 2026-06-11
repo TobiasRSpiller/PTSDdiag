@@ -61,10 +61,11 @@
 #'   scenario (default 10). Fixed scenarios always contribute exactly one
 #'   combination regardless of \code{n_top}.
 #'
-#' @param score_by Character. Optimization criterion: \code{"accuracy"}
-#'   (minimise FP + FN) or \code{"sensitivity"} (minimise FN only). Applied
-#'   to optimize scenarios that do not override it. Default
-#'   \code{"accuracy"}.
+#' @param score_by Character. Optimization criterion:
+#'   \code{"balanced_accuracy"} (maximise the mean of sensitivity and
+#'   specificity), \code{"accuracy"} (minimise FP + FN), or
+#'   \code{"sensitivity"} (minimise FN only). Applied to optimize scenarios
+#'   that do not override it. Default \code{"balanced_accuracy"}.
 #'
 #' @param clusters Optional named list of integer vectors defining the PCL-5
 #'   clusters used by hierarchical optimize scenarios that do not specify
@@ -102,12 +103,22 @@
 #' @export
 #'
 #' @examples
-#' ptsd_data <- rename_ptsd_columns(simulated_ptsd,
-#'                                   id_col = c("patient_id", "age", "sex"))
+#' # Use a 250-row subset of the bundled data to keep the example fast
+#' ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+#'                                  id_col = c("patient_id", "age", "sex"))
 #' \donttest{
-#' # Three preprint scenarios + ICD-11 in one call
-#' comp <- compare_optimizations(ptsd_data, n_top = 5, include_icd11 = TRUE,
-#'                               show_progress = FALSE)
+#' # A compact optimized rule plus ICD-11 (a small 4-symptom search keeps
+#' # the example fast; omit `scenarios` to run the three default rules)
+#' comp <- compare_optimizations(
+#'   ptsd_data,
+#'   scenarios = list(
+#'     "3/4 Non-hierarchical" = list(n_symptoms = 4, n_required = 3,
+#'                                   hierarchical = FALSE)
+#'   ),
+#'   include_icd11 = TRUE,
+#'   n_top = 5,
+#'   show_progress = FALSE
+#' )
 #' print(comp)
 #'
 #' # Manuscript Table 2
@@ -118,7 +129,7 @@ compare_optimizations <- function(data,
                                   scenarios     = NULL,
                                   include_icd11 = FALSE,
                                   n_top         = 10,
-                                  score_by      = "accuracy",
+                                  score_by      = "balanced_accuracy",
                                   clusters      = NULL,
                                   show_progress = TRUE) {
   .validate_pcl5_data(data, strict_cols = FALSE)

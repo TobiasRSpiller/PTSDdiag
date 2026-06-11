@@ -1,9 +1,17 @@
+# Building the default-scenario comparison is the expensive part of this
+# file, so each variant is built once and reused (all tests are read-only).
+.comp_cache <- new.env(parent = emptyenv())
 make_comp <- function(n = 200, seed = 7) {
-  set.seed(seed)
-  df <- as.data.frame(matrix(sample(0:4, 20 * n, replace = TRUE), nrow = n,
-                             ncol = 20))
-  names(df) <- paste0("symptom_", 1:20)
-  compare_optimizations(df, n_top = 8, show_progress = FALSE)
+  key <- paste(n, seed, sep = "_")
+  if (is.null(.comp_cache[[key]])) {
+    set.seed(seed)
+    df <- as.data.frame(matrix(sample(0:4, 20 * n, replace = TRUE), nrow = n,
+                               ncol = 20))
+    names(df) <- paste0("symptom_", 1:20)
+    .comp_cache[[key]] <- compare_optimizations(df, n_top = 8,
+                                                show_progress = FALSE)
+  }
+  .comp_cache[[key]]
 }
 
 # ---------------------------------------------------------------------------
@@ -59,6 +67,7 @@ test_that("evaluate_definitions returns a performance table with Accuracy and IC
 
   tbl <- evaluate_definitions(newdata, defs, include_icd11 = TRUE)
   expect_true("Accuracy" %in% names(tbl))
+  expect_true("Balanced Accuracy" %in% names(tbl))
   expect_true("Scenario" %in% names(tbl))
   # reference + 2 defs x 3 rules + ICD-11 = 1 + 6 + 1 = 8 rows
   expect_equal(nrow(tbl), 8)

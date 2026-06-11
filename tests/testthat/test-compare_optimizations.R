@@ -34,20 +34,27 @@ test_that("compare_optimizations() honours custom scenarios with varying n_sympt
   set.seed(13)
   data <- make_test_data(n = 60, id = FALSE)
   scenarios <- list(
-    "5/7 Hier" = list(n_symptoms = 7, n_required = 5, hierarchical = TRUE),
-    "4/6 Hier" = list(n_symptoms = 6, n_required = 4, hierarchical = TRUE)
+    "3/5 Hier" = list(n_symptoms = 5, n_required = 3, hierarchical = TRUE),
+    "3/4 Hier" = list(n_symptoms = 4, n_required = 3, hierarchical = TRUE)
   )
   comp <- compare_optimizations(data, scenarios = scenarios, n_top = 2,
                                 show_progress = FALSE)
-  expect_equal(comp$config$n_symptoms, c(7L, 6L))
-  expect_equal(comp$config$n_required, c(5L, 4L))
-  expect_true(all(lengths(comp$scenarios[[1]]$best_symptoms) == 7))
+  expect_equal(comp$config$n_symptoms, c(5L, 4L))
+  expect_equal(comp$config$n_required, c(3L, 3L))
+  expect_true(all(lengths(comp$scenarios[[1]]$best_symptoms) == 5))
 })
 
 test_that("compare_optimizations() carries id_col through every scenario", {
   set.seed(17)
   data_with_id <- make_test_data(n = 60, id = TRUE)
-  comp <- compare_optimizations(data_with_id, n_top = 2, show_progress = FALSE)
+  # One hierarchical and one non-hierarchical scenario cover both code paths
+  # at a fraction of the default scenarios' cost
+  scenarios <- list(
+    "3/4 Hier" = list(n_symptoms = 4, n_required = 3, hierarchical = TRUE),
+    "3/4 NH"   = list(n_symptoms = 4, n_required = 3, hierarchical = FALSE)
+  )
+  comp <- compare_optimizations(data_with_id, scenarios = scenarios,
+                                n_top = 2, show_progress = FALSE)
   for (res in comp$scenarios) {
     expect_true("patient_id" %in% names(res$diagnosis_comparison))
     expect_equal(res$diagnosis_comparison$patient_id, data_with_id$patient_id)
@@ -103,8 +110,11 @@ test_that("compare_optimizations() rejects unnamed scenarios", {
 test_that("include_icd11 = TRUE adds an ICD-11 fixed scenario", {
   set.seed(29)
   data <- make_test_data(n = 80, id = FALSE)
-  comp <- compare_optimizations(data, n_top = 2, include_icd11 = TRUE,
-                                show_progress = FALSE)
+  scenarios <- list(
+    "3/4 NH" = list(n_symptoms = 4, n_required = 3, hierarchical = FALSE)
+  )
+  comp <- compare_optimizations(data, scenarios = scenarios, n_top = 2,
+                                include_icd11 = TRUE, show_progress = FALSE)
   expect_true("ICD-11" %in% names(comp$scenarios))
   expect_equal(attr(comp$scenarios[["ICD-11"]], "type"), "fixed")
   expect_equal(comp$scenarios[["ICD-11"]]$best_symptoms[[1]],
@@ -157,7 +167,10 @@ test_that("Fixed scenario rejects unknown criterion string", {
 test_that("print.ptsdiag_comparison runs without error", {
   set.seed(41)
   data <- make_test_data(n = 60, id = FALSE)
-  comp <- compare_optimizations(data, n_top = 1, include_icd11 = TRUE,
-                                show_progress = FALSE)
+  scenarios <- list(
+    "3/4 NH" = list(n_symptoms = 4, n_required = 3, hierarchical = FALSE)
+  )
+  comp <- compare_optimizations(data, scenarios = scenarios, n_top = 1,
+                                include_icd11 = TRUE, show_progress = FALSE)
   expect_invisible(print(comp))
 })

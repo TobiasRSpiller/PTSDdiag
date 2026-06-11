@@ -26,13 +26,13 @@ The PCL-5 is completed by the patient; the CAPS-5 is administered by a clinician
 
 The general-population dataset `simulated_ptsd_genpop` ships both instruments for the same participants: the PCL-5 items `S1`–`S20` and paired CAPS-5 severity ratings `C1`–`C20`, simulated so the two total scores correlate about 0.8 (the level usually reported empirically). Because both come from one data frame, the PCL-5 and CAPS-5 views describe the same people in the same row order, which is exactly what a paired-instrument comparison requires.
 
-To analyse one instrument we standardise its 20 columns and park everything else, including the other instrument's columns, in `id_col`, so `rename_*` sees exactly 20 item columns. We use a 500-row subset for speed.
+To analyse one instrument we standardise its 20 columns and park everything else, including the other instrument's columns, in `id_col`, so `rename_*` sees exactly 20 item columns. We use a 250-row subset for speed.
 
 ```{r setup, message = FALSE}
 library(PTSDdiag)
 
 data("simulated_ptsd_genpop")
-gp   <- simulated_ptsd_genpop[1:500, ]
+gp   <- simulated_ptsd_genpop[1:250, ]
 demo <- c("patient_id", "age", "sex")
 
 # PCL-5 view: rename S1..S20; carry the CAPS-5 columns through untouched
@@ -53,7 +53,7 @@ mean(caps5_dx$PTSD_caps5) * 100
 
 ## Comparing the PCL-5 and CAPS-5 diagnoses
 
-`compare_diagnostic_systems()` builds one summary table that scores each diagnostic system against a chosen reference. Setting `reference = "caps5"` makes the CAPS-5 the standard, so the PCL-5 diagnosis and ICD-11 are evaluated against it. Each row reports sensitivity, specificity, PPV, NPV, and accuracy against the reference, together with the counts of false positives, false negatives, and total misclassifications.
+`compare_diagnostic_systems()` builds one summary table that scores each diagnostic system against a chosen reference. Setting `reference = "caps5"` makes the CAPS-5 the standard, so the PCL-5 diagnosis and ICD-11 are evaluated against it. Each row reports sensitivity, specificity, PPV, NPV, accuracy, and balanced accuracy against the reference, together with the counts of false positives, false negatives, and total misclassifications.
 
 ```{r compare}
 compare_diagnostic_systems(
@@ -64,7 +64,7 @@ compare_diagnostic_systems(
 )
 ```
 
-Because the two instruments are correlated here rather than random, the self-report PCL-5 diagnosis agrees substantially with the clinician CAPS-5 reference. Sensitivity is the share of CAPS-5-positive participants the PCL-5 rule also calls positive, and accuracy is the overall share classified the same way.
+Because the two instruments are correlated here rather than random, the self-report PCL-5 diagnosis agrees substantially with the clinician CAPS-5 reference. Sensitivity is the share of CAPS-5-positive participants the PCL-5 rule also calls positive, accuracy is the overall share classified the same way, and balanced accuracy averages performance in the CAPS-5-positive and CAPS-5-negative groups.
 
 ## Optimizing against the CAPS-5 diagnosis
 
@@ -80,7 +80,7 @@ comp <- compare_optimizations(
                                   symptoms = 1:20)
   ),
   n_top         = 5,
-  score_by      = "accuracy",
+  score_by      = "balanced_accuracy",
   show_progress = FALSE
 )
 summarize_top_combinations(comp, top_n = 3, as_percent = TRUE)

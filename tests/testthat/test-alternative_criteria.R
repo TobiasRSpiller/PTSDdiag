@@ -121,12 +121,13 @@ combo_df <- apply_symptom_combinations(
   n_required   = 1L
 )
 
-test_that("compare_diagnostic_systems returns a data.frame with 13 columns", {
+test_that("compare_diagnostic_systems returns a data.frame with 14 columns", {
   result <- compare_diagnostic_systems(icd11_cases, combo_df, icd11 = TRUE)
   expect_true(is.data.frame(result))
-  expect_equal(ncol(result), 13L)
+  expect_equal(ncol(result), 14L)
   expect_equal(names(result)[1], "system")
   expect_true("accuracy" %in% names(result))
+  expect_true("balanced_accuracy" %in% names(result))
 })
 
 test_that("compare_diagnostic_systems icd11=TRUE includes DSM-5-TR and ICD-11 rows", {
@@ -150,6 +151,7 @@ test_that("compare_diagnostic_systems DSM-5-TR row has perfect metrics", {
   expect_equal(ref_row$n_false_positive, 0L)
   expect_equal(ref_row$n_misclassified,  0L)
   expect_equal(ref_row$accuracy,         1)
+  expect_equal(ref_row$balanced_accuracy, 1)
 })
 
 test_that("compare_diagnostic_systems labels override ... column names", {
@@ -297,7 +299,7 @@ test_that("compare_diagnostic_systems with caps5_data adds CAPS-5 row", {
   expect_true("DSM-5-TR (PCL-5)"  %in% result$system)
   expect_true("DSM-5-TR (CAPS-5)" %in% result$system)
   expect_true("ICD-11 (PCL-5)"    %in% result$system)
-  expect_equal(ncol(result), 13L)
+  expect_equal(ncol(result), 14L)
 })
 
 test_that("compare_diagnostic_systems caps5 reference has perfect metrics", {
@@ -347,7 +349,7 @@ test_that("compare_diagnostic_systems relaxes PTSD_orig check with caps5_data", 
     caps5_data = caps5_cases, icd11 = FALSE
   )
   expect_true(is.data.frame(result))
-  expect_equal(ncol(result), 13L)
+  expect_equal(ncol(result), 14L)
 })
 
 test_that("compare_diagnostic_systems strict check still works without caps5_data", {

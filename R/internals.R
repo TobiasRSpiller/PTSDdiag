@@ -150,12 +150,12 @@
 #' Validate score_by parameter
 #'
 #' Accepts the epidemiological argument names introduced in v0.3.1
-#' (\code{"accuracy"} and \code{"sensitivity"}). When users pass the old
-#' (v <= 0.3.0) values \code{"false_cases"} or \code{"newly_nondiagnosed"},
-#' a migration-hint error is raised.
+#' (\code{"accuracy"} and \code{"sensitivity"}) plus \code{"balanced_accuracy"}
+#' (v0.3.5). When users pass the old (v <= 0.3.0) values \code{"false_cases"}
+#' or \code{"newly_nondiagnosed"}, a migration-hint error is raised.
 #' @noRd
 .validate_score_by <- function(score_by) {
-  valid_scoring <- c("accuracy", "sensitivity")
+  valid_scoring <- c("accuracy", "balanced_accuracy", "sensitivity")
   legacy_map    <- c(false_cases = "accuracy",
                      newly_nondiagnosed = "sensitivity")
 
@@ -356,8 +356,9 @@
 #' @param binarized_data Binarized symptom data (matrix or data.frame).
 #' @param baseline_results Logical vector of baseline DSM-5 diagnoses.
 #' @param score_by Character: "accuracy" (minimise FP + FN, equivalent to
-#'   pre-0.3.1 "false_cases") or "sensitivity" (minimise FN, equivalent to
-#'   pre-0.3.1 "newly_nondiagnosed").
+#'   pre-0.3.1 "false_cases"), "balanced_accuracy" (minimise FN/P + FP/N,
+#'   i.e. maximise the mean of sensitivity and specificity), or "sensitivity"
+#'   (minimise FN, equivalent to pre-0.3.1 "newly_nondiagnosed").
 #' @param n_top Integer: how many top combinations to track.
 #' @param diagnose_fn Function(binarized_data, symptoms) -> logical vector.
 #' @return Named list with $top (list of n_top elements, each with
@@ -372,6 +373,17 @@
   )
   n_tied_with_best <- 0L
 
+  n_pos <- sum(baseline_results)
+  n_neg <- sum(!baseline_results)
+  if (score_by == "balanced_accuracy" && (n_pos == 0L || n_neg == 0L)) {
+    single_class <- if (n_pos == 0L) "non-diagnosed" else "diagnosed"
+    cli::cli_abort(c(
+      "{.code score_by = \"balanced_accuracy\"} requires both diagnosed and non-diagnosed cases under the reference criterion.",
+      "x" = "All cases in the data are {single_class}, so sensitivity or specificity is undefined.",
+      "i" = "Use {.code score_by = \"accuracy\"} or {.code score_by = \"sensitivity\"} instead."
+    ))
+  }
+
   if (show_progress) {
     cli::cli_progress_bar("Evaluating combinations", total = length(combinations))
   }
@@ -384,6 +396,9 @@
 
     score <- if (score_by == "accuracy") {
       -(newly_diagnosed + newly_nondiagnosed)
+    } else if (score_by == "balanced_accuracy") {
+      # Maximising balanced accuracy == minimising FN/P + FP/N
+      -(newly_nondiagnosed / n_pos + newly_diagnosed / n_neg)
     } else {
       # "sensitivity"
       -newly_nondiagnosed

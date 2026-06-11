@@ -9,6 +9,7 @@ utils::globalVariables(c(
   "True Cases", "False Cases",
   "True_Positive", "Newly_Non_Diagnosed", "True_Negative", "Newly_Diagnosed",
   "True_Cases", "False_Cases", "Accuracy",
+  "Sensitivity", "Specificity", "Balanced_Accuracy",
   "Splits_Appeared",
   ".strata"
 ))
@@ -47,8 +48,11 @@ utils::globalVariables(c(
 #'   (default: 0.7 for 70/30 split)
 #' @param score_by Character string specifying optimization criterion:
 #'   \itemize{
+#'     \item "balanced_accuracy": Maximise balanced accuracy, the mean of
+#'       sensitivity and specificity. Robust when one diagnostic class is
+#'       much more common than the other. Default.
 #'     \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
-#'       maximise overall accuracy). Default.
+#'       maximise overall accuracy).
 #'     \item "sensitivity": Minimize false negatives only (i.e. maximise
 #'       sensitivity relative to the full DSM-5-TR diagnosis).
 #'   }
@@ -87,18 +91,15 @@ utils::globalVariables(c(
 #'
 #'
 #' @examples
-#' # Create sample data
-#' set.seed(42)
-#' sample_data <- data.frame(
-#'   matrix(sample(0:4, 20 * 200, replace = TRUE),
-#'          nrow = 200,
-#'          ncol = 20)
-#' )
-#' colnames(sample_data) <- paste0("symptom_", 1:20)
+#' # Use a 250-row subset of the bundled data to keep the example fast
+#' ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+#'                                  id_col = c("patient_id", "age", "sex"))
 #'
 #' \donttest{
-#' # Perform holdout validation
-#' validation_results <- holdout_validation(sample_data, train_ratio = 0.7)
+#' # Validate a compact 3-of-5 definition (a 5-symptom search keeps the
+#' # example fast; use n_symptoms = 6, n_required = 4 for the classic rule)
+#' validation_results <- holdout_validation(ptsd_data, train_ratio = 0.7,
+#'                                          n_symptoms = 5, n_required = 3)
 #'
 #' # Access results
 #' validation_results$without_clusters$summary
@@ -106,7 +107,7 @@ utils::globalVariables(c(
 #' }
 #'
 holdout_validation <- function(data, train_ratio = 0.7,
-                               score_by = "accuracy", seed = 123,
+                               score_by = "balanced_accuracy", seed = 123,
                                n_symptoms = 6, n_required = 4, n_top = 3,
                                DT = FALSE) {
   # Input validation
@@ -229,8 +230,11 @@ holdout_validation <- function(data, train_ratio = 0.7,
 #' @param k Number of folds for cross-validation (default: 5)
 #' @param score_by Character string specifying optimization criterion:
 #'   \itemize{
+#'     \item "balanced_accuracy": Maximise balanced accuracy, the mean of
+#'       sensitivity and specificity. Robust when one diagnostic class is
+#'       much more common than the other. Default.
 #'     \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
-#'       maximise overall accuracy). Default.
+#'       maximise overall accuracy).
 #'     \item "sensitivity": Minimize false negatives only (i.e. maximise
 #'       sensitivity relative to the full DSM-5-TR diagnosis).
 #'   }
@@ -274,18 +278,16 @@ holdout_validation <- function(data, train_ratio = 0.7,
 #' @importFrom dplyr bind_rows group_by summarise mutate select everything across filter n
 #'
 #' @examples
-#' # Create sample data
-#' set.seed(42)
-#' sample_data <- data.frame(
-#'   matrix(sample(0:4, 20 * 200, replace = TRUE),
-#'          nrow = 200,
-#'          ncol = 20)
-#' )
-#' colnames(sample_data) <- paste0("symptom_", 1:20)
+#' # Use a 250-row subset of the bundled data to keep the example fast
+#' ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+#'                                  id_col = c("patient_id", "age", "sex"))
 #'
 #' \donttest{
-#' # Perform 5-fold cross-validation
-#' cv_results <- cross_validation(sample_data, k = 5)
+#' # 3-fold cross-validation of a compact 3-of-4 definition (a 4-symptom
+#' # search keeps the example fast; use n_symptoms = 6, n_required = 4 for
+#' # the classic rule)
+#' cv_results <- cross_validation(ptsd_data, k = 3,
+#'                                n_symptoms = 4, n_required = 3)
 #'
 #' # View summary for each fold
 #' cv_results$without_clusters$summary_by_fold
@@ -294,7 +296,7 @@ holdout_validation <- function(data, train_ratio = 0.7,
 #' cv_results$without_clusters$combinations_summary
 #' }
 #'
-cross_validation <- function(data, k = 5, score_by = "accuracy",
+cross_validation <- function(data, k = 5, score_by = "balanced_accuracy",
                              seed = 123, n_symptoms = 6, n_required = 4,
                              n_top = 3, DT = FALSE) {
   # Input validation
@@ -399,7 +401,10 @@ cross_validation <- function(data, k = 5, score_by = "accuracy",
         NPV = ifelse((True_Negative + Newly_Non_Diagnosed) == 0, NA_real_,
                      round(True_Negative / (True_Negative + Newly_Non_Diagnosed), 4)),
         Accuracy = ifelse((True_Cases + False_Cases) == 0, NA_real_,
-                          round(True_Cases / (True_Cases + False_Cases), 4))
+                          round(True_Cases / (True_Cases + False_Cases), 4)),
+        Balanced_Accuracy = ifelse(is.na(Sensitivity) | is.na(Specificity),
+                                   NA_real_,
+                                   round((Sensitivity + Specificity) / 2, 4))
       )
 
     multiple_appearance <- combo_summary %>% dplyr::filter(Splits_Appeared > 1)

@@ -44,9 +44,18 @@ definitions from one sample, then evaluate them in any sample.
 }
 \examples{
 \donttest{
-ptsd <- rename_ptsd_columns(simulated_ptsd[1:300, ],
+# Use a 250-row subset and a small 4-symptom search to keep the example
+# fast; omit `scenarios` to run the three default rules
+ptsd <- rename_ptsd_columns(simulated_ptsd[1:250, ],
                             id_col = c("patient_id", "age", "sex"))
-comp <- compare_optimizations(ptsd, n_top = 10, show_progress = FALSE)
+comp <- compare_optimizations(
+  ptsd,
+  scenarios = list(
+    "3/4 Non-hierarchical" = list(n_symptoms = 4, n_required = 3,
+                                  hierarchical = FALSE)
+  ),
+  n_top = 10, show_progress = FALSE
+)
 definitions <- extract_definitions(comp, n = 5)
 lapply(definitions, function(d) d$symptoms)
 }

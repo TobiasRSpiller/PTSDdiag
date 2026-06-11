@@ -47,9 +47,18 @@ utils::globalVariables(c("Symptom_Factor", "RelFreq", "Count", "Approach",
 #'
 #' @examples
 #' \donttest{
-#' ptsd_data <- rename_ptsd_columns(simulated_ptsd,
-#'                                   id_col = c("patient_id", "age", "sex"))
-#' comp <- compare_optimizations(ptsd_data, n_top = 5, show_progress = FALSE)
+#' # Use a 250-row subset and a small 4-symptom search to keep the example
+#' # fast; omit `scenarios` to run the three default rules
+#' ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+#'                                  id_col = c("patient_id", "age", "sex"))
+#' comp <- compare_optimizations(
+#'   ptsd_data,
+#'   scenarios = list(
+#'     "3/4 Non-hierarchical" = list(n_symptoms = 4, n_required = 3,
+#'                                   hierarchical = FALSE)
+#'   ),
+#'   include_icd11 = TRUE, n_top = 5, show_progress = FALSE
+#' )
 #' plot_symptom_frequency(comp)
 #' }
 plot_symptom_frequency <- function(comparison,

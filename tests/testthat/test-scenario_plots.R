@@ -1,10 +1,18 @@
+# Building the default-scenario comparison is the expensive part of this
+# file, so each variant is built once and reused (all tests are read-only).
+.comparison_cache <- new.env(parent = emptyenv())
 build_comparison <- function(n = 60, seed = 7, include_icd11 = FALSE) {
-  set.seed(seed)
-  df <- as.data.frame(matrix(sample(0:4, 20 * n, replace = TRUE), nrow = n,
-                             ncol = 20))
-  names(df) <- paste0("symptom_", 1:20)
-  compare_optimizations(df, n_top = 3, include_icd11 = include_icd11,
-                        show_progress = FALSE)
+  key <- paste(n, seed, include_icd11, sep = "_")
+  if (is.null(.comparison_cache[[key]])) {
+    set.seed(seed)
+    df <- as.data.frame(matrix(sample(0:4, 20 * n, replace = TRUE), nrow = n,
+                               ncol = 20))
+    names(df) <- paste0("symptom_", 1:20)
+    .comparison_cache[[key]] <- compare_optimizations(
+      df, n_top = 3, include_icd11 = include_icd11, show_progress = FALSE
+    )
+  }
+  .comparison_cache[[key]]
 }
 
 test_that("plot_symptom_frequency returns a ggplot object", {

@@ -6,7 +6,7 @@
 #' \code{\link{compare_optimizations}} result. The output matches the layout
 #' of the PTSDdiag preprint's Table 2: one row per combination, with
 #' Approach / Rank / Combination / TP / FN / FP / TN / Sensitivity /
-#' Specificity / PPV / NPV / Accuracy.
+#' Specificity / PPV / NPV / Accuracy / Balanced Accuracy.
 #'
 #' @details
 #' For each scenario, the per-row \code{diagnosis_comparison} dataframe is
@@ -14,24 +14,27 @@
 #' \code{PTSD_orig} row is dropped, the remaining rows are renamed, and the
 #' scenario label is prepended.
 #'
-#' Sensitivity, specificity, PPV, NPV and accuracy are returned on the 0-1
-#' fraction scale by default (matching \code{\link{compare_diagnostic_systems}});
-#' set \code{as_percent = TRUE} to convert to 0-100 for manuscript display.
-#' Accuracy is \code{(TP + TN) / N}, the quantity minimised by
-#' \code{score_by = "accuracy"}.
+#' Sensitivity, specificity, PPV, NPV, accuracy and balanced accuracy are
+#' returned on the 0-1 fraction scale by default (matching
+#' \code{\link{compare_diagnostic_systems}}); set \code{as_percent = TRUE} to
+#' convert to 0-100 for manuscript display. Accuracy is \code{(TP + TN) / N},
+#' the quantity maximised by \code{score_by = "accuracy"}; balanced accuracy
+#' is \code{(sensitivity + specificity) / 2}, the quantity maximised by the
+#' default \code{score_by = "balanced_accuracy"}.
 #'
 #' @param comparison A \code{ptsdiag_comparison} object.
 #' @param top_n Optional integer. Per-scenario limit on combinations to
 #'   include. Fixed scenarios always contribute exactly one row. Default
 #'   \code{NULL} returns all stored combinations.
 #' @param as_percent Logical. If \code{TRUE},
-#'   Sensitivity/Specificity/PPV/NPV/Accuracy are returned as percentages
-#'   (0-100); otherwise as fractions (0-1). Default \code{FALSE}.
+#'   Sensitivity/Specificity/PPV/NPV/Accuracy/Balanced Accuracy are returned
+#'   as percentages (0-100); otherwise as fractions (0-1). Default
+#'   \code{FALSE}.
 #'
 #' @returns A data.frame with columns: \code{Approach}, \code{Rank},
 #'   \code{Combination}, \code{TP}, \code{FN}, \code{FP}, \code{TN},
 #'   \code{Sensitivity}, \code{Specificity}, \code{PPV}, \code{NPV},
-#'   \code{Accuracy}.
+#'   \code{Accuracy}, \code{Balanced Accuracy}.
 #'
 #' @seealso \code{\link{compare_optimizations}},
 #'   \code{\link{symptom_frequency}},
@@ -41,9 +44,18 @@
 #'
 #' @examples
 #' \donttest{
-#' ptsd_data <- rename_ptsd_columns(simulated_ptsd,
-#'                                   id_col = c("patient_id", "age", "sex"))
-#' comp <- compare_optimizations(ptsd_data, n_top = 5, show_progress = FALSE)
+#' # Use a 250-row subset and a small 4-symptom search to keep the example
+#' # fast; omit `scenarios` to run the three default rules
+#' ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+#'                                  id_col = c("patient_id", "age", "sex"))
+#' comp <- compare_optimizations(
+#'   ptsd_data,
+#'   scenarios = list(
+#'     "3/4 Non-hierarchical" = list(n_symptoms = 4, n_required = 3,
+#'                                   hierarchical = FALSE)
+#'   ),
+#'   include_icd11 = TRUE, n_top = 5, show_progress = FALSE
+#' )
 #' summarize_top_combinations(comp, as_percent = TRUE)
 #' }
 summarize_top_combinations <- function(comparison, top_n = NULL,
@@ -104,7 +116,9 @@ summarize_top_combinations <- function(comparison, top_n = NULL,
       PPV         = stats$ppv,
       NPV         = stats$npv,
       Accuracy    = stats$accuracy,
-      stringsAsFactors = FALSE
+      `Balanced Accuracy` = stats$balanced_accuracy,
+      stringsAsFactors = FALSE,
+      check.names = FALSE
     )
     if (isTRUE(as_percent)) {
       out$Sensitivity <- out$Sensitivity * 100
@@ -112,6 +126,7 @@ summarize_top_combinations <- function(comparison, top_n = NULL,
       out$PPV         <- out$PPV         * 100
       out$NPV         <- out$NPV         * 100
       out$Accuracy    <- out$Accuracy    * 100
+      out$`Balanced Accuracy` <- out$`Balanced Accuracy` * 100
     }
     rows[[label]] <- out
   }
@@ -162,9 +177,18 @@ summarize_top_combinations <- function(comparison, top_n = NULL,
 #'
 #' @examples
 #' \donttest{
-#' ptsd_data <- rename_ptsd_columns(simulated_ptsd,
-#'                                   id_col = c("patient_id", "age", "sex"))
-#' comp <- compare_optimizations(ptsd_data, n_top = 5, show_progress = FALSE)
+#' # Use a 250-row subset and a small 4-symptom search to keep the example
+#' # fast; omit `scenarios` to run the three default rules
+#' ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+#'                                  id_col = c("patient_id", "age", "sex"))
+#' comp <- compare_optimizations(
+#'   ptsd_data,
+#'   scenarios = list(
+#'     "3/4 Non-hierarchical" = list(n_symptoms = 4, n_required = 3,
+#'                                   hierarchical = FALSE)
+#'   ),
+#'   include_icd11 = TRUE, n_top = 5, show_progress = FALSE
+#' )
 #' freq <- symptom_frequency(comp)
 #' head(freq)
 #' }

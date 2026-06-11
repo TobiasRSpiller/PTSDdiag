@@ -9,7 +9,7 @@ optimize_combinations(
   n_symptoms = 6,
   n_required = 4,
   n_top = 3,
-  score_by = "accuracy",
+  score_by = "balanced_accuracy",
   DT = FALSE,
   show_progress = TRUE
 )
@@ -39,8 +39,11 @@ diagnosis (default: 4). Must be between 1 and \code{n_symptoms}.}
 \item{score_by}{Character string specifying optimization criterion:
 
 \itemize{
+  \item "balanced_accuracy": Maximise balanced accuracy, the mean of
+    sensitivity and specificity. Robust when one diagnostic class is much
+    more common than the other. Default.
   \item "accuracy": Minimize total misclassifications (FP + FN, i.e.
-    maximise overall accuracy). Default.
+    maximise overall accuracy).
   \item "sensitivity": Minimize false negatives only (i.e. maximise
     sensitivity relative to the full DSM-5-TR diagnosis).
 }}
@@ -92,9 +95,11 @@ The function:
    DSM-5 diagnosis
 }
 
-Optimization can be based on either:
+Optimization can be based on:
 
 \itemize{
+\item Maximizing balanced accuracy, the mean of sensitivity and
+  specificity (the default)
 \item Minimizing false cases (both false positives and false negatives)
 \item Minimizing only false negatives (newly non-diagnosed cases)
 }
@@ -109,16 +114,18 @@ The symptom clusters in PCL-5 are:
 }
 }
 \examples{
-# Create example data
-ptsd_data <- data.frame(matrix(sample(0:4, 200, replace=TRUE), ncol=20))
-names(ptsd_data) <- paste0("symptom_", 1:20)
+# Use a 250-row subset of the bundled data to keep the example fast
+ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+                                 id_col = c("patient_id", "age", "sex"))
 
 \donttest{
-# Find best 6-symptom combinations requiring 4 present (classic defaults)
+# Find best 6-symptom combinations requiring 4 present (classic defaults,
+# optimized for balanced accuracy)
 results <- optimize_combinations(ptsd_data, n_symptoms = 6, n_required = 4,
-             score_by = "accuracy")
+             score_by = "balanced_accuracy")
 
-# Find best 5-symptom combinations requiring 3 present, return top 5
+# Find best 5-symptom combinations requiring 3 present, return top 5,
+# this time minimizing total misclassifications
 results2 <- optimize_combinations(ptsd_data, n_symptoms = 5, n_required = 3,
               n_top = 5, score_by = "accuracy")
 

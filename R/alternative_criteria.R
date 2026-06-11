@@ -252,6 +252,8 @@ create_caps5_diagnosis <- function(data) {
 #'   \item \code{n_misclassified}: Total misclassified cases
 #'   \item \code{accuracy}: Proportion classified the same as the reference
 #'     ((total - misclassified) / total), 4 dp
+#'   \item \code{balanced_accuracy}: Mean of sensitivity and specificity
+#'     ((sensitivity + specificity) / 2), 4 dp
 #' }
 #'
 #' @seealso
@@ -468,6 +470,7 @@ compare_diagnostic_systems <- function(data, ..., icd11 = TRUE,
     pct_false_positive = round(raw$newly_diagnosed    / n_total * 100,   2),
     n_misclassified    = raw$false_cases,
     accuracy           = round((n_total - raw$false_cases) / n_total,   4),
+    balanced_accuracy  = round(raw$balanced_accuracy,                   4),
     stringsAsFactors   = FALSE
   )
 }

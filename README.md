@@ -12,8 +12,10 @@ status](https://www.r-pkg.org/badges/version/PTSDdiag)](https://CRAN.R-project.o
 
 <p>
 
-<a href="https://tobiasrspiller.github.io/PTSDdiag/articles/quickstart.html" class="btn btn-primary btn-lg">Quick Start</a>
-<a href="https://tobiasrspiller.github.io/PTSDdiag/articles/internal_analysis.html" class="btn btn-outline-primary btn-lg">Full Analysis</a>
+<a href="https://tobiasrspiller.github.io/PTSDdiag/articles/getting-started.html" class="btn btn-primary btn-lg">Getting
+Started</a>
+<a href="https://tobiasrspiller.github.io/PTSDdiag/articles/comparing-criteria.html" class="btn btn-outline-primary btn-lg">Comparing
+Criteria</a>
 <a href="https://tobiasrspiller.github.io/PTSDdiag/reference/index.html" class="btn btn-outline-primary btn-lg">Reference</a>
 <a href="https://doi.org/10.31219/osf.io/6rk72_v1" class="btn btn-outline-secondary btn-lg">Publication</a>
 </p>
@@ -56,16 +58,22 @@ devtools::install_github("TobiasRSpiller/PTSDdiag")
 
 ## Getting Started
 
-The vignette demonstrates how to use the package to prepare the PCL-5
-data, calculate some basic descriptive statistics and reliability
-metrics, find the optimal minimal symptom combinations for PTSD
-diagnosis, compare different diagnostic approaches and perform
-validation methods for evaluating model performance.
+The vignettes demonstrate how to prepare PCL-5 data, find the optimal
+minimal symptom combinations for PTSD diagnosis, compare different
+diagnostic approaches (including ICD-11 and the clinician-administered
+CAPS-5), and validate the resulting definitions within and across
+cohorts.
 
-- [Quick Start](https://tobiasrspiller.github.io/PTSDdiag/articles/quickstart.html)
-- [Full Internal Analysis](https://tobiasrspiller.github.io/PTSDdiag/articles/internal_analysis.html)
-- [External Validation (PCL-5)](https://tobiasrspiller.github.io/PTSDdiag/articles/external_validation_pcl5.html)
-- [External Validation (CAPS-5)](https://tobiasrspiller.github.io/PTSDdiag/articles/external_validation_caps5.html)
+- [Getting started with
+  PTSDdiag](https://tobiasrspiller.github.io/PTSDdiag/articles/getting-started.html)
+- [Comparing diagnostic
+  criteria](https://tobiasrspiller.github.io/PTSDdiag/articles/comparing-criteria.html)
+- [Validating abbreviated symptom
+  definitions](https://tobiasrspiller.github.io/PTSDdiag/articles/validation.html)
+- [Validating a shared definition across
+  sites](https://tobiasrspiller.github.io/PTSDdiag/articles/multi-site-validation.html)
+- [CAPS-5
+  workflow](https://tobiasrspiller.github.io/PTSDdiag/articles/caps5-workflow.html)
 - [Package Website](https://tobiasrspiller.github.io/PTSDdiag/)
 
 ## Bugs, Contributions
