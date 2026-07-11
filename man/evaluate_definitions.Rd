@@ -4,43 +4,99 @@
 \alias{evaluate_definitions}
 \title{Evaluate symptom definitions against a sample}
 \usage{
-evaluate_definitions(data, definitions, include_icd11 = TRUE)
+evaluate_definitions(
+  data,
+  definitions,
+  include_icd11 = TRUE,
+  reference = NULL,
+  include_full_pcl5 = NULL,
+  tidy = FALSE,
+  as_percent = FALSE
+)
 }
 \arguments{
 \item{data}{A dataframe with the 20 PCL-5 item columns \code{symptom_1}
 through \code{symptom_20} (output of \code{\link{rename_ptsd_columns}}).
-Additional carry-through columns are ignored.}
+Additional carry-through columns are ignored (but may be named by
+\code{reference}).}
 
 \item{definitions}{A named list of definitions, as returned by
-\code{\link{extract_definitions}}. Each element must contain
-\code{symptoms} (a list of integer vectors), \code{n_required}, and
-\code{hierarchical}.}
+\code{\link{extract_definitions}} or \code{\link{as_definitions}}. Each
+element must contain \code{symptoms} (a list of integer vectors),
+\code{n_required}, and \code{hierarchical} (plus an optional
+\code{clusters} structure). A specification from
+\code{\link{read_combinations}} -- or a list of them -- is converted
+automatically via \code{\link{as_definitions}}.}
 
 \item{include_icd11}{Logical. If \code{TRUE} (default), append the ICD-11
 criterion as a benchmark row.}
+
+\item{reference}{\code{NULL} (default) to score against the full DSM-5-TR
+PCL-5 diagnosis computed from \code{data}. Otherwise an external
+reference standard: a logical vector with one value per row, a 0/1-coded
+numeric vector, or a single string naming such a column in \code{data}.
+Missing values mark rows without a reference assessment; those rows are
+excluded (with a message).}
+
+\item{include_full_pcl5}{Logical or \code{NULL} (default). Whether to add a
+\code{"Full 20-item PCL-5"} ceiling row. \code{NULL} resolves to
+\code{TRUE} exactly when \code{reference} is external (where the row is
+informative) and \code{FALSE} otherwise (where it would be a
+self-comparison).}
+
+\item{tidy}{Logical. If \code{FALSE} (default), return the formatted
+display table (see \code{\link{create_readable_summary}}). If
+\code{TRUE}, return a plain analysis table matching
+\code{\link{summarize_top_combinations}}: one row per evaluated rule with
+\code{Approach}, \code{Rank}, \code{Combination}, the 2x2 counts, and
+numeric metrics -- ready to filter, bind, or export without parsing
+labels.}
+
+\item{as_percent}{Logical. Only with \code{tidy = TRUE}: if \code{TRUE},
+Sensitivity/Specificity/PPV/NPV/Accuracy/Balanced Accuracy are returned
+as percentages (0-100) instead of fractions (0-1). Default \code{FALSE}.}
 }
 \value{
-A formatted performance table (see
-  \code{\link{create_readable_summary}}): one row for the full DSM-5-TR
-  reference, one per definition (labelled by rule and symptom set), and one
-  for ICD-11 when included. Includes Sensitivity, Specificity, PPV, NPV,
-  Accuracy, and Balanced Accuracy.
+With \code{tidy = FALSE}, a formatted performance table (see
+  \code{\link{create_readable_summary}}): one row for the reference
+  standard (labelled \code{PTSD_orig}), one per definition (labelled by
+  rule and symptom set), plus the optional \code{"Full 20-item PCL-5"} and
+  \code{"ICD-11"} rows.
+
+  With \code{tidy = TRUE}, a data.frame with columns \code{Approach},
+  \code{Rank} (the combination's rank within its definition),
+  \code{Combination} (comma-separated PCL-5 item numbers; \code{NA} for the
+  full-PCL-5 ceiling row), \code{TP}, \code{FN}, \code{FP}, \code{TN},
+  \code{Sensitivity}, \code{Specificity}, \code{PPV}, \code{NPV},
+  \code{Accuracy}, \code{Balanced Accuracy}. The reference self-comparison
+  row is omitted. The layout matches
+  \code{\link{summarize_top_combinations}}, so derivation and validation
+  results can be combined with \code{rbind()}.
 }
 \description{
 Applies a set of pre-derived symptom definitions to a dataset and returns a
-performance table scoring each one against that sample's full DSM-5-TR
-diagnosis. Because it needs only the definitions (symptom indices and rules)
-and a data frame, the same call can be run at a site that never saw the data
-the definitions were derived from.
+performance table scoring each one against a reference standard. By default
+the reference is the sample's own full DSM-5-TR diagnosis; supply
+\code{reference} to score against an external standard instead (e.g. a
+clinician CAPS diagnosis). Because it needs only the definitions (symptom
+indices and rules) and a data frame, the same call can be run at a site
+that never saw the data the definitions were derived from.
 }
 \details{
 Each definition is applied with its own rule via
-\code{\link{apply_symptom_combinations}} (using the default PCL-5 clusters
-when \code{hierarchical = TRUE}). When \code{include_icd11 = TRUE}, the
-ICD-11 criterion (\code{\link{create_icd11_diagnosis}}) is added as a fixed
-benchmark, computed locally on the supplied data. Every definition is then
-scored against the full DSM-5-TR diagnosis with
-\code{\link{summarize_ptsd_changes}} and \code{\link{create_readable_summary}}.
+\code{\link{apply_symptom_combinations}} (using the definition's own
+cluster structure when present, otherwise the default PCL-5 clusters, when
+\code{hierarchical = TRUE}). When \code{include_icd11 = TRUE}, the ICD-11
+criterion (\code{\link{create_icd11_diagnosis}}) is added as a fixed
+benchmark, computed locally on the supplied data.
+
+With an external \code{reference}, rows with a missing reference value are
+excluded from the evaluation (with a message reporting how many), and a
+\code{"Full 20-item PCL-5"} ceiling row is added by default: the full
+DSM-5-TR PCL-5 diagnosis scored against the same reference. This row
+separates the cost of using a reduced symptom set from the intrinsic
+disagreement between the PCL-5 and the external standard -- no reduced rule
+can be expected to exceed it.
 }
 \examples{
 \donttest{
@@ -57,10 +113,27 @@ comp <- compare_optimizations(
   n_top = 10, show_progress = FALSE
 )
 definitions <- extract_definitions(comp, n = 3)
+
+# Default: formatted table against the full DSM-5-TR PCL-5 diagnosis
 evaluate_definitions(ptsd, definitions)
+
+# Tidy analysis table (same layout as summarize_top_combinations())
+evaluate_definitions(ptsd, definitions, tidy = TRUE)
+
+# Against an external reference: the bundled general-population sample
+# carries paired CAPS-5 items, standing in for a clinician diagnosis
+gp   <- simulated_ptsd_genpop[1:400, ]
+caps <- create_caps5_diagnosis(
+  rename_caps5_columns(gp[, paste0("C", 1:20)])
+)$PTSD_caps5
+ptsd_gp <- rename_ptsd_columns(gp[, c("patient_id", paste0("S", 1:20))],
+                               id_col = "patient_id")
+ptsd_gp$caps <- caps
+evaluate_definitions(ptsd_gp, definitions, reference = "caps", tidy = TRUE)
 }
 }
 \seealso{
-\code{\link{extract_definitions}},
-  \code{\link{compare_optimizations}}.
+\code{\link{extract_definitions}}, \code{\link{as_definitions}},
+  \code{\link{compare_optimizations}},
+  \code{\link{summarize_top_combinations}}.
 }

@@ -79,6 +79,7 @@ reference:
   - title: Data Preparation
     desc: Functions for preparing and standardizing PCL-5 and CAPS-5 data
     contents:
+    - check_pcl5_data
     - rename_ptsd_columns
     - rename_caps5_columns
     - binarize_data
@@ -96,6 +97,7 @@ reference:
     - optimize_combinations
     - optimize_combinations_clusters
     - apply_symptom_combinations
+    - score_all_combinations
     - analyze_best_six_symptoms_four_required
     - analyze_best_six_symptoms_four_required_clusters
 
@@ -107,14 +109,17 @@ reference:
     - summarize_top_combinations
     - symptom_frequency
     - plot_symptom_frequency
-    - extract_definitions
-    - evaluate_definitions
 
-  - title: Import/Export
-    desc: Functions for sharing symptom combinations across research groups
+  - title: Multi-Site Definition Exchange
+    desc: >
+      Share derived symptom definitions across research groups and evaluate
+      them at validation sites — the full derivation-to-validation chain
     contents:
+    - extract_definitions
     - write_combinations
     - read_combinations
+    - as_definitions
+    - evaluate_definitions
 
   - title: Summary and Reporting
     desc: Functions for creating summaries and comparing diagnostic approaches

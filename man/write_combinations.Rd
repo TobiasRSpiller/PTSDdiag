@@ -11,7 +11,8 @@ write_combinations(
   clusters = NULL,
   n_symptoms = NULL,
   score_by = NULL,
-  description = ""
+  description = "",
+  label = NULL
 )
 }
 \arguments{
@@ -44,6 +45,13 @@ optimization (\code{"balanced_accuracy"}, \code{"accuracy"}, or
 \item{description}{Character string. Optional free-text description of the
 derivation context (e.g., sample characteristics, dataset name). Default
 is an empty string.}
+
+\item{label}{Character string or \code{NULL} (default). Optional short
+display label for the rule these combinations implement (e.g.
+\code{"4/6 Hierarchical"}). Stored in the file and used by
+\code{\link{as_definitions}} to name the definition at the validation
+site, so the derivation site controls how the rule is labelled in
+downstream tables.}
 }
 \value{
 The file path (invisibly), following the convention of

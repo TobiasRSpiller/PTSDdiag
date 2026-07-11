@@ -1,0 +1,35 @@
+citHeader("To cite PTSDdiag in publications, please cite the paper and the package:")
+
+bibentry(
+  bibtype = "Misc",
+  title   = "Optimizing PTSD Diagnosis: A Mathematical Approach to Simplifying Complexity to Six Symptoms Without Compromising Diagnostic Accuracy",
+  author  = c(
+    person("Laura", "Weidmann"),
+    person("Andrina", "Capaul"),
+    person("Achim", "Burrer"),
+    person("Philipp", "Homan"),
+    person("Erich", "Seifritz"),
+    person("Or", "Duek"),
+    person("Ian C.", "Fischer"),
+    person("Robert H.", "Pietrzak"),
+    person("Aaron", "Fisher"),
+    person("Ilan", "Harpaz-Rotem"),
+    person("Tobias R.", "Spiller")
+  ),
+  year    = "2025",
+  doi     = "10.31219/osf.io/6rk72_v1",
+  note    = "OSF Preprints"
+)
+
+bibentry(
+  bibtype = "Manual",
+  title   = "PTSDdiag: Optimize PTSD Diagnostic Criteria",
+  author  = c(
+    person("Laura", "Weidmann"),
+    person("Tobias R.", "Spiller"),
+    person("Flavio A.", "Sch\u00fcepp")
+  ),
+  year    = format(Sys.Date(), "%Y"),
+  note    = paste("R package version", meta$Version),
+  url     = "https://tobiasrspiller.github.io/PTSDdiag/"
+)

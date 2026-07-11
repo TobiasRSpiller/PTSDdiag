@@ -43,6 +43,9 @@
 #'   \code{symptom_20}. If \code{id_col} is supplied, the named columns are
 #'   prepended (in original order).
 #'
+#' @seealso \code{\link{check_pcl5_data}} for a pre-flight check that reports
+#'   every data problem at once before this step.
+#'
 #' @export
 #'
 #' @importFrom dplyr rename_with
@@ -199,4 +202,145 @@ rename_caps5_columns <- function(data, id_col = NULL) {
     return(renamed)
   }
   cbind(id_df, renamed, stringsAsFactors = FALSE)
+}
+
+
+#' Check PCL-5 item data before starting the workflow
+#'
+#' @description
+#' Pre-flight check for a data frame of PCL-5 item scores. Unlike the
+#' fail-fast validation inside the workflow functions, this check runs
+#' \strong{all} checks and reports every problem at once -- column count,
+#' numeric type, the integer 0-4 scoring range, and missing values -- so a
+#' data file can be fixed in one pass instead of one error at a time. Run it
+#' on your item columns before \code{\link{rename_ptsd_columns}}.
+#'
+#' @details
+#' Two input shapes are supported. If \code{data} already contains the renamed
+#' columns \code{symptom_1} through \code{symptom_20}, those are checked by
+#' name (extra columns such as \code{total} are ignored). Otherwise all
+#' non-\code{id_col} columns are treated as the item columns in positional
+#' DSM-5 order, exactly as \code{\link{rename_ptsd_columns}} will interpret
+#' them -- the check then also requires that there are exactly 20 of them.
+#'
+#' Rows in which every item is 0 are reported as an informational note, not an
+#' error: whether symptom-free records are kept (e.g. to contribute true
+#' negatives in a validation sample) or excluded is an analytic choice.
+#'
+#' @param data A data frame containing the PCL-5 item columns (plus any
+#'   columns named in \code{id_col}).
+#' @param id_col Optional character vector naming identifier column(s) to
+#'   exclude from the check, mirroring \code{\link{rename_ptsd_columns}}.
+#'
+#' @returns \code{invisible(TRUE)} when every check passes; otherwise the
+#'   function aborts with a report listing all failed checks.
+#'
+#' @seealso \code{\link{rename_ptsd_columns}}, which this check prepares for.
+#'
+#' @export
+#'
+#' @examples
+#' # Clean data passes and reports each check
+#' ptsd_items <- simulated_ptsd[1:100, paste0("S", 1:20)]
+#' check_pcl5_data(ptsd_items)
+#'
+#' # A data frame with several problems reports them all in one error
+#' bad <- ptsd_items
+#' bad$extra_column <- 1          # 21 item columns
+#' bad$S3[5] <- NA                # a missing value
+#' bad$S7[2] <- 9                 # out of the 0-4 range
+#' try(check_pcl5_data(bad))
+check_pcl5_data <- function(data, id_col = NULL) {
+  if (!is.data.frame(data)) {
+    cli::cli_abort("{.arg data} must be a data frame, not {.cls {class(data)}}.")
+  }
+  .validate_id_col(data, id_col)
+
+  expected_cols <- paste0("symptom_", 1:20)
+  by_name <- all(expected_cols %in% names(data))
+
+  report <- character(0)
+
+  if (by_name) {
+    items <- data[, expected_cols, drop = FALSE]
+    report <- c(report, "v" = "Found the 20 renamed item columns \\
+                ({.code symptom_1} to {.code symptom_20}); checking them by name.")
+  } else {
+    items <- data[, setdiff(names(data), id_col), drop = FALSE]
+    n_items <- ncol(items)
+    if (n_items == 20) {
+      report <- c(report, "v" = "Found exactly 20 non-ID columns; checking \\
+                  them positionally (DSM-5 item order assumed).")
+    } else {
+      report <- c(report, "x" = "Expected exactly 20 item columns after \\
+                  excluding {.arg id_col}; got {n_items}.")
+    }
+  }
+
+  n_rows <- nrow(data)
+  if (n_rows == 0) {
+    report <- c(report, "x" = "{.arg data} must contain at least one row.")
+  } else {
+    report <- c(report, "v" = "{n_rows} row{?s}.")
+  }
+
+  non_numeric_cols <- names(items)[!vapply(items, is.numeric, logical(1))]
+  if (length(non_numeric_cols) == 0) {
+    report <- c(report, "v" = "All item columns are numeric.")
+  } else {
+    report <- c(report, "x" = "{cli::qty(length(non_numeric_cols))}\\
+                Non-numeric item column{?s}: {.val {non_numeric_cols}}.")
+  }
+
+  num_items <- items[, setdiff(names(items), non_numeric_cols), drop = FALSE]
+
+  if (ncol(num_items) > 0 && n_rows > 0) {
+    na_by_col <- vapply(num_items, function(x) sum(is.na(x)), integer(1))
+    if (sum(na_by_col) == 0) {
+      report <- c(report, "v" = "No missing values.")
+    } else {
+      na_total <- sum(na_by_col)
+      na_cols  <- names(na_by_col)[na_by_col > 0]
+      na_rows  <- utils::head(which(rowSums(is.na(num_items)) > 0), 5)
+      report <- c(report, "x" = "{na_total} missing value{?s} in \\
+                  {.val {na_cols}} (first affected \\
+                  {cli::qty(length(na_rows))}row{?s}: {na_rows}).")
+    }
+
+    is_bad_value <- function(x) !is.na(x) & (x < 0 | x > 4 | x != floor(x))
+    bad_value_cols <- names(num_items)[vapply(num_items, function(x)
+      any(is_bad_value(x)), logical(1))]
+    if (length(bad_value_cols) == 0) {
+      report <- c(report, "v" = "All scores are integers between 0 and 4.")
+    } else {
+      bad_value_examples <- utils::head(
+        sort(unique(unlist(lapply(num_items[bad_value_cols], function(x)
+          x[is_bad_value(x)])))), 5)
+      report <- c(report, "x" = "{cli::qty(length(bad_value_cols))}Column{?s} \\
+                  {.val {bad_value_cols}} {cli::qty(length(bad_value_cols))}\\
+                  {?contains/contain} values outside the integer 0-4 range \\
+                  (e.g. {bad_value_examples}).")
+    }
+
+    if (length(non_numeric_cols) == 0 && ncol(num_items) == 20 &&
+        sum(na_by_col) == 0) {
+      n_all_zero <- sum(rowSums(num_items != 0) == 0)
+      if (n_all_zero > 0) {
+        report <- c(report, "i" = "{n_all_zero} row{?s} have all items = 0. \\
+                    Some analyses exclude symptom-free records; this is an \\
+                    analytic choice, not an error.")
+      }
+    }
+  }
+
+  if (any(names(report) == "x")) {
+    cli::cli_abort(c(
+      "{.arg data} is not ready for the PTSDdiag workflow.",
+      report
+    ))
+  }
+
+  cli::cli_bullets(report)
+  cli::cli_alert_success("All checks passed -- data ready for the PTSDdiag workflow.")
+  invisible(TRUE)
 }

@@ -338,46 +338,7 @@ optimize_combinations_clusters <- function(data, n_symptoms = 6, n_required = 4,
   binarized_data <- as.matrix(symptom_data)
 
   # Generate valid combinations ensuring representation from all clusters
-  # Strategy: pick one symptom from each cluster as "base", then fill remaining
-  # slots from the remaining symptom pool
-  n_remaining <- n_symptoms - n_clusters
-
-  # Generate all "base" combinations (one from each cluster)
-  # Use expand.grid to get all combinations of one-from-each-cluster
-  cluster_items <- lapply(clusters, function(cl) cl)
-  base_grid <- expand.grid(cluster_items, KEEP.OUT.ATTRS = FALSE)
-
-  valid_combinations <- vector("list", nrow(base_grid) * 100)
-  combination_count <- 0
-
-  all_items <- 1:20
-
-  for (row_idx in seq_len(nrow(base_grid))) {
-    base <- as.integer(base_grid[row_idx, ])
-    remaining_pool <- setdiff(all_items, base)
-
-    if (n_remaining == 0) {
-      # Exactly one from each cluster, no remaining slots
-      combination_count <- combination_count + 1
-      if (combination_count > length(valid_combinations)) {
-        length(valid_combinations) <- length(valid_combinations) * 2
-      }
-      valid_combinations[[combination_count]] <- sort(base)
-    } else {
-      # Choose n_remaining from the remaining pool
-      extras <- utils::combn(remaining_pool, n_remaining, simplify = FALSE)
-      for (extra in extras) {
-        combination_count <- combination_count + 1
-        if (combination_count > length(valid_combinations)) {
-          length(valid_combinations) <- length(valid_combinations) * 2
-        }
-        valid_combinations[[combination_count]] <- sort(c(base, extra))
-      }
-    }
-  }
-
-  valid_combinations <- valid_combinations[seq_len(combination_count)]
-  valid_combinations <- unique(valid_combinations)
+  valid_combinations <- .generate_valid_combinations(n_symptoms, clusters)
 
   cli::cli_alert_info("Generated {length(valid_combinations)} valid cluster-constrained combination{?s}")
 

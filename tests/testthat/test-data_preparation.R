@@ -156,3 +156,63 @@ test_that("rename_caps5_columns preserves id_col", {
   expect_equal(names(renamed), c("patient_id", paste0("symptom_", 1:20)))
   expect_equal(renamed$patient_id, raw$patient_id)
 })
+
+# ---------------------------------------------------------------------------
+# check_pcl5_data()
+# ---------------------------------------------------------------------------
+
+test_that("check_pcl5_data passes clean data and returns invisible TRUE", {
+  clean <- data.frame(matrix(sample(0:4, 20 * 10, replace = TRUE),
+                             nrow = 10, ncol = 20))
+  expect_message(res <- check_pcl5_data(clean), "All checks passed")
+  expect_true(res)
+})
+
+test_that("check_pcl5_data reports all problems in one error", {
+  set.seed(9)
+  bad <- data.frame(matrix(sample(0:4, 20 * 10, replace = TRUE),
+                           nrow = 10, ncol = 20))
+  bad$extra <- 1              # a 21st item column
+  bad[3, 2]  <- NA            # a missing value
+  bad[5, 4]  <- 9             # out of the 0-4 range
+
+  # one abort carries all three problems
+  expect_error(check_pcl5_data(bad), "got 21")
+  expect_error(check_pcl5_data(bad), "missing value")
+  expect_error(check_pcl5_data(bad), "0-4 range")
+})
+
+test_that("check_pcl5_data reports non-numeric item columns", {
+  bad <- data.frame(matrix(sample(0:4, 19 * 6, replace = TRUE),
+                           nrow = 6, ncol = 19))
+  bad$text_col <- "yes"
+  expect_error(check_pcl5_data(bad), "Non-numeric")
+})
+
+test_that("check_pcl5_data respects id_col and the renamed-data path", {
+  raw <- data.frame(
+    patient_id = sprintf("P%02d", 1:10),
+    matrix(sample(0:4, 20 * 10, replace = TRUE), nrow = 10, ncol = 20),
+    stringsAsFactors = FALSE
+  )
+  expect_true(suppressMessages(check_pcl5_data(raw, id_col = "patient_id")))
+
+  # already-renamed data with extra workflow columns is checked by name
+  renamed <- rename_ptsd_columns(raw, id_col = "patient_id")
+  renamed$total <- rowSums(renamed[, paste0("symptom_", 1:20)])
+  expect_true(suppressMessages(check_pcl5_data(renamed)))
+})
+
+test_that("check_pcl5_data notes all-zero rows without failing", {
+  clean <- data.frame(matrix(sample(1:4, 20 * 5, replace = TRUE),
+                             nrow = 5, ncol = 20))
+  clean[2, ] <- 0
+  expect_message(res <- check_pcl5_data(clean), "all items = 0")
+  expect_true(res)
+})
+
+test_that("check_pcl5_data errors on zero rows and non-data-frame input", {
+  empty <- data.frame(matrix(numeric(0), nrow = 0, ncol = 20))
+  expect_error(check_pcl5_data(empty), "at least one row")
+  expect_error(check_pcl5_data("not a data frame"), "data frame")
+})

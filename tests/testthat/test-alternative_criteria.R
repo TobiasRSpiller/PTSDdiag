@@ -23,7 +23,7 @@ icd11_cases <- rbind(
             symptom_6 = 3, symptom_7  = 3,
             symptom_8 = 3, symptom_9  = 3,
             symptom_15 = 3, symptom_16 = 3, symptom_17 = 3),
-  # row 2: re-experiencing absent (items 1-3 all 0) -> ICD-11 FALSE
+  # row 2: re-experiencing absent (items 2-3 all 0) -> ICD-11 FALSE
   make_pcl5(symptom_6 = 3, symptom_7  = 3,
             symptom_16 = 3, symptom_17 = 3),
   # row 3: avoidance absent (items 6-7 all 0) -> ICD-11 FALSE
@@ -65,6 +65,22 @@ test_that("create_icd11_diagnosis: missing avoidance -> FALSE", {
 test_that("create_icd11_diagnosis: missing sense-of-current-threat -> FALSE", {
   result <- create_icd11_diagnosis(icd11_cases)
   expect_false(result$PTSD_icd11[4])
+})
+
+test_that("create_icd11_diagnosis: re-experiencing uses items 2/3 only (narrow mapping)", {
+  # Avoidance (item 6) and current threat (item 17) are present in all three
+  # cases; only the re-experiencing operationalization differs. ICD-11
+  # re-experiencing must have a here-and-now quality: nightmares (item 2) and
+  # flashbacks (item 3) qualify; intrusive memories (item 1) as worded in the
+  # PCL-5 do not, so item 1 alone must NOT satisfy the cluster.
+  via_1 <- make_pcl5(symptom_1 = 3, symptom_6 = 3, symptom_17 = 3)
+  expect_false(create_icd11_diagnosis(via_1)$PTSD_icd11)
+
+  via_2 <- make_pcl5(symptom_2 = 3, symptom_6 = 3, symptom_17 = 3)
+  expect_true(create_icd11_diagnosis(via_2)$PTSD_icd11)
+
+  via_3 <- make_pcl5(symptom_3 = 3, symptom_6 = 3, symptom_17 = 3)
+  expect_true(create_icd11_diagnosis(via_3)$PTSD_icd11)
 })
 
 test_that("create_icd11_diagnosis: current threat uses items 17/18, not 16", {
