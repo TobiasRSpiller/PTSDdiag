@@ -1,3 +1,72 @@
+# PTSDdiag 0.4.0
+
+This release focuses on the multi-site validation workflow: everything a
+collaborator site previously had to hand-code around the package is now built
+in. It also corrects the ICD-11 operationalization to the field-standard
+six-item mapping (see Corrections — ICD-11 results change). Apart from that
+correction, no existing call changes behavior.
+
+## Corrections
+
+* **ICD-11 re-experiencing now uses PCL-5 items 2-3 (was 1-3).**
+  `create_icd11_diagnosis()` — and everything built on it: the `"icd11"`
+  fixed criterion in `compare_optimizations()`, `include_icd11 = TRUE` in
+  `evaluate_definitions()`, and the ICD-11 row of the symptom-frequency
+  heatmap — now operationalizes ICD-11 PTSD with the narrow six-item mapping
+  (items 2, 3, 6, 7, 17, 18; at least one symptom per cluster). ICD-11
+  requires re-experiencing with a here-and-now quality, which nightmares
+  (item 2) and flashbacks (item 3) capture but intrusive memories (item 1)
+  as worded in the PCL-5 do not; this is the mapping used across the
+  published PCL-5-to-ICD-11 literature (Kuester et al. 2017; Schellong et
+  al. 2019; Heeke et al. 2020; Pettrich et al. 2025). **All ICD-11 benchmark
+  results change** relative to earlier versions; because the six-item rule
+  is strictly more conservative, ICD-11 diagnoses can only become less
+  frequent. The broad seven-item variant remains available as a custom fixed
+  criterion — see the recipe in `?create_icd11_diagnosis`.
+
+## New features
+
+* `as_definitions()` converts combinations imported from JSON into the
+  definitions list `evaluate_definitions()` expects, with optional top-`n`
+  truncation and automatic rule labels such as `"4/6 Hierarchical"`.
+  `read_combinations()` output is now classed `ptsdiag_spec` and can be passed
+  to `evaluate_definitions()` directly (single spec or a list of specs — the
+  conversion happens automatically). `write_combinations()` gains an optional
+  `label` argument stored in the file, so the derivation site controls how
+  each rule is labelled downstream.
+* `evaluate_definitions()` gains `reference`: validate definitions against an
+  external reference standard (e.g. a clinician CAPS diagnosis) supplied as a
+  logical vector, a 0/1 column, or a column name. Rows with a missing
+  reference are excluded with a message, and a `"Full 20-item PCL-5"` ceiling
+  row is added by default (`include_full_pcl5`) so the cost of the reduced
+  symptom set can be separated from the intrinsic PCL-5-vs-reference
+  disagreement.
+* `evaluate_definitions()` gains `tidy` (and `as_percent`): return a plain
+  analysis table with `Approach` / `Rank` / `Combination`, the 2x2 counts,
+  and numeric metrics — the same layout as `summarize_top_combinations()`,
+  so derivation and validation results can be combined with `rbind()`. No
+  more parsing rule labels out of the formatted display table.
+* `score_all_combinations()` scores **every** candidate combination
+  (optionally cluster-constrained) against the DSM-5-TR diagnosis and returns
+  the complete ranked table — the exhaustive companion to
+  `optimize_combinations()`, for interchangeability ("plateau") analyses.
+  Chunked, with optional parallel scoring via `future.apply` like
+  `cross_validation()`.
+* `check_pcl5_data()`: exported pre-flight check that reports every data
+  problem in one pass (column count, numeric type, integer 0-4 range, missing
+  values) instead of one error at a time, plus an informational note on
+  all-zero rows. Aimed at collaborator sites preparing data for
+  `rename_ptsd_columns()`.
+* New `inst/CITATION`: `citation("PTSDdiag")` now points to the paper and the
+  package.
+
+## Bug fixes
+
+* Hierarchical definitions that carry a custom cluster structure (stored in a
+  combinations JSON file) are now evaluated with exactly those clusters;
+  previously `evaluate_definitions()` silently substituted the default PCL-5
+  B/C/D/E structure.
+
 # PTSDdiag 0.3.5
 
 ## New features

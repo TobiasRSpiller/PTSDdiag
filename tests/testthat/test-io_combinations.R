@@ -343,3 +343,46 @@ test_that("write_combinations handles empty description", {
   spec <- read_combinations(tmp)
   expect_equal(spec$description, "")
 })
+
+# ============================================================
+# label round-trip and ptsdiag_spec class (v0.4.0)
+# ============================================================
+
+test_that("read_combinations returns a classed spec with label round-trip", {
+  combos <- make_test_combos()
+  tmp <- tempfile(fileext = ".json")
+  on.exit(unlink(tmp))
+
+  write_combinations(combos, tmp, n_required = 4,
+                     label = "4/6 Non-hierarchical")
+  spec <- read_combinations(tmp)
+
+  expect_s3_class(spec, "ptsdiag_spec")
+  expect_true(is.list(spec))            # backward compatible: still a list
+  expect_equal(spec$label, "4/6 Non-hierarchical")
+  # $-access of the pre-0.4.0 fields is unchanged
+  expect_equal(length(spec$combinations), 3)
+  expect_equal(spec$n_required, 4)
+})
+
+test_that("read_combinations yields NA label for files written without one", {
+  combos <- make_test_combos()
+  tmp <- tempfile(fileext = ".json")
+  on.exit(unlink(tmp))
+
+  write_combinations(combos, tmp, n_required = 4)
+  spec <- read_combinations(tmp)
+  expect_true(is.na(spec$label))
+  expect_s3_class(spec, "ptsdiag_spec")
+})
+
+test_that("write_combinations validates the label argument", {
+  combos <- make_test_combos()
+  tmp <- tempfile(fileext = ".json")
+  on.exit(unlink(tmp))
+
+  expect_error(write_combinations(combos, tmp, label = c("a", "b")),
+               "single character")
+  expect_error(write_combinations(combos, tmp, label = 1),
+               "single character")
+})

@@ -62,5 +62,7 @@ lapply(definitions, function(d) d$symptoms)
 }
 \seealso{
 \code{\link{evaluate_definitions}},
+  \code{\link{as_definitions}} for building the same object from
+  combinations imported with \code{\link{read_combinations}},
   \code{\link{compare_optimizations}}.
 }

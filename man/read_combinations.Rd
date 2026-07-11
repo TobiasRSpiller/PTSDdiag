@@ -28,13 +28,20 @@ A named list with the following elements:
   \item{parameters}{Named list with additional metadata: \code{n_symptoms}
     and \code{score_by} (may be \code{NULL} if not recorded).}
   \item{description}{Character string with the user-provided description.}
+  \item{label}{Character string with the display label stored by
+    \code{\link{write_combinations}}, or \code{NA} for files written without
+    one (including files from versions before 0.4.0). Used by
+    \code{\link{as_definitions}} to name the definition.}
   \item{ptsddiag_version}{Character string indicating which package version
     created the file.}
   \item{created_at}{Character string with the creation timestamp.}
 }
 
-The \code{combinations}, \code{n_required}, and \code{clusters} elements
-can be passed directly to \code{\link{apply_symptom_combinations}}:
+The returned list carries class \code{ptsdiag_spec}, so it can be handed
+directly to \code{\link{as_definitions}} or \code{\link{evaluate_definitions}}
+(which converts it automatically). For row-level diagnoses, the
+\code{combinations}, \code{n_required}, and \code{clusters} elements can
+also be passed to \code{\link{apply_symptom_combinations}}:
 
 \preformatted{
 spec <- read_combinations("my_combos.json")
@@ -84,6 +91,9 @@ unlink(tmp)
 }
 \seealso{
 \code{\link{write_combinations}} to export combinations to a JSON file.
+
+\code{\link{as_definitions}} to convert one or more imported specifications
+into the definitions list used by \code{\link{evaluate_definitions}}.
 
 \code{\link{apply_symptom_combinations}} to apply imported combinations
 to new data.

@@ -118,7 +118,7 @@ test_that("include_icd11 = TRUE adds an ICD-11 fixed scenario", {
   expect_true("ICD-11" %in% names(comp$scenarios))
   expect_equal(attr(comp$scenarios[["ICD-11"]], "type"), "fixed")
   expect_equal(comp$scenarios[["ICD-11"]]$best_symptoms[[1]],
-               c(1, 2, 3, 6, 7, 17, 18))
+               c(2, 3, 6, 7, 17, 18))
   # Diagnosis column matches create_icd11_diagnosis output
   ref <- create_icd11_diagnosis(data)$PTSD_icd11
   expect_equal(comp$scenarios[["ICD-11"]]$diagnosis_comparison$PTSD_icd11, ref)

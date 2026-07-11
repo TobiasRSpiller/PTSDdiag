@@ -289,6 +289,77 @@
   )
 }
 
+#' Generate the candidate combinations for an exhaustive search
+#'
+#' For \code{clusters = NULL}, all \code{choose(n_total, n_symptoms)} subsets
+#' of the items. For a cluster structure, only the combinations containing at
+#' least one item per cluster -- the same candidate set searched by
+#' \code{optimize_combinations_clusters()}. Every combination is returned as a
+#' sorted integer vector.
+#'
+#' @param n_symptoms Integer. Number of items per combination.
+#' @param clusters NULL for unconstrained subsets, or a named list of integer
+#'   vectors defining the cluster structure.
+#' @param n_total Integer. Total number of items (default 20).
+#' @return List of sorted integer vectors.
+#' @noRd
+.generate_valid_combinations <- function(n_symptoms, clusters = NULL,
+                                         n_total = 20) {
+  if (is.null(clusters)) {
+    return(utils::combn(seq_len(n_total), n_symptoms, simplify = FALSE))
+  }
+
+  n_clusters <- length(clusters)
+  if (n_symptoms < n_clusters) {
+    cli::cli_abort(c(
+      "{.arg n_symptoms} ({n_symptoms}) must be at least the number of \\
+      clusters ({n_clusters}).",
+      "i" = "Cluster-constrained combinations require >= 1 symptom per cluster."
+    ))
+  }
+
+  # Strategy: pick one symptom from each cluster as "base", then fill remaining
+  # slots from the remaining symptom pool
+  n_remaining <- n_symptoms - n_clusters
+
+  # Generate all "base" combinations (one from each cluster)
+  # Use expand.grid to get all combinations of one-from-each-cluster
+  cluster_items <- lapply(clusters, function(cl) cl)
+  base_grid <- expand.grid(cluster_items, KEEP.OUT.ATTRS = FALSE)
+
+  valid_combinations <- vector("list", nrow(base_grid) * 100)
+  combination_count <- 0
+
+  all_items <- seq_len(n_total)
+
+  for (row_idx in seq_len(nrow(base_grid))) {
+    base <- as.integer(base_grid[row_idx, ])
+    remaining_pool <- setdiff(all_items, base)
+
+    if (n_remaining == 0) {
+      # Exactly one from each cluster, no remaining slots
+      combination_count <- combination_count + 1
+      if (combination_count > length(valid_combinations)) {
+        length(valid_combinations) <- length(valid_combinations) * 2
+      }
+      valid_combinations[[combination_count]] <- sort(base)
+    } else {
+      # Choose n_remaining from the remaining pool
+      extras <- utils::combn(remaining_pool, n_remaining, simplify = FALSE)
+      for (extra in extras) {
+        combination_count <- combination_count + 1
+        if (combination_count > length(valid_combinations)) {
+          length(valid_combinations) <- length(valid_combinations) * 2
+        }
+        valid_combinations[[combination_count]] <- sort(c(base, extra))
+      }
+    }
+  }
+
+  valid_combinations <- valid_combinations[seq_len(combination_count)]
+  unique(valid_combinations)
+}
+
 #' Diagnose based on a single symptom combination
 #'
 #' Applies a symptom combination to binarized data and returns a logical
@@ -578,7 +649,7 @@
     icd11 = list(
       label    = "ICD-11",
       column   = "PTSD_icd11",
-      symptoms = c(1, 2, 3, 6, 7, 17, 18),
+      symptoms = c(2, 3, 6, 7, 17, 18),
       producer = function(data) create_icd11_diagnosis(data)$PTSD_icd11
     ),
     caps5 = list(
@@ -621,8 +692,88 @@
     if (!is.logical(d$hierarchical) || length(d$hierarchical) != 1) {
       cli::cli_abort("Definition {.val {label}}: {.field hierarchical} must be a single logical.")
     }
+    if (!is.null(d$clusters)) {
+      .validate_clusters(d$clusters, n_total = n_total)
+    }
   }
   invisible(TRUE)
+}
+
+#' Is x a single combination specification (read_combinations() shape)?
+#'
+#' Distinguishes the spec shape (\code{$combinations} + \code{$n_required},
+#' as returned by \code{read_combinations()}) from the definitions shape
+#' (\code{$symptoms} + \code{$n_required} + \code{$hierarchical}, as returned
+#' by \code{extract_definitions()}).
+#' @noRd
+.is_combination_spec <- function(x) {
+  is.list(x) && !is.data.frame(x) &&
+    !is.null(x$combinations) && !is.null(x$n_required)
+}
+
+#' Resolve the reference argument of evaluate_definitions()
+#'
+#' Accepts a logical vector, a 0/1 numeric vector, or a single string naming a
+#' column of \code{data}, and returns a logical vector of length
+#' \code{nrow(data)} with \code{NA}s preserved (the caller decides how to
+#' handle them). Aborts when the reference cannot be interpreted or contains
+#' only missing values.
+#' @noRd
+.resolve_reference <- function(data, reference) {
+  if (is.character(reference)) {
+    if (length(reference) != 1 || is.na(reference) || !nzchar(reference)) {
+      cli::cli_abort(
+        "{.arg reference} must be a single column name or a logical vector."
+      )
+    }
+    if (reference %in% paste0("symptom_", 1:20)) {
+      cli::cli_abort(c(
+        "{.arg reference} must not be one of the PCL-5 item columns.",
+        "i" = "Point it at a carry-through diagnosis column (added via \\
+              {.code rename_ptsd_columns(id_col = ...)})."
+      ))
+    }
+    if (!reference %in% names(data)) {
+      carry <- .detect_carry_cols(data)
+      hint <- if (length(carry) > 0) {
+        "Available non-symptom column{?s}: {.val {carry}}."
+      } else {
+        "Add the reference column to {.arg data} before calling."
+      }
+      cli::cli_abort(c(
+        "Column {.val {reference}} not found in {.arg data}.",
+        "i" = hint
+      ))
+    }
+    ref <- data[[reference]]
+  } else {
+    ref <- reference
+  }
+
+  if (length(ref) != nrow(data)) {
+    cli::cli_abort(c(
+      "{.arg reference} must have one value per row of {.arg data}.",
+      "x" = "Got {length(ref)} value{?s} for {nrow(data)} row{?s}."
+    ))
+  }
+
+  if (is.logical(ref)) {
+    out <- ref
+  } else if (is.numeric(ref) && all(ref %in% c(0, 1) | is.na(ref))) {
+    out <- as.logical(ref)
+  } else {
+    cli::cli_abort(c(
+      "{.arg reference} must be logical ({.val TRUE}/{.val FALSE}) or coded 0/1.",
+      "x" = "Got {.cls {class(ref)}} values.",
+      "i" = "Convert your reference first, e.g. {.code data$caps == 1}."
+    ))
+  }
+
+  if (all(is.na(out))) {
+    cli::cli_abort("{.arg reference} contains only missing values.")
+  }
+
+  out
 }
 
 #' Validate the scenarios list passed to compare_optimizations()

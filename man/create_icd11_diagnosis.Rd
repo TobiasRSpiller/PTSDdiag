@@ -40,16 +40,34 @@ ICD-11 PTSD requires ALL THREE of the following clusters to be met (symptom
 present = score \eqn{\ge} 2 on original 0–4 scale):
 
 \enumerate{
-  \item \strong{Re-experiencing} (in the present): \eqn{\ge} 1 of PCL-5
-    items 1, 2, 3 (intrusive memories, nightmares, flashbacks)
+  \item \strong{Re-experiencing in the present}: \eqn{\ge} 1 of PCL-5
+    items 2, 3 (nightmares, flashbacks)
   \item \strong{Avoidance}: \eqn{\ge} 1 of PCL-5 items 6, 7
   \item \strong{Sense of current threat}: \eqn{\ge} 1 of PCL-5 items 17, 18
     (hypervigilance, exaggerated startle)
 }
 
-A minimum of 3 symptoms total across all ICD-11 items (1, 2, 3, 6, 7, 17,
-18) must be present. This is automatically satisfied when all three cluster
+A minimum of 3 symptoms total across all ICD-11 items (2, 3, 6, 7, 17, 18)
+must be present. This is automatically satisfied when all three cluster
 requirements are met but is enforced explicitly for clarity.
+
+This is the \emph{narrow} six-item mapping used across the published
+PCL-5-to-ICD-11 literature (e.g. Kuester et al. 2017, Schellong et al.
+2019, Heeke et al. 2020, Pettrich et al. 2025): ICD-11 requires
+re-experiencing to have a here-and-now quality, which nightmares (item 2)
+and flashbacks (item 3) capture, while intrusive memories (item 1) as
+worded in the PCL-5 do not. To benchmark the broader seven-item variant
+(items 1, 2, 3, 6, 7, 17, 18) instead, compute it yourself and pass it to
+\code{\link{compare_optimizations}} as a custom fixed criterion:
+
+\preformatted{
+broad <- rowSums(data[, paste0("symptom_", c(1, 2, 3))]  >= 2) >= 1 &
+         rowSums(data[, paste0("symptom_", c(6, 7))]     >= 2) >= 1 &
+         rowSums(data[, paste0("symptom_", c(17, 18))]   >= 2) >= 1
+compare_optimizations(data, scenarios = list(
+  "ICD-11 (broad)" = list(type = "fixed", criterion = broad,
+                          symptoms = c(1, 2, 3, 6, 7, 17, 18))))
+}
 
 DSM-5-TR diagnosis (\code{PTSD_orig}) is computed using the same binarization
 logic as the rest of the package (\code{\link{create_ptsd_diagnosis_binarized}}).

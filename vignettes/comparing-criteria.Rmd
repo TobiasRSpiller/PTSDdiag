@@ -25,7 +25,7 @@ As the differences between the DSM-5-TR and the ICD-11 illustrate, there are num
 - **Four of six symptoms, hierarchical.** At least four of a total of six selected symptoms must be present, and the selected set must include at least one symptom from each DSM-5-TR cluster (B, C, D, E). This preserves the polythetic structure of the full criteria.
 - **Four of six symptoms, without the cluster requirement.** The same number of symptoms, but any six symptoms may be chosen, not requiring the cluster structure.
 - **Three of six symptoms, without the cluster requirement.** A lower threshold on six symptoms, more resembling the ICD-11 definition of PTSD.
-- **ICD-11.** A fixed rule using seven items (re-experiencing items 1, 2, 3; avoidance items 6, 7; sense of current threat items 17, 18).
+- **ICD-11.** A fixed rule using six items (re-experiencing in the present, items 2, 3; avoidance, items 6, 7; sense of current threat, items 17, 18), requiring at least one symptom per cluster. This is the narrow mapping used across the published PCL-5-to-ICD-11 literature: ICD-11 re-experiencing must have a here-and-now quality, which nightmares and flashbacks capture but the PCL-5's intrusive-memories item (item 1) does not.
 
 ## Requirements for the input data
 

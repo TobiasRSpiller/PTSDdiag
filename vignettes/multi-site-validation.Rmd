@@ -67,7 +67,29 @@ definitions <- extract_definitions(comp_vet, n = 5)
 lapply(definitions, function(d) d$symptoms)
 ```
 
-This object is everything the other site needs, and it holds nothing but symptom numbers and rules. No participant, score, or demographic is in it, so it can be shared freely. `write_combinations()` serializes a set of combinations to a small JSON file for transfer, as shown in the [Validating abbreviated symptom definitions](validation.html) vignette.
+This object is everything the other site needs, and it holds nothing but symptom numbers and rules. No participant, score, or demographic is in it, so it can be shared freely.
+
+In a real collaboration the definitions travel as files rather than as an R object. `write_combinations()` serializes one rule's combinations to a small JSON file; the optional `label` stores the rule's display name in the file, so tables produced at the receiving site are labelled by the derivation site automatically. A temporary file stands in for the transfer here.
+
+```{r share-json}
+json_file <- tempfile(fileext = ".json")
+write_combinations(
+  definitions[["4/6 Hierarchical"]]$symptoms, json_file,
+  n_required  = 4,
+  clusters    = list(B = 1:5, C = 6:7, D = 8:14, E = 15:20),
+  label       = "4/6 Hierarchical",
+  description = "Top 5 hierarchical combinations, veteran derivation sample"
+)
+```
+
+At the other end, `read_combinations()` imports the file and `as_definitions()` turns one or several imported files into the same definitions structure `extract_definitions()` produces — `lapply(files, read_combinations)` handles a whole folder of rules in one line. The round trip reproduces the shared definition exactly:
+
+```{r json-roundtrip}
+received <- as_definitions(read_combinations(json_file))
+
+all.equal(received[["4/6 Hierarchical"]]$symptoms,
+          definitions[["4/6 Hierarchical"]]$symptoms)
+```
 
 ## Evaluating every definition in a sample
 
@@ -101,6 +123,15 @@ evaluate_definitions(genpop, definitions, include_icd11 = TRUE)
 ```
 
 Both tables are built the same way, so they line up row for row with the derivation table above.
+
+## A tidy table for downstream analysis
+
+The tables above are formatted for reading. For filtering, plotting, or combining results across sites, request the same evaluation as a plain analysis table with `tidy = TRUE`: one row per combination with `Approach`, `Rank`, `Combination`, the 2x2 counts, and numeric metrics. The layout matches `summarize_top_combinations()` on the derivation side, so tables from both sites stack with `rbind()` — no label parsing required.
+
+```{r tidy-table}
+tidy_gp <- evaluate_definitions(genpop, definitions, tidy = TRUE)
+head(tidy_gp)
+```
 
 ## Reading the two tables together
 

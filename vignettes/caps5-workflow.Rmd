@@ -86,6 +86,19 @@ comp <- compare_optimizations(
 summarize_top_combinations(comp, top_n = 3, as_percent = TRUE)
 ```
 
+## Validating derived definitions against the CAPS-5 diagnosis
+
+At a validation site the definitions arrive already derived (see [Validating a shared definition across sites](multi-site-validation.html)), and the question becomes how each performs against the local clinician diagnosis. `evaluate_definitions()` takes the clinician standard through its `reference` argument: a logical vector, a 0/1-coded column, or the name of a carry-through column in the data. Participants without a clinician interview — `NA` in the reference — are excluded automatically, with a message reporting how many. A `"Full 20-item PCL-5"` ceiling row is added by default: the complete PCL-5 diagnosis scored against the same reference. That row separates the cost of dropping items from the intrinsic PCL-5-vs-CAPS-5 disagreement, and no reduced definition can be expected to beat it. Here we extract the top three combinations per optimized rule from the comparison above and request the tidy table layout.
+
+```{r evaluate-vs-caps5}
+definitions <- extract_definitions(comp, n = 3)
+
+evaluate_definitions(ptsd, definitions,
+                     reference = caps5_dx$PTSD_caps5, tidy = TRUE)
+```
+
+The `Combination` column is `NA` for the ceiling row, which applies all 20 items rather than a subset. Comparing each definition's balanced accuracy with the ceiling shows how much of the disagreement with the CAPS-5 is attributable to simplification and how much the full instrument shares.
+
 ## Interpreting agreement and disagreement
 
 When the PCL-5 and CAPS-5 diagnoses agree closely, as they do in this paired sample, a simplified PCL-5 definition that reproduces the full PCL-5 diagnosis also largely reproduces the clinician diagnosis, so the choice of reference matters little. When the instruments diverge, the choice of reference matters, and reporting performance against both is the honest course; the fixed-criterion mechanism above makes that choice explicit.

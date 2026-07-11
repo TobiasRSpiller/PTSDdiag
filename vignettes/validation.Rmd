@@ -110,6 +110,20 @@ summarize_ptsd_changes(applied) %>%
 
 Compare this table with the derivation performance. The predictive values move with prevalence: in the lower-prevalence community sample, PPV falls and NPV rises, so a positive result from the same rule is less likely to correspond to a true case than it was in the clinic. Sensitivity and specificity are often more stable, but they are not immune to differences in case mix: here sensitivity is lower in the community sample, whose symptom profiles are milder than the clinic's, while specificity is slightly higher. Neither shift is a failure of the rule; both are properties of applying any fixed criterion across settings that differ in prevalence and severity, and revealing them is exactly what external validation is for.
 
+## How special is the winning subset?
+
+Internal and external validation both look at the top of the ranking. A complementary question is how the rest of the candidate set behaves: if thousands of subsets perform nearly as well as the winner, the specific winning items should not be over-interpreted, because many symptom sets are effectively interchangeable. `score_all_combinations()` answers this by scoring every candidate combination — here all $\binom{20}{4} = 4{,}845$ four-symptom subsets — and returning the complete ranked table, the exhaustive companion to `optimize_combinations()`. Plotting the ranking metric against rank typically shows a plateau of near-optimal subsets before performance falls away; the width of that plateau is the interchangeability of the solution.
+
+```{r all-combinations, fig.alt = "Balanced accuracy of every four-symptom combination by rank"}
+curve <- score_all_combinations(ptsd, n_symptoms = 4, n_required = 3,
+                                show_progress = FALSE)
+nrow(curve)
+head(curve, 3)
+
+plot(curve$rank, curve$balanced_accuracy, type = "l", log = "x",
+     xlab = "Combination rank (log scale)", ylab = "Balanced accuracy")
+```
+
 ## See also
 
 - [Getting started](getting-started.html) for the single-cohort derivation workflow.

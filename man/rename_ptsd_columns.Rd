@@ -67,3 +67,7 @@ with_id <- rename_ptsd_columns(sample_data, id_col = "patient_id")
 head(with_id)
 
 }
+\seealso{
+\code{\link{check_pcl5_data}} for a pre-flight check that reports
+  every data problem at once before this step.
+}

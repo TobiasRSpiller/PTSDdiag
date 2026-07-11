@@ -51,6 +51,13 @@
 #'   derivation context (e.g., sample characteristics, dataset name). Default
 #'   is an empty string.
 #'
+#' @param label Character string or \code{NULL} (default). Optional short
+#'   display label for the rule these combinations implement (e.g.
+#'   \code{"4/6 Hierarchical"}). Stored in the file and used by
+#'   \code{\link{as_definitions}} to name the definition at the validation
+#'   site, so the derivation site controls how the rule is labelled in
+#'   downstream tables.
+#'
 #' @returns The file path (invisibly), following the convention of
 #'   \code{\link[utils]{write.csv}}.
 #'
@@ -89,7 +96,8 @@
 #'
 write_combinations <- function(combinations, file, n_required = 4,
                                clusters = NULL, n_symptoms = NULL,
-                               score_by = NULL, description = "") {
+                               score_by = NULL, description = "",
+                               label = NULL) {
   # Auto-detect optimization result object
   if (is.list(combinations) && "best_symptoms" %in% names(combinations)) {
     combinations <- combinations$best_symptoms
@@ -121,6 +129,11 @@ write_combinations <- function(combinations, file, n_required = 4,
     cli::cli_abort("{.arg description} must be a single character string.")
   }
 
+  if (!is.null(label) &&
+      (!is.character(label) || length(label) != 1 || is.na(label))) {
+    cli::cli_abort("{.arg label} must be a single character string or {.code NULL}.")
+  }
+
   # Compute canonical combination IDs and ranks
   combination_ids <- vapply(combinations, function(combo) {
     paste(sort(combo), collapse = "_")
@@ -132,6 +145,7 @@ write_combinations <- function(combinations, file, n_required = 4,
     ptsddiag_version = as.character(utils::packageVersion("PTSDdiag")),
     created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     description = description,
+    label = label,
     parameters = list(
       n_symptoms = n_symptoms,
       n_required = n_required,
@@ -189,13 +203,20 @@ write_combinations <- function(combinations, file, n_required = 4,
 #'   \item{parameters}{Named list with additional metadata: \code{n_symptoms}
 #'     and \code{score_by} (may be \code{NULL} if not recorded).}
 #'   \item{description}{Character string with the user-provided description.}
+#'   \item{label}{Character string with the display label stored by
+#'     \code{\link{write_combinations}}, or \code{NA} for files written without
+#'     one (including files from versions before 0.4.0). Used by
+#'     \code{\link{as_definitions}} to name the definition.}
 #'   \item{ptsddiag_version}{Character string indicating which package version
 #'     created the file.}
 #'   \item{created_at}{Character string with the creation timestamp.}
 #' }
 #'
-#' The \code{combinations}, \code{n_required}, and \code{clusters} elements
-#' can be passed directly to \code{\link{apply_symptom_combinations}}:
+#' The returned list carries class \code{ptsdiag_spec}, so it can be handed
+#' directly to \code{\link{as_definitions}} or \code{\link{evaluate_definitions}}
+#' (which converts it automatically). For row-level diagnoses, the
+#' \code{combinations}, \code{n_required}, and \code{clusters} elements can
+#' also be passed to \code{\link{apply_symptom_combinations}}:
 #'
 #' \preformatted{
 #' spec <- read_combinations("my_combos.json")
@@ -206,6 +227,9 @@ write_combinations <- function(combinations, file, n_required = 4,
 #'
 #' @seealso
 #' \code{\link{write_combinations}} to export combinations to a JSON file.
+#'
+#' \code{\link{as_definitions}} to convert one or more imported specifications
+#' into the definitions list used by \code{\link{evaluate_definitions}}.
 #'
 #' \code{\link{apply_symptom_combinations}} to apply imported combinations
 #' to new data.
@@ -311,9 +335,10 @@ read_combinations <- function(file) {
       score_by = raw$parameters$score_by
     ),
     description = if (!is.null(raw$description)) raw$description else "",
+    label = if (!is.null(raw$label)) as.character(raw$label) else NA_character_,
     ptsddiag_version = if (!is.null(file_version)) file_version else NA_character_,
     created_at = if (!is.null(raw$created_at)) raw$created_at else NA_character_
   )
 
-  return(result)
+  structure(result, class = c("ptsdiag_spec", "list"))
 }
