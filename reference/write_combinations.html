@@ -13,7 +13,7 @@ workflows."><meta property="og:image" content="https://tobiasrspiller.github.io/
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,7 +62,8 @@ workflows.</p>
 <span>  clusters <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n_symptoms <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  score_by <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  description <span class="op">=</span> <span class="st">""</span></span>
+<span>  description <span class="op">=</span> <span class="st">""</span>,</span>
+<span>  label <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -113,6 +114,15 @@ optimization (<code>"balanced_accuracy"</code>, <code>"accuracy"</code>, or
 derivation context (e.g., sample characteristics, dataset name). Default
 is an empty string.</p></dd>
 
+
+<dt id="arg-label">label<a class="anchor" aria-label="anchor" href="#arg-label"></a></dt>
+<dd><p>Character string or <code>NULL</code> (default). Optional short
+display label for the rule these combinations implement (e.g.
+<code>"4/6 Hierarchical"</code>). Stored in the file and used by
+<code><a href="as_definitions.html">as_definitions</a></code> to name the definition at the validation
+site, so the derivation site controls how the rule is labelled in
+downstream tables.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -154,7 +164,7 @@ to new data.</p></div>
 <span class="r-in"><span><span class="fu">write_combinations</span><span class="op">(</span><span class="va">my_combos</span>, <span class="va">tmp</span>, n_required <span class="op">=</span> <span class="fl">4</span>,</span></span>
 <span class="r-in"><span>                   score_by <span class="op">=</span> <span class="st">"balanced_accuracy"</span>,</span></span>
 <span class="r-in"><span>                   description <span class="op">=</span> <span class="st">"Example non-hierarchical combinations"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Combinations written to <span style="color: #0000BB;">/tmp/RtmpYxrDd3/file1a8b60de62a0.json</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Combinations written to <span style="color: #0000BB;">/tmp/RtmpIP77bQ/file1b9519629da.json</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Can also pass a full optimization result directly:</span></span></span>
 <span class="r-in"><span><span class="co"># write_combinations(optimization_result, tmp, n_required = 4)</span></span></span>
@@ -173,7 +183,7 @@ to new data.</p></div>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,33 @@
       <small>Source: <a href="https://github.com/TobiasRSpiller/PTSDdiag/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.0" id="ptsddiag-040">PTSDdiag 0.4.0<a class="anchor" aria-label="anchor" href="#ptsddiag-040"></a></h2>
+<p>This release focuses on the multi-site validation workflow: everything a collaborator site previously had to hand-code around the package is now built in. It also corrects the ICD-11 operationalization to the field-standard six-item mapping (see Corrections — ICD-11 results change). Apart from that correction, no existing call changes behavior.</p>
+<div class="section level3">
+<h3 id="corrections-0-4-0">Corrections<a class="anchor" aria-label="anchor" href="#corrections-0-4-0"></a></h3>
+<ul><li>
+<strong>ICD-11 re-experiencing now uses PCL-5 items 2-3 (was 1-3).</strong> <code><a href="../reference/create_icd11_diagnosis.html">create_icd11_diagnosis()</a></code> — and everything built on it: the <code>"icd11"</code> fixed criterion in <code><a href="../reference/compare_optimizations.html">compare_optimizations()</a></code>, <code>include_icd11 = TRUE</code> in <code><a href="../reference/evaluate_definitions.html">evaluate_definitions()</a></code>, and the ICD-11 row of the symptom-frequency heatmap — now operationalizes ICD-11 PTSD with the narrow six-item mapping (items 2, 3, 6, 7, 17, 18; at least one symptom per cluster). ICD-11 requires re-experiencing with a here-and-now quality, which nightmares (item 2) and flashbacks (item 3) capture but intrusive memories (item 1) as worded in the PCL-5 do not; this is the mapping used across the published PCL-5-to-ICD-11 literature (Kuester et al. 2017; Schellong et al. 2019; Heeke et al. 2020; Pettrich et al. 2025). <strong>All ICD-11 benchmark results change</strong> relative to earlier versions; because the six-item rule is strictly more conservative, ICD-11 diagnoses can only become less frequent. The broad seven-item variant remains available as a custom fixed criterion — see the recipe in <code><a href="../reference/create_icd11_diagnosis.html">?create_icd11_diagnosis</a></code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-features-0-4-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-4-0"></a></h3>
+<ul><li>
+<code><a href="../reference/as_definitions.html">as_definitions()</a></code> converts combinations imported from JSON into the definitions list <code><a href="../reference/evaluate_definitions.html">evaluate_definitions()</a></code> expects, with optional top-<code>n</code> truncation and automatic rule labels such as <code>"4/6 Hierarchical"</code>. <code><a href="../reference/read_combinations.html">read_combinations()</a></code> output is now classed <code>ptsdiag_spec</code> and can be passed to <code><a href="../reference/evaluate_definitions.html">evaluate_definitions()</a></code> directly (single spec or a list of specs — the conversion happens automatically). <code><a href="../reference/write_combinations.html">write_combinations()</a></code> gains an optional <code>label</code> argument stored in the file, so the derivation site controls how each rule is labelled downstream.</li>
+<li>
+<code><a href="../reference/evaluate_definitions.html">evaluate_definitions()</a></code> gains <code>reference</code>: validate definitions against an external reference standard (e.g. a clinician CAPS diagnosis) supplied as a logical vector, a 0/1 column, or a column name. Rows with a missing reference are excluded with a message, and a <code>"Full 20-item PCL-5"</code> ceiling row is added by default (<code>include_full_pcl5</code>) so the cost of the reduced symptom set can be separated from the intrinsic PCL-5-vs-reference disagreement.</li>
+<li>
+<code><a href="../reference/evaluate_definitions.html">evaluate_definitions()</a></code> gains <code>tidy</code> (and <code>as_percent</code>): return a plain analysis table with <code>Approach</code> / <code>Rank</code> / <code>Combination</code>, the 2x2 counts, and numeric metrics — the same layout as <code><a href="../reference/summarize_top_combinations.html">summarize_top_combinations()</a></code>, so derivation and validation results can be combined with <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind()</a></code>. No more parsing rule labels out of the formatted display table.</li>
+<li>
+<code><a href="../reference/score_all_combinations.html">score_all_combinations()</a></code> scores <strong>every</strong> candidate combination (optionally cluster-constrained) against the DSM-5-TR diagnosis and returns the complete ranked table — the exhaustive companion to <code><a href="../reference/optimize_combinations.html">optimize_combinations()</a></code>, for interchangeability (“plateau”) analyses. Chunked, with optional parallel scoring via <code>future.apply</code> like <code><a href="../reference/cross_validation.html">cross_validation()</a></code>.</li>
+<li>
+<code><a href="../reference/check_pcl5_data.html">check_pcl5_data()</a></code>: exported pre-flight check that reports every data problem in one pass (column count, numeric type, integer 0-4 range, missing values) instead of one error at a time, plus an informational note on all-zero rows. Aimed at collaborator sites preparing data for <code><a href="../reference/rename_ptsd_columns.html">rename_ptsd_columns()</a></code>.</li>
+<li>New <code>inst/CITATION</code>: <code>citation("PTSDdiag")</code> now points to the paper and the package.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-4-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-4-0"></a></h3>
+<ul><li>Hierarchical definitions that carry a custom cluster structure (stored in a combinations JSON file) are now evaluated with exactly those clusters; previously <code><a href="../reference/evaluate_definitions.html">evaluate_definitions()</a></code> silently substituted the default PCL-5 B/C/D/E structure.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.5" id="ptsddiag-035">PTSDdiag 0.3.5<a class="anchor" aria-label="anchor" href="#ptsddiag-035"></a></h2>
 <div class="section level3">
@@ -311,7 +338,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

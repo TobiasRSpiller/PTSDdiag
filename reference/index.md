@@ -4,6 +4,8 @@
 
 Functions for preparing and standardizing PCL-5 and CAPS-5 data
 
+- [`check_pcl5_data()`](https://tobiasrspiller.github.io/PTSDdiag/reference/check_pcl5_data.md)
+  : Check PCL-5 item data before starting the workflow
 - [`rename_ptsd_columns()`](https://tobiasrspiller.github.io/PTSDdiag/reference/rename_ptsd_columns.md)
   : Rename PTSD symptom (= PCL-5 item) columns
 - [`rename_caps5_columns()`](https://tobiasrspiller.github.io/PTSDdiag/reference/rename_caps5_columns.md)
@@ -35,6 +37,8 @@ Functions for analyzing optimal symptom combinations
   (hierarchical/cluster-based)
 - [`apply_symptom_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/apply_symptom_combinations.md)
   : Apply pre-specified symptom combinations to new data
+- [`score_all_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/score_all_combinations.md)
+  : Score every candidate symptom combination
 - [`analyze_best_six_symptoms_four_required()`](https://tobiasrspiller.github.io/PTSDdiag/reference/analyze_best_six_symptoms_four_required.md)
   : Find optimal non-hierarchical six-symptom combinations for PTSD
   diagnosis
@@ -58,19 +62,22 @@ results
 - [`plot_symptom_frequency()`](https://tobiasrspiller.github.io/PTSDdiag/reference/plot_symptom_frequency.md)
   : Heatmap of PCL-5 symptom selection frequency across optimization
   scenarios
+
+## Multi-Site Definition Exchange
+
+Share derived symptom definitions across research groups and evaluate
+them at validation sites — the full derivation-to-validation chain
+
 - [`extract_definitions()`](https://tobiasrspiller.github.io/PTSDdiag/reference/extract_definitions.md)
   : Extract portable symptom definitions from a comparison
-- [`evaluate_definitions()`](https://tobiasrspiller.github.io/PTSDdiag/reference/evaluate_definitions.md)
-  : Evaluate symptom definitions against a sample
-
-## Import/Export
-
-Functions for sharing symptom combinations across research groups
-
 - [`write_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/write_combinations.md)
   : Write symptom combinations to a JSON file
 - [`read_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/read_combinations.md)
   : Read symptom combinations from a JSON file
+- [`as_definitions()`](https://tobiasrspiller.github.io/PTSDdiag/reference/as_definitions.md)
+  : Convert imported combination specifications into definitions
+- [`evaluate_definitions()`](https://tobiasrspiller.github.io/PTSDdiag/reference/evaluate_definitions.md)
+  : Evaluate symptom definitions against a sample
 
 ## Summary and Reporting
 

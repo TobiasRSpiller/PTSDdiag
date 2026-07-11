@@ -13,7 +13,7 @@ apply_symptom_combinations."><meta property="og:image" content="https://tobiasrs
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -98,6 +98,12 @@ needed to apply the combinations to new data via
   <dt>description</dt>
 <dd><p>Character string with the user-provided description.</p></dd>
 
+  <dt>label</dt>
+<dd><p>Character string with the display label stored by
+    <code><a href="write_combinations.html">write_combinations</a></code>, or <code>NA</code> for files written without
+    one (including files from versions before 0.4.0). Used by
+    <code><a href="as_definitions.html">as_definitions</a></code> to name the definition.</p></dd>
+
   <dt>ptsddiag_version</dt>
 <dd><p>Character string indicating which package version
     created the file.</p></dd>
@@ -106,8 +112,11 @@ needed to apply the combinations to new data via
 <dd><p>Character string with the creation timestamp.</p></dd>
 
 
-</dl><p>The <code>combinations</code>, <code>n_required</code>, and <code>clusters</code> elements
-can be passed directly to <code><a href="apply_symptom_combinations.html">apply_symptom_combinations</a></code>:</p>
+</dl><p>The returned list carries class <code>ptsdiag_spec</code>, so it can be handed
+directly to <code><a href="as_definitions.html">as_definitions</a></code> or <code><a href="evaluate_definitions.html">evaluate_definitions</a></code>
+(which converts it automatically). For row-level diagnoses, the
+<code>combinations</code>, <code>n_required</code>, and <code>clusters</code> elements can
+also be passed to <code><a href="apply_symptom_combinations.html">apply_symptom_combinations</a></code>:</p>
 <div class="sourceCode"><pre><code><span></span>
 <span><span class="va">spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_combinations.html">read_combinations</a></span><span class="op">(</span><span class="st">"my_combos.json"</span><span class="op">)</span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apply_symptom_combinations.html">apply_symptom_combinations</a></span><span class="op">(</span></span>
@@ -127,6 +136,8 @@ currently installed, an informational message is displayed.</p>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="write_combinations.html">write_combinations</a></code> to export combinations to a JSON file.</p>
+<p><code><a href="as_definitions.html">as_definitions</a></code> to convert one or more imported specifications
+into the definitions list used by <code><a href="evaluate_definitions.html">evaluate_definitions</a></code>.</p>
 <p><code><a href="apply_symptom_combinations.html">apply_symptom_combinations</a></code> to apply imported combinations
 to new data.</p></div>
     </div>
@@ -141,7 +152,7 @@ to new data.</p></div>
 <span class="r-in"><span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".json"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="write_combinations.html">write_combinations</a></span><span class="op">(</span><span class="va">my_combos</span>, <span class="va">tmp</span>, n_required <span class="op">=</span> <span class="fl">4</span>,</span></span>
 <span class="r-in"><span>                   score_by <span class="op">=</span> <span class="st">"balanced_accuracy"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Combinations written to <span style="color: #0000BB;">/tmp/RtmpYxrDd3/file1a8b4f2fec62.json</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Combinations written to <span style="color: #0000BB;">/tmp/RtmpIP77bQ/file1b951b2c784.json</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Read them back</span></span></span>
 <span class="r-in"><span><span class="va">spec</span> <span class="op">&lt;-</span> <span class="fu">read_combinations</span><span class="op">(</span><span class="va">tmp</span><span class="op">)</span></span></span>
@@ -174,7 +185,7 @@ to new data.</p></div>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

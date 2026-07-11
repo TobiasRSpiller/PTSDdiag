@@ -78,15 +78,15 @@ compare_diagnostic_systems(
 #>              system n_diagnosed pct_diagnosed sensitivity specificity    ppv
 #> 1 DSM-5-TR (CAPS-5)          50          20.0        1.00        1.00 1.0000
 #> 2  DSM-5-TR (PCL-5)          52          20.8        0.64        0.90 0.6154
-#> 3    ICD-11 (PCL-5)          58          23.2        0.60        0.86 0.5172
+#> 3    ICD-11 (PCL-5)          56          22.4        0.60        0.87 0.5357
 #>      npv n_false_negative pct_false_negative n_false_positive
 #> 1 1.0000                0                0.0                0
 #> 2 0.9091               18                7.2               20
-#> 3 0.8958               20                8.0               28
+#> 3 0.8969               20                8.0               26
 #>   pct_false_positive n_misclassified accuracy balanced_accuracy
-#> 1                0.0               0    1.000              1.00
-#> 2                8.0              38    0.848              0.77
-#> 3               11.2              48    0.808              0.73
+#> 1                0.0               0    1.000             1.000
+#> 2                8.0              38    0.848             0.770
+#> 3               10.4              46    0.816             0.735
 ```
 
 Because the two instruments are correlated here rather than random, the
@@ -142,6 +142,57 @@ summarize_top_combinations(comp, top_n = 3, as_percent = TRUE)
 #> 6    98.98990  95.91837 97.51244     97.2          94.68726
 #> 7    90.90909  64.00000 90.00000     84.8          76.22378
 ```
+
+## Validating derived definitions against the CAPS-5 diagnosis
+
+At a validation site the definitions arrive already derived (see
+[Validating a shared definition across
+sites](https://tobiasrspiller.github.io/PTSDdiag/articles/multi-site-validation.md)),
+and the question becomes how each performs against the local clinician
+diagnosis.
+[`evaluate_definitions()`](https://tobiasrspiller.github.io/PTSDdiag/reference/evaluate_definitions.md)
+takes the clinician standard through its `reference` argument: a logical
+vector, a 0/1-coded column, or the name of a carry-through column in the
+data. Participants without a clinician interview — `NA` in the reference
+— are excluded automatically, with a message reporting how many. A
+`"Full 20-item PCL-5"` ceiling row is added by default: the complete
+PCL-5 diagnosis scored against the same reference. That row separates
+the cost of dropping items from the intrinsic PCL-5-vs-CAPS-5
+disagreement, and no reduced definition can be expected to beat it. Here
+we extract the top three combinations per optimized rule from the
+comparison above and request the tidy table layout.
+
+``` r
+
+definitions <- extract_definitions(comp, n = 3)
+
+evaluate_definitions(ptsd, definitions,
+                     reference = caps5_dx$PTSD_caps5, tidy = TRUE)
+#>               Approach Rank           Combination TP FN FP  TN Sensitivity
+#> 1     4/6 Hierarchical    1    1, 5, 6, 7, 11, 18 28 22 11 189        0.56
+#> 2     4/6 Hierarchical    2   3, 6, 7, 11, 13, 15 22 28 16 184        0.44
+#> 3     4/6 Hierarchical    3    2, 3, 6, 7, 11, 18 27 23 11 189        0.54
+#> 4 4/6 Non-hierarchical    1 7, 10, 11, 15, 18, 19 31 19 17 183        0.62
+#> 5 4/6 Non-hierarchical    2  3, 7, 10, 15, 18, 19 30 20 19 181        0.60
+#> 6 4/6 Non-hierarchical    3  3, 7, 11, 15, 18, 19 30 20 19 181        0.60
+#> 7   Full 20-item PCL-5    1                  <NA> 32 18 20 180        0.64
+#> 8               ICD-11    1    2, 3, 6, 7, 17, 18 30 20 26 174        0.60
+#>   Specificity       PPV       NPV Accuracy Balanced Accuracy
+#> 1       0.945 0.7179487 0.8957346    0.868            0.7525
+#> 2       0.920 0.5789474 0.8679245    0.824            0.6800
+#> 3       0.945 0.7105263 0.8915094    0.864            0.7425
+#> 4       0.915 0.6458333 0.9059406    0.856            0.7675
+#> 5       0.905 0.6122449 0.9004975    0.844            0.7525
+#> 6       0.905 0.6122449 0.9004975    0.844            0.7525
+#> 7       0.900 0.6153846 0.9090909    0.848            0.7700
+#> 8       0.870 0.5357143 0.8969072    0.816            0.7350
+```
+
+The `Combination` column is `NA` for the ceiling row, which applies all
+20 items rather than a subset. Comparing each definition’s balanced
+accuracy with the ceiling shows how much of the disagreement with the
+CAPS-5 is attributable to simplification and how much the full
+instrument shares.
 
 ## Interpreting agreement and disagreement
 

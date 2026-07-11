@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -144,15 +144,15 @@ false negatives, and total misclassifications.</p>
 <span><span class="co">#&gt;              system n_diagnosed pct_diagnosed sensitivity specificity    ppv</span></span>
 <span><span class="co">#&gt; 1 DSM-5-TR (CAPS-5)          50          20.0        1.00        1.00 1.0000</span></span>
 <span><span class="co">#&gt; 2  DSM-5-TR (PCL-5)          52          20.8        0.64        0.90 0.6154</span></span>
-<span><span class="co">#&gt; 3    ICD-11 (PCL-5)          58          23.2        0.60        0.86 0.5172</span></span>
+<span><span class="co">#&gt; 3    ICD-11 (PCL-5)          56          22.4        0.60        0.87 0.5357</span></span>
 <span><span class="co">#&gt;      npv n_false_negative pct_false_negative n_false_positive</span></span>
 <span><span class="co">#&gt; 1 1.0000                0                0.0                0</span></span>
 <span><span class="co">#&gt; 2 0.9091               18                7.2               20</span></span>
-<span><span class="co">#&gt; 3 0.8958               20                8.0               28</span></span>
+<span><span class="co">#&gt; 3 0.8969               20                8.0               26</span></span>
 <span><span class="co">#&gt;   pct_false_positive n_misclassified accuracy balanced_accuracy</span></span>
-<span><span class="co">#&gt; 1                0.0               0    1.000              1.00</span></span>
-<span><span class="co">#&gt; 2                8.0              38    0.848              0.77</span></span>
-<span><span class="co">#&gt; 3               11.2              48    0.808              0.73</span></span></code></pre></div>
+<span><span class="co">#&gt; 1                0.0               0    1.000             1.000</span></span>
+<span><span class="co">#&gt; 2                8.0              38    0.848             0.770</span></span>
+<span><span class="co">#&gt; 3               10.4              46    0.816             0.735</span></span></code></pre></div>
 <p>Because the two instruments are correlated here rather than random,
 the self-report PCL-5 diagnosis agrees substantially with the clinician
 CAPS-5 reference. Sensitivity is the share of CAPS-5-positive
@@ -204,6 +204,52 @@ vignette.</p>
 <span><span class="co">#&gt; 7    90.90909  64.00000 90.00000     84.8          76.22378</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="validating-derived-definitions-against-the-caps-5-diagnosis">Validating derived definitions against the CAPS-5 diagnosis<a class="anchor" aria-label="anchor" href="#validating-derived-definitions-against-the-caps-5-diagnosis"></a>
+</h2>
+<p>At a validation site the definitions arrive already derived (see <a href="multi-site-validation.html">Validating a shared definition across
+sites</a>), and the question becomes how each performs against the local
+clinician diagnosis. <code><a href="../reference/evaluate_definitions.html">evaluate_definitions()</a></code> takes the
+clinician standard through its <code>reference</code> argument: a
+logical vector, a 0/1-coded column, or the name of a carry-through
+column in the data. Participants without a clinician interview —
+<code>NA</code> in the reference — are excluded automatically, with a
+message reporting how many. A <code>"Full 20-item PCL-5"</code> ceiling
+row is added by default: the complete PCL-5 diagnosis scored against the
+same reference. That row separates the cost of dropping items from the
+intrinsic PCL-5-vs-CAPS-5 disagreement, and no reduced definition can be
+expected to beat it. Here we extract the top three combinations per
+optimized rule from the comparison above and request the tidy table
+layout.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">definitions</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_definitions.html">extract_definitions</a></span><span class="op">(</span><span class="va">comp</span>, n <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/evaluate_definitions.html">evaluate_definitions</a></span><span class="op">(</span><span class="va">ptsd</span>, <span class="va">definitions</span>,</span>
+<span>                     reference <span class="op">=</span> <span class="va">caps5_dx</span><span class="op">$</span><span class="va">PTSD_caps5</span>, tidy <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt;               Approach Rank           Combination TP FN FP  TN Sensitivity</span></span>
+<span><span class="co">#&gt; 1     4/6 Hierarchical    1    1, 5, 6, 7, 11, 18 28 22 11 189        0.56</span></span>
+<span><span class="co">#&gt; 2     4/6 Hierarchical    2   3, 6, 7, 11, 13, 15 22 28 16 184        0.44</span></span>
+<span><span class="co">#&gt; 3     4/6 Hierarchical    3    2, 3, 6, 7, 11, 18 27 23 11 189        0.54</span></span>
+<span><span class="co">#&gt; 4 4/6 Non-hierarchical    1 7, 10, 11, 15, 18, 19 31 19 17 183        0.62</span></span>
+<span><span class="co">#&gt; 5 4/6 Non-hierarchical    2  3, 7, 10, 15, 18, 19 30 20 19 181        0.60</span></span>
+<span><span class="co">#&gt; 6 4/6 Non-hierarchical    3  3, 7, 11, 15, 18, 19 30 20 19 181        0.60</span></span>
+<span><span class="co">#&gt; 7   Full 20-item PCL-5    1                  &lt;NA&gt; 32 18 20 180        0.64</span></span>
+<span><span class="co">#&gt; 8               ICD-11    1    2, 3, 6, 7, 17, 18 30 20 26 174        0.60</span></span>
+<span><span class="co">#&gt;   Specificity       PPV       NPV Accuracy Balanced Accuracy</span></span>
+<span><span class="co">#&gt; 1       0.945 0.7179487 0.8957346    0.868            0.7525</span></span>
+<span><span class="co">#&gt; 2       0.920 0.5789474 0.8679245    0.824            0.6800</span></span>
+<span><span class="co">#&gt; 3       0.945 0.7105263 0.8915094    0.864            0.7425</span></span>
+<span><span class="co">#&gt; 4       0.915 0.6458333 0.9059406    0.856            0.7675</span></span>
+<span><span class="co">#&gt; 5       0.905 0.6122449 0.9004975    0.844            0.7525</span></span>
+<span><span class="co">#&gt; 6       0.905 0.6122449 0.9004975    0.844            0.7525</span></span>
+<span><span class="co">#&gt; 7       0.900 0.6153846 0.9090909    0.848            0.7700</span></span>
+<span><span class="co">#&gt; 8       0.870 0.5357143 0.8969072    0.816            0.7350</span></span></code></pre></div>
+<p>The <code>Combination</code> column is <code>NA</code> for the
+ceiling row, which applies all 20 items rather than a subset. Comparing
+each definition’s balanced accuracy with the ceiling shows how much of
+the disagreement with the CAPS-5 is attributable to simplification and
+how much the full instrument shares.</p>
+</div>
+<div class="section level2">
 <h2 id="interpreting-agreement-and-disagreement">Interpreting agreement and disagreement<a class="anchor" aria-label="anchor" href="#interpreting-agreement-and-disagreement"></a>
 </h2>
 <p>When the PCL-5 and CAPS-5 diagnoses agree closely, as they do in this
@@ -240,7 +286,7 @@ definitions</a> for internal and external validation.</li>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -319,6 +319,41 @@ settings that differ in prevalence and severity, and revealing them is
 exactly what external validation is for.</p>
 </div>
 <div class="section level2">
+<h2 id="how-special-is-the-winning-subset">How special is the winning subset?<a class="anchor" aria-label="anchor" href="#how-special-is-the-winning-subset"></a>
+</h2>
+<p>Internal and external validation both look at the top of the ranking.
+A complementary question is how the rest of the candidate set behaves:
+if thousands of subsets perform nearly as well as the winner, the
+specific winning items should not be over-interpreted, because many
+symptom sets are effectively interchangeable.
+<code><a href="../reference/score_all_combinations.html">score_all_combinations()</a></code> answers this by scoring every
+candidate combination — here all
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mo stretchy="true" form="prefix">(</mo><mfrac linethickness="0"><mn>20</mn><mn>4</mn></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mn>4</mn><mo>,</mo><mn>845</mn></mrow><annotation encoding="application/x-tex">\binom{20}{4} = 4{,}845</annotation></semantics></math>
+four-symptom subsets — and returning the complete ranked table, the
+exhaustive companion to <code><a href="../reference/optimize_combinations.html">optimize_combinations()</a></code>. Plotting
+the ranking metric against rank typically shows a plateau of
+near-optimal subsets before performance falls away; the width of that
+plateau is the interchangeability of the solution.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">curve</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/score_all_combinations.html">score_all_combinations</a></span><span class="op">(</span><span class="va">ptsd</span>, n_symptoms <span class="op">=</span> <span class="fl">4</span>, n_required <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                                show_progress <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">curve</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 4845</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">curve</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   rank combination_id  tp fn fp tn sensitivity specificity ppv       npv</span></span>
+<span><span class="co">#&gt; 1    1      6_7_12_17 227  5  0 18   0.9784483           1   1 0.7826087</span></span>
+<span><span class="co">#&gt; 2    2       4_6_7_12 226  6  0 18   0.9741379           1   1 0.7500000</span></span>
+<span><span class="co">#&gt; 3    3       4_6_7_19 225  7  0 18   0.9698276           1   1 0.7200000</span></span>
+<span><span class="co">#&gt;   accuracy balanced_accuracy</span></span>
+<span><span class="co">#&gt; 1    0.980         0.9892241</span></span>
+<span><span class="co">#&gt; 2    0.976         0.9870690</span></span>
+<span><span class="co">#&gt; 3    0.972         0.9849138</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">curve</span><span class="op">$</span><span class="va">rank</span>, <span class="va">curve</span><span class="op">$</span><span class="va">balanced_accuracy</span>, type <span class="op">=</span> <span class="st">"l"</span>, log <span class="op">=</span> <span class="st">"x"</span>,</span>
+<span>     xlab <span class="op">=</span> <span class="st">"Combination rank (log scale)"</span>, ylab <span class="op">=</span> <span class="st">"Balanced accuracy"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="validation_files/figure-html/all-combinations-1.png" class="r-plt" alt="Balanced accuracy of every four-symptom combination by rank" width="672"></p>
+</div>
+<div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>
 </h2>
 <ul>
@@ -344,7 +379,7 @@ against a clinician-administered reference.</li>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

@@ -260,6 +260,45 @@ rule; both are properties of applying any fixed criterion across
 settings that differ in prevalence and severity, and revealing them is
 exactly what external validation is for.
 
+## How special is the winning subset?
+
+Internal and external validation both look at the top of the ranking. A
+complementary question is how the rest of the candidate set behaves: if
+thousands of subsets perform nearly as well as the winner, the specific
+winning items should not be over-interpreted, because many symptom sets
+are effectively interchangeable.
+[`score_all_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/score_all_combinations.md)
+answers this by scoring every candidate combination — here all
+$`\binom{20}{4} = 4{,}845`$ four-symptom subsets — and returning the
+complete ranked table, the exhaustive companion to
+[`optimize_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/optimize_combinations.md).
+Plotting the ranking metric against rank typically shows a plateau of
+near-optimal subsets before performance falls away; the width of that
+plateau is the interchangeability of the solution.
+
+``` r
+
+curve <- score_all_combinations(ptsd, n_symptoms = 4, n_required = 3,
+                                show_progress = FALSE)
+nrow(curve)
+#> [1] 4845
+head(curve, 3)
+#>   rank combination_id  tp fn fp tn sensitivity specificity ppv       npv
+#> 1    1      6_7_12_17 227  5  0 18   0.9784483           1   1 0.7826087
+#> 2    2       4_6_7_12 226  6  0 18   0.9741379           1   1 0.7500000
+#> 3    3       4_6_7_19 225  7  0 18   0.9698276           1   1 0.7200000
+#>   accuracy balanced_accuracy
+#> 1    0.980         0.9892241
+#> 2    0.976         0.9870690
+#> 3    0.972         0.9849138
+
+plot(curve$rank, curve$balanced_accuracy, type = "l", log = "x",
+     xlab = "Combination rank (log scale)", ylab = "Balanced accuracy")
+```
+
+![Balanced accuracy of every four-symptom combination by
+rank](validation_files/figure-html/all-combinations-1.png)
+
 ## See also
 
 - [Getting

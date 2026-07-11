@@ -72,7 +72,28 @@ names(simulated_ptsd)[1:6]
 ```
 
 To keep this vignette quick to build we work with a 250-row subset; the
-workflow is identical on the full dataset. We pass the three demographic
+workflow is identical on the full dataset.
+
+Before renaming anything,
+[`check_pcl5_data()`](https://tobiasrspiller.github.io/PTSDdiag/reference/check_pcl5_data.md)
+verifies the item columns in a single pass — exactly 20 non-identifier
+columns, numeric, integer scores 0 to 4, no missing values — and reports
+every problem at once rather than stopping at the first. On a freshly
+exported data file this turns fixing the input into a one-iteration job.
+
+``` r
+
+check_pcl5_data(simulated_ptsd[1:250, ], id_col = c("patient_id", "age", "sex"))
+#> ✔ Found exactly 20 non-ID columns; checking them positionally (DSM-5 item order
+#>   assumed).
+#> ✔ 250 rows.
+#> ✔ All item columns are numeric.
+#> ✔ No missing values.
+#> ✔ All scores are integers between 0 and 4.
+#> ✔ All checks passed -- data ready for the PTSDdiag workflow.
+```
+
+With the input verified, we rename. We pass the three demographic
 columns to `id_col`. They stay attached to every participant through the
 rest of the workflow, which is what later lets us describe the sample
 without a separate merge.

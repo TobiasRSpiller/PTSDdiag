@@ -15,7 +15,8 @@ write_combinations(
   clusters = NULL,
   n_symptoms = NULL,
   score_by = NULL,
-  description = ""
+  description = "",
+  label = NULL
 )
 ```
 
@@ -65,6 +66,15 @@ write_combinations(
   Character string. Optional free-text description of the derivation
   context (e.g., sample characteristics, dataset name). Default is an
   empty string.
+
+- label:
+
+  Character string or `NULL` (default). Optional short display label for
+  the rule these combinations implement (e.g. `"4/6 Hierarchical"`).
+  Stored in the file and used by
+  [`as_definitions`](https://tobiasrspiller.github.io/PTSDdiag/reference/as_definitions.md)
+  to name the definition at the validation site, so the derivation site
+  controls how the rule is labelled in downstream tables.
 
 ## Value
 
@@ -117,7 +127,7 @@ tmp <- tempfile(fileext = ".json")
 write_combinations(my_combos, tmp, n_required = 4,
                    score_by = "balanced_accuracy",
                    description = "Example non-hierarchical combinations")
-#> ✔ Combinations written to /tmp/RtmpYxrDd3/file1a8b60de62a0.json
+#> ✔ Combinations written to /tmp/RtmpIP77bQ/file1b9519629da.json
 
 # Can also pass a full optimization result directly:
 # write_combinations(optimization_result, tmp, n_required = 4)

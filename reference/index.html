@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,6 +49,13 @@
 
 
       <dl><dt>
+
+          <code><a href="check_pcl5_data.html">check_pcl5_data()</a></code>
+
+        </dt>
+        <dd>Check PCL-5 item data before starting the workflow</dd>
+
+        <dt>
 
           <code><a href="rename_ptsd_columns.html">rename_ptsd_columns()</a></code>
 
@@ -131,6 +138,13 @@
 
         <dt>
 
+          <code><a href="score_all_combinations.html">score_all_combinations()</a></code>
+
+        </dt>
+        <dd>Score every candidate symptom combination</dd>
+
+        <dt>
+
           <code><a href="analyze_best_six_symptoms_four_required.html">analyze_best_six_symptoms_four_required()</a></code>
 
         </dt>
@@ -186,24 +200,10 @@
 
         </dt>
         <dd>Heatmap of PCL-5 symptom selection frequency across optimization scenarios</dd>
-
-        <dt>
-
-          <code><a href="extract_definitions.html">extract_definitions()</a></code>
-
-        </dt>
-        <dd>Extract portable symptom definitions from a comparison</dd>
-
-        <dt>
-
-          <code><a href="evaluate_definitions.html">evaluate_definitions()</a></code>
-
-        </dt>
-        <dd>Evaluate symptom definitions against a sample</dd>
       </dl></div><div class="section level2">
-      <h2 id="import-export">Import/Export<a class="anchor" aria-label="anchor" href="#import-export"></a></h2>
+      <h2 id="multi-site-definition-exchange">Multi-Site Definition Exchange<a class="anchor" aria-label="anchor" href="#multi-site-definition-exchange"></a></h2>
 
-      <div class="section-desc"><p>Functions for sharing symptom combinations across research groups</p></div>
+      <div class="section-desc"><p>Share derived symptom definitions across research groups and evaluate them at validation sites — the full derivation-to-validation chain</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -211,6 +211,13 @@
 
 
       <dl><dt>
+
+          <code><a href="extract_definitions.html">extract_definitions()</a></code>
+
+        </dt>
+        <dd>Extract portable symptom definitions from a comparison</dd>
+
+        <dt>
 
           <code><a href="write_combinations.html">write_combinations()</a></code>
 
@@ -223,6 +230,20 @@
 
         </dt>
         <dd>Read symptom combinations from a JSON file</dd>
+
+        <dt>
+
+          <code><a href="as_definitions.html">as_definitions()</a></code>
+
+        </dt>
+        <dd>Convert imported combination specifications into definitions</dd>
+
+        <dt>
+
+          <code><a href="evaluate_definitions.html">evaluate_definitions()</a></code>
+
+        </dt>
+        <dd>Evaluate symptom definitions against a sample</dd>
       </dl></div><div class="section level2">
       <h2 id="summary-and-reporting">Summary and Reporting<a class="anchor" aria-label="anchor" href="#summary-and-reporting"></a></h2>
 
@@ -330,7 +351,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

@@ -14,8 +14,10 @@
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/analyze_best_six_symptoms_four_required.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/analyze_best_six_symptoms_four_required_clusters.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/apply_symptom_combinations.html</loc></url>
+<url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/as_definitions.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/binarize_data.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/calculate_ptsd_total.html</loc></url>
+<url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/check_pcl5_data.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/compare_diagnostic_systems.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/compare_optimizations.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/create_caps5_diagnosis.html</loc></url>
@@ -35,6 +37,7 @@
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/read_combinations.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/rename_caps5_columns.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/rename_ptsd_columns.html</loc></url>
+<url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/score_all_combinations.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/simulated_ptsd.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/simulated_ptsd_genpop.html</loc></url>
 <url><loc>https://tobiasrspiller.github.io/PTSDdiag/reference/summarize_ptsd.html</loc></url>

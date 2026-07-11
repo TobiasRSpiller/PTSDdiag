@@ -148,11 +148,46 @@ lapply(definitions, function(d) d$symptoms)
 This object is everything the other site needs, and it holds nothing but
 symptom numbers and rules. No participant, score, or demographic is in
 it, so it can be shared freely.
+
+In a real collaboration the definitions travel as files rather than as
+an R object.
 [`write_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/write_combinations.md)
-serializes a set of combinations to a small JSON file for transfer, as
-shown in the [Validating abbreviated symptom
-definitions](https://tobiasrspiller.github.io/PTSDdiag/articles/validation.md)
-vignette.
+serializes one rule’s combinations to a small JSON file; the optional
+`label` stores the rule’s display name in the file, so tables produced
+at the receiving site are labelled by the derivation site automatically.
+A temporary file stands in for the transfer here.
+
+``` r
+
+json_file <- tempfile(fileext = ".json")
+write_combinations(
+  definitions[["4/6 Hierarchical"]]$symptoms, json_file,
+  n_required  = 4,
+  clusters    = list(B = 1:5, C = 6:7, D = 8:14, E = 15:20),
+  label       = "4/6 Hierarchical",
+  description = "Top 5 hierarchical combinations, veteran derivation sample"
+)
+#> ✔ Combinations written to /tmp/RtmpOKoo85/file1f475a80ddea.json
+```
+
+At the other end,
+[`read_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/read_combinations.md)
+imports the file and
+[`as_definitions()`](https://tobiasrspiller.github.io/PTSDdiag/reference/as_definitions.md)
+turns one or several imported files into the same definitions structure
+[`extract_definitions()`](https://tobiasrspiller.github.io/PTSDdiag/reference/extract_definitions.md)
+produces — `lapply(files, read_combinations)` handles a whole folder of
+rules in one line. The round trip reproduces the shared definition
+exactly:
+
+``` r
+
+received <- as_definitions(read_combinations(json_file))
+
+all.equal(received[["4/6 Hierarchical"]]$symptoms,
+          definitions[["4/6 Hierarchical"]]$symptoms)
+#> [1] TRUE
+```
 
 ## Evaluating every definition in a sample
 
@@ -190,7 +225,7 @@ evaluate_definitions(vet, definitions, include_icd11 = TRUE)
 #> 14  3/6 Non-hierarchical (4, 6, 7, 13, 15, 19)     237 (94.8%)
 #> 15 3/6 Non-hierarchical (6, 7, 10, 12, 15, 19)     237 (94.8%)
 #> 16   3/6 Non-hierarchical (2, 6, 7, 8, 10, 15)     236 (94.4%)
-#> 17                                      ICD-11     226 (90.4%)
+#> 17                                      ICD-11     222 (88.8%)
 #>    Total Non-Diagnosed True Positive True Negative Newly Diagnosed
 #> 1            18 (7.2%)           232            18               0
 #> 2           37 (14.8%)           213            18               0
@@ -208,7 +243,7 @@ evaluate_definitions(vet, definitions, include_icd11 = TRUE)
 #> 14           13 (5.2%)           232            13               5
 #> 15           13 (5.2%)           232            13               5
 #> 16           14 (5.6%)           231            13               5
-#> 17           24 (9.6%)           224            16               2
+#> 17          28 (11.2%)           220            16               2
 #>    Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV
 #> 1                    0        250           0      1.0000      1.0000 1.0000
 #> 2                   19        231          19      0.9181      1.0000 1.0000
@@ -226,7 +261,7 @@ evaluate_definitions(vet, definitions, include_icd11 = TRUE)
 #> 14                   0        245           5      1.0000      0.7222 0.9789
 #> 15                   0        245           5      1.0000      0.7222 0.9789
 #> 16                   1        244           6      0.9957      0.7222 0.9788
-#> 17                   8        240          10      0.9655      0.8889 0.9912
+#> 17                  12        236          14      0.9483      0.8889 0.9910
 #>       NPV Accuracy Balanced Accuracy
 #> 1  1.0000    1.000            1.0000
 #> 2  0.4865    0.924            0.9591
@@ -244,7 +279,7 @@ evaluate_definitions(vet, definitions, include_icd11 = TRUE)
 #> 14 1.0000    0.980            0.8611
 #> 15 1.0000    0.980            0.8611
 #> 16 0.9286    0.976            0.8590
-#> 17 0.6667    0.960            0.9272
+#> 17 0.5714    0.944            0.9186
 ```
 
 The first row is the full DSM-5-TR diagnosis itself, the reference.
@@ -286,7 +321,7 @@ evaluate_definitions(genpop, definitions, include_icd11 = TRUE)
 #> 14  3/6 Non-hierarchical (4, 6, 7, 13, 15, 19)    332 (27.67%)
 #> 15 3/6 Non-hierarchical (6, 7, 10, 12, 15, 19)    345 (28.75%)
 #> 16   3/6 Non-hierarchical (2, 6, 7, 8, 10, 15)    346 (28.83%)
-#> 17                                      ICD-11    279 (23.25%)
+#> 17                                      ICD-11    259 (21.58%)
 #>    Total Non-Diagnosed True Positive True Negative Newly Diagnosed
 #> 1            948 (79%)           252           948               0
 #> 2         1062 (88.5%)           135           945               3
@@ -304,7 +339,7 @@ evaluate_definitions(genpop, definitions, include_icd11 = TRUE)
 #> 14        868 (72.33%)           225           841             107
 #> 15        855 (71.25%)           230           833             115
 #> 16        854 (71.17%)           225           827             121
-#> 17        921 (76.75%)           221           890              58
+#> 17        941 (78.42%)           214           903              45
 #>    Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV
 #> 1                    0       1200           0      1.0000      1.0000 1.0000
 #> 2                  117       1080         120      0.5357      0.9968 0.9783
@@ -322,7 +357,7 @@ evaluate_definitions(genpop, definitions, include_icd11 = TRUE)
 #> 14                  27       1066         134      0.8929      0.8871 0.6777
 #> 15                  22       1063         137      0.9127      0.8787 0.6667
 #> 16                  27       1052         148      0.8929      0.8724 0.6503
-#> 17                  31       1111          89      0.8770      0.9388 0.7921
+#> 17                  38       1117          83      0.8492      0.9525 0.8263
 #>       NPV Accuracy Balanced Accuracy
 #> 1  1.0000   1.0000            1.0000
 #> 2  0.8898   0.9000            0.7663
@@ -340,11 +375,43 @@ evaluate_definitions(genpop, definitions, include_icd11 = TRUE)
 #> 14 0.9689   0.8883            0.8900
 #> 15 0.9743   0.8858            0.8957
 #> 16 0.9684   0.8767            0.8826
-#> 17 0.9663   0.9258            0.9079
+#> 17 0.9596   0.9308            0.9009
 ```
 
 Both tables are built the same way, so they line up row for row with the
 derivation table above.
+
+## A tidy table for downstream analysis
+
+The tables above are formatted for reading. For filtering, plotting, or
+combining results across sites, request the same evaluation as a plain
+analysis table with `tidy = TRUE`: one row per combination with
+`Approach`, `Rank`, `Combination`, the 2x2 counts, and numeric metrics.
+The layout matches
+[`summarize_top_combinations()`](https://tobiasrspiller.github.io/PTSDdiag/reference/summarize_top_combinations.md)
+on the derivation side, so tables from both sites stack with
+[`rbind()`](https://rdrr.io/r/base/cbind.html) — no label parsing
+required.
+
+``` r
+
+tidy_gp <- evaluate_definitions(genpop, definitions, tidy = TRUE)
+head(tidy_gp)
+#>               Approach Rank         Combination  TP  FN FP  TN Sensitivity
+#> 1     4/6 Hierarchical    1 1, 6, 7, 13, 15, 17 135 117  3 945   0.5357143
+#> 2     4/6 Hierarchical    2 1, 3, 7, 13, 15, 17 135 117  2 946   0.5357143
+#> 3     4/6 Hierarchical    3 1, 3, 6, 13, 16, 19 141 111  9 939   0.5595238
+#> 4     4/6 Hierarchical    4  1, 4, 6, 7, 11, 17 156  96  2 946   0.6190476
+#> 5     4/6 Hierarchical    5 1, 6, 7, 11, 15, 17 145 107  3 945   0.5753968
+#> 6 4/6 Non-hierarchical    1 6, 7, 8, 11, 13, 17 207  45 17 931   0.8214286
+#>   Specificity       PPV       NPV  Accuracy Balanced Accuracy
+#> 1   0.9968354 0.9782609 0.8898305 0.9000000         0.7662749
+#> 2   0.9978903 0.9854015 0.8899341 0.9008333         0.7668023
+#> 3   0.9905063 0.9400000 0.8942857 0.9000000         0.7750151
+#> 4   0.9978903 0.9873418 0.9078695 0.9183333         0.8084690
+#> 5   0.9968354 0.9797297 0.8982890 0.9083333         0.7861161
+#> 6   0.9820675 0.9241071 0.9538934 0.9483333         0.9017480
+```
 
 ## Reading the two tables together
 

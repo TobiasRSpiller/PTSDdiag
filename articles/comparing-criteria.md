@@ -27,8 +27,13 @@ These rules are:
 - **Three of six symptoms, without the cluster requirement.** A lower
   threshold on six symptoms, more resembling the ICD-11 definition of
   PTSD.
-- **ICD-11.** A fixed rule using seven items (re-experiencing items 1,
-  2, 3; avoidance items 6, 7; sense of current threat items 17, 18).
+- **ICD-11.** A fixed rule using six items (re-experiencing in the
+  present, items 2, 3; avoidance, items 6, 7; sense of current threat,
+  items 17, 18), requiring at least one symptom per cluster. This is the
+  narrow mapping used across the published PCL-5-to-ICD-11 literature:
+  ICD-11 re-experiencing must have a here-and-now quality, which
+  nightmares and flashbacks capture but the PCL-5’s intrusive-memories
+  item (item 1) does not.
 
 ## Requirements for the input data
 
@@ -166,7 +171,7 @@ knitr::kable(
 
 | Symptom | 4/6 Hierarchical | 4/6 Non-hierarchical | 3/6 Non-hierarchical | ICD-11 | OVERALL |
 |---:|---:|---:|---:|---:|---:|
-| 1 | 10 | 0 | 0 | 1 | 10 |
+| 1 | 10 | 0 | 0 | 0 | 10 |
 | 2 | 0 | 0 | 1 | 1 | 1 |
 | 3 | 4 | 0 | 1 | 1 | 5 |
 | 4 | 2 | 2 | 7 | 0 | 11 |

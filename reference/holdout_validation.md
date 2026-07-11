@@ -134,8 +134,7 @@ validation_results <- holdout_validation(ptsd_data, train_ratio = 0.7,
 #> ℹ Training on 175 observations, testing on 75
 #> ℹ Evaluated 15504 combinations. Best: 4, 6, 7, 12, 16
 #> ℹ Generated 3360 valid cluster-constrained combinations
-#> Evaluating combinations ■■■■■■■■■■                        31% | ETA:  2s
-#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■          76% | ETA:  1s
+#> Evaluating combinations ■■■■■■■■■■■                       33% | ETA:  2s
 #> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
 #> ℹ Evaluated 3360 combinations. Best: 1, 6, 7, 11, 17
 #> ✔ Holdout validation complete

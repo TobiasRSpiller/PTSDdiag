@@ -65,6 +65,12 @@ order. The PCL-5 items correspond to different symptom clusters:
 - symptom_15 to symptom_20: Alterations in arousal and reactivity
   (Criterion E)
 
+## See also
+
+[`check_pcl5_data`](https://tobiasrspiller.github.io/PTSDdiag/reference/check_pcl5_data.md)
+for a pre-flight check that reports every data problem at once before
+this step.
+
 ## Examples
 
 ``` r

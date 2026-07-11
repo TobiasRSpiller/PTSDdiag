@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -146,11 +146,26 @@ by the 20 PCL-5 items (<code>S1</code>–<code>S20</code>).</p>
 <span><span class="co">#&gt; [1] "patient_id" "age"        "sex"        "S1"         "S2"        </span></span>
 <span><span class="co">#&gt; [6] "S3"</span></span></code></pre></div>
 <p>To keep this vignette quick to build we work with a 250-row subset;
-the workflow is identical on the full dataset. We pass the three
-demographic columns to <code>id_col</code>. They stay attached to every
-participant through the rest of the workflow, which is what later lets
-us describe the sample without a separate merge.</p>
+the workflow is identical on the full dataset.</p>
+<p>Before renaming anything, <code><a href="../reference/check_pcl5_data.html">check_pcl5_data()</a></code> verifies the
+item columns in a single pass — exactly 20 non-identifier columns,
+numeric, integer scores 0 to 4, no missing values — and reports every
+problem at once rather than stopping at the first. On a freshly exported
+data file this turns fixing the input into a one-iteration job.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/check_pcl5_data.html">check_pcl5_data</a></span><span class="op">(</span><span class="va">simulated_ptsd</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">250</span>, <span class="op">]</span>, id_col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"patient_id"</span>, <span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Found exactly 20 non-ID columns; checking them positionally (DSM-5 item order</span></span>
+<span><span class="co">#&gt;   assumed).</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> 250 rows.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> All item columns are numeric.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> No missing values.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> All scores are integers between 0 and 4.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> All checks passed -- data ready for the PTSDdiag workflow.</span></span></code></pre></div>
+<p>With the input verified, we rename. We pass the three demographic
+columns to <code>id_col</code>. They stay attached to every participant
+through the rest of the workflow, which is what later lets us describe
+the sample without a separate merge.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ptsd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rename_ptsd_columns.html">rename_ptsd_columns</a></span><span class="op">(</span><span class="va">simulated_ptsd</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">250</span>, <span class="op">]</span>,</span>
 <span>                            id_col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"patient_id"</span>, <span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ptsd</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span></span>
@@ -176,7 +191,7 @@ symptoms.</p>
 negative alterations in cognition and mood (items 8–14), and at least
 two from alterations in arousal and reactivity (items 15–20), each
 symptom counted as present at a score of 2 or higher.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ptsd</span> <span class="op">&lt;-</span> <span class="va">ptsd</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="../reference/create_ptsd_diagnosis_nonbinarized.html">create_ptsd_diagnosis_nonbinarized</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><code><a href="../reference/calculate_ptsd_total.html">calculate_ptsd_total()</a></code> adds the PCL-5 sum score (range
@@ -185,13 +200,13 @@ a separate descriptive copy rather than in the analysis data, because
 the optimization functions expect only the 20 items next to identifiers
 and the reference diagnosis and warn when a total-score column is
 present.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">desc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_ptsd_total.html">calculate_ptsd_total</a></span><span class="op">(</span><span class="va">ptsd</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">desc</span><span class="op">$</span><span class="va">total</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 58.224</span></span></code></pre></div>
 <p>In this clinical-style sample, the mean PCL-5 total is 58.2 points
 and 93% of participants meet the full criteria.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">ptsd</span><span class="op">$</span><span class="va">PTSD_orig</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
 <span><span class="co">#&gt; [1] 92.8</span></span></code></pre></div>
 </div>
@@ -234,7 +249,7 @@ that near optimal solutions can be compared; the companion value
 top score exactly, which shows whether the leading subset is uniquely
 best or one of several equivalent solutions.
 <code>show_progress = FALSE</code> suppresses the progress bar.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/optimize_combinations.html">optimize_combinations</a></span><span class="op">(</span></span>
 <span>  <span class="va">ptsd</span>,</span>
 <span>  n_symptoms    <span class="op">=</span> <span class="fl">6</span>,</span>
@@ -277,7 +292,7 @@ reference diagnosis and each top combination in
 <code>res$summary</code>, including <code>Accuracy</code> and
 <code>Balanced Accuracy</code> columns. This is the
 diagnostic-performance table.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span><span class="op">$</span><span class="va">summary</span></span>
 <span><span class="co">#&gt;                  Scenario  combination_id rank Total Diagnosed</span></span>
 <span><span class="co">#&gt; 1               PTSD_orig            &lt;NA&gt;   NA     232 (92.8%)</span></span>
@@ -329,7 +344,7 @@ clinician-administered CAPS-5 as the reference instrument.</li>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

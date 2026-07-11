@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">PTSDdiag</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -202,10 +202,35 @@ to carry.</p>
 <span><span class="co">#&gt; [1]  2  6  7  8 10 15</span></span></code></pre></div>
 <p>This object is everything the other site needs, and it holds nothing
 but symptom numbers and rules. No participant, score, or demographic is
-in it, so it can be shared freely. <code><a href="../reference/write_combinations.html">write_combinations()</a></code>
-serializes a set of combinations to a small JSON file for transfer, as
-shown in the <a href="validation.html">Validating abbreviated symptom
-definitions</a> vignette.</p>
+in it, so it can be shared freely.</p>
+<p>In a real collaboration the definitions travel as files rather than
+as an R object. <code><a href="../reference/write_combinations.html">write_combinations()</a></code> serializes one rule’s
+combinations to a small JSON file; the optional <code>label</code>
+stores the rule’s display name in the file, so tables produced at the
+receiving site are labelled by the derivation site automatically. A
+temporary file stands in for the transfer here.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">json_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".json"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/write_combinations.html">write_combinations</a></span><span class="op">(</span></span>
+<span>  <span class="va">definitions</span><span class="op">[[</span><span class="st">"4/6 Hierarchical"</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">symptoms</span>, <span class="va">json_file</span>,</span>
+<span>  n_required  <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  clusters    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>B <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, C <span class="op">=</span> <span class="fl">6</span><span class="op">:</span><span class="fl">7</span>, D <span class="op">=</span> <span class="fl">8</span><span class="op">:</span><span class="fl">14</span>, E <span class="op">=</span> <span class="fl">15</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span>,</span>
+<span>  label       <span class="op">=</span> <span class="st">"4/6 Hierarchical"</span>,</span>
+<span>  description <span class="op">=</span> <span class="st">"Top 5 hierarchical combinations, veteran derivation sample"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Combinations written to <span style="color: #0000BB;">/tmp/RtmpOKoo85/file1f475a80ddea.json</span></span></span></code></pre></div>
+<p>At the other end, <code><a href="../reference/read_combinations.html">read_combinations()</a></code> imports the file
+and <code><a href="../reference/as_definitions.html">as_definitions()</a></code> turns one or several imported files
+into the same definitions structure <code><a href="../reference/extract_definitions.html">extract_definitions()</a></code>
+produces — <code>lapply(files, read_combinations)</code> handles a whole
+folder of rules in one line. The round trip reproduces the shared
+definition exactly:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">received</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_definitions.html">as_definitions</a></span><span class="op">(</span><span class="fu"><a href="../reference/read_combinations.html">read_combinations</a></span><span class="op">(</span><span class="va">json_file</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="va">received</span><span class="op">[[</span><span class="st">"4/6 Hierarchical"</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">symptoms</span>,</span>
+<span>          <span class="va">definitions</span><span class="op">[[</span><span class="st">"4/6 Hierarchical"</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">symptoms</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="evaluating-every-definition-in-a-sample">Evaluating every definition in a sample<a class="anchor" aria-label="anchor" href="#evaluating-every-definition-in-a-sample"></a>
@@ -223,7 +248,7 @@ data frame, the identical call runs at either site.</p>
 </h2>
 <p>The veteran site records how every definition performs on its own
 patients, the baseline the other site will be read against.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/evaluate_definitions.html">evaluate_definitions</a></span><span class="op">(</span><span class="va">vet</span>, <span class="va">definitions</span>, include_icd11 <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                       Scenario Total Diagnosed</span></span>
 <span><span class="co">#&gt; 1                                    PTSD_orig     232 (92.8%)</span></span>
@@ -242,7 +267,7 @@ patients, the baseline the other site will be read against.</p>
 <span><span class="co">#&gt; 14  3/6 Non-hierarchical (4, 6, 7, 13, 15, 19)     237 (94.8%)</span></span>
 <span><span class="co">#&gt; 15 3/6 Non-hierarchical (6, 7, 10, 12, 15, 19)     237 (94.8%)</span></span>
 <span><span class="co">#&gt; 16   3/6 Non-hierarchical (2, 6, 7, 8, 10, 15)     236 (94.4%)</span></span>
-<span><span class="co">#&gt; 17                                      ICD-11     226 (90.4%)</span></span>
+<span><span class="co">#&gt; 17                                      ICD-11     222 (88.8%)</span></span>
 <span><span class="co">#&gt;    Total Non-Diagnosed True Positive True Negative Newly Diagnosed</span></span>
 <span><span class="co">#&gt; 1            18 (7.2%)           232            18               0</span></span>
 <span><span class="co">#&gt; 2           37 (14.8%)           213            18               0</span></span>
@@ -260,7 +285,7 @@ patients, the baseline the other site will be read against.</p>
 <span><span class="co">#&gt; 14           13 (5.2%)           232            13               5</span></span>
 <span><span class="co">#&gt; 15           13 (5.2%)           232            13               5</span></span>
 <span><span class="co">#&gt; 16           14 (5.6%)           231            13               5</span></span>
-<span><span class="co">#&gt; 17           24 (9.6%)           224            16               2</span></span>
+<span><span class="co">#&gt; 17          28 (11.2%)           220            16               2</span></span>
 <span><span class="co">#&gt;    Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV</span></span>
 <span><span class="co">#&gt; 1                    0        250           0      1.0000      1.0000 1.0000</span></span>
 <span><span class="co">#&gt; 2                   19        231          19      0.9181      1.0000 1.0000</span></span>
@@ -278,7 +303,7 @@ patients, the baseline the other site will be read against.</p>
 <span><span class="co">#&gt; 14                   0        245           5      1.0000      0.7222 0.9789</span></span>
 <span><span class="co">#&gt; 15                   0        245           5      1.0000      0.7222 0.9789</span></span>
 <span><span class="co">#&gt; 16                   1        244           6      0.9957      0.7222 0.9788</span></span>
-<span><span class="co">#&gt; 17                   8        240          10      0.9655      0.8889 0.9912</span></span>
+<span><span class="co">#&gt; 17                  12        236          14      0.9483      0.8889 0.9910</span></span>
 <span><span class="co">#&gt;       NPV Accuracy Balanced Accuracy</span></span>
 <span><span class="co">#&gt; 1  1.0000    1.000            1.0000</span></span>
 <span><span class="co">#&gt; 2  0.4865    0.924            0.9591</span></span>
@@ -296,7 +321,7 @@ patients, the baseline the other site will be read against.</p>
 <span><span class="co">#&gt; 14 1.0000    0.980            0.8611</span></span>
 <span><span class="co">#&gt; 15 1.0000    0.980            0.8611</span></span>
 <span><span class="co">#&gt; 16 0.9286    0.976            0.8590</span></span>
-<span><span class="co">#&gt; 17 0.6667    0.960            0.9272</span></span></code></pre></div>
+<span><span class="co">#&gt; 17 0.5714    0.944            0.9186</span></span></code></pre></div>
 <p>The first row is the full DSM-5-TR diagnosis itself, the reference.
 Below it are the fifteen derived definitions, grouped by rule, followed
 by ICD-11, each scored against the reference.</p>
@@ -308,7 +333,7 @@ by ICD-11, each scored against the reference.</p>
 above. It runs the same evaluation on its own patients. The veteran site
 never sees these records, and this site never sees the veteran
 records.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"simulated_ptsd_genpop"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># simulated_ptsd_genpop also carries paired CAPS-5 columns (C1..C20); here we</span></span>
@@ -336,7 +361,7 @@ records.</p>
 <span><span class="co">#&gt; 14  3/6 Non-hierarchical (4, 6, 7, 13, 15, 19)    332 (27.67%)</span></span>
 <span><span class="co">#&gt; 15 3/6 Non-hierarchical (6, 7, 10, 12, 15, 19)    345 (28.75%)</span></span>
 <span><span class="co">#&gt; 16   3/6 Non-hierarchical (2, 6, 7, 8, 10, 15)    346 (28.83%)</span></span>
-<span><span class="co">#&gt; 17                                      ICD-11    279 (23.25%)</span></span>
+<span><span class="co">#&gt; 17                                      ICD-11    259 (21.58%)</span></span>
 <span><span class="co">#&gt;    Total Non-Diagnosed True Positive True Negative Newly Diagnosed</span></span>
 <span><span class="co">#&gt; 1            948 (79%)           252           948               0</span></span>
 <span><span class="co">#&gt; 2         1062 (88.5%)           135           945               3</span></span>
@@ -354,7 +379,7 @@ records.</p>
 <span><span class="co">#&gt; 14        868 (72.33%)           225           841             107</span></span>
 <span><span class="co">#&gt; 15        855 (71.25%)           230           833             115</span></span>
 <span><span class="co">#&gt; 16        854 (71.17%)           225           827             121</span></span>
-<span><span class="co">#&gt; 17        921 (76.75%)           221           890              58</span></span>
+<span><span class="co">#&gt; 17        941 (78.42%)           214           903              45</span></span>
 <span><span class="co">#&gt;    Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV</span></span>
 <span><span class="co">#&gt; 1                    0       1200           0      1.0000      1.0000 1.0000</span></span>
 <span><span class="co">#&gt; 2                  117       1080         120      0.5357      0.9968 0.9783</span></span>
@@ -372,7 +397,7 @@ records.</p>
 <span><span class="co">#&gt; 14                  27       1066         134      0.8929      0.8871 0.6777</span></span>
 <span><span class="co">#&gt; 15                  22       1063         137      0.9127      0.8787 0.6667</span></span>
 <span><span class="co">#&gt; 16                  27       1052         148      0.8929      0.8724 0.6503</span></span>
-<span><span class="co">#&gt; 17                  31       1111          89      0.8770      0.9388 0.7921</span></span>
+<span><span class="co">#&gt; 17                  38       1117          83      0.8492      0.9525 0.8263</span></span>
 <span><span class="co">#&gt;       NPV Accuracy Balanced Accuracy</span></span>
 <span><span class="co">#&gt; 1  1.0000   1.0000            1.0000</span></span>
 <span><span class="co">#&gt; 2  0.8898   0.9000            0.7663</span></span>
@@ -390,9 +415,38 @@ records.</p>
 <span><span class="co">#&gt; 14 0.9689   0.8883            0.8900</span></span>
 <span><span class="co">#&gt; 15 0.9743   0.8858            0.8957</span></span>
 <span><span class="co">#&gt; 16 0.9684   0.8767            0.8826</span></span>
-<span><span class="co">#&gt; 17 0.9663   0.9258            0.9079</span></span></code></pre></div>
+<span><span class="co">#&gt; 17 0.9596   0.9308            0.9009</span></span></code></pre></div>
 <p>Both tables are built the same way, so they line up row for row with
 the derivation table above.</p>
+</div>
+<div class="section level2">
+<h2 id="a-tidy-table-for-downstream-analysis">A tidy table for downstream analysis<a class="anchor" aria-label="anchor" href="#a-tidy-table-for-downstream-analysis"></a>
+</h2>
+<p>The tables above are formatted for reading. For filtering, plotting,
+or combining results across sites, request the same evaluation as a
+plain analysis table with <code>tidy = TRUE</code>: one row per
+combination with <code>Approach</code>, <code>Rank</code>,
+<code>Combination</code>, the 2x2 counts, and numeric metrics. The
+layout matches <code><a href="../reference/summarize_top_combinations.html">summarize_top_combinations()</a></code> on the
+derivation side, so tables from both sites stack with
+<code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind()</a></code> — no label parsing required.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tidy_gp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/evaluate_definitions.html">evaluate_definitions</a></span><span class="op">(</span><span class="va">genpop</span>, <span class="va">definitions</span>, tidy <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tidy_gp</span><span class="op">)</span></span>
+<span><span class="co">#&gt;               Approach Rank         Combination  TP  FN FP  TN Sensitivity</span></span>
+<span><span class="co">#&gt; 1     4/6 Hierarchical    1 1, 6, 7, 13, 15, 17 135 117  3 945   0.5357143</span></span>
+<span><span class="co">#&gt; 2     4/6 Hierarchical    2 1, 3, 7, 13, 15, 17 135 117  2 946   0.5357143</span></span>
+<span><span class="co">#&gt; 3     4/6 Hierarchical    3 1, 3, 6, 13, 16, 19 141 111  9 939   0.5595238</span></span>
+<span><span class="co">#&gt; 4     4/6 Hierarchical    4  1, 4, 6, 7, 11, 17 156  96  2 946   0.6190476</span></span>
+<span><span class="co">#&gt; 5     4/6 Hierarchical    5 1, 6, 7, 11, 15, 17 145 107  3 945   0.5753968</span></span>
+<span><span class="co">#&gt; 6 4/6 Non-hierarchical    1 6, 7, 8, 11, 13, 17 207  45 17 931   0.8214286</span></span>
+<span><span class="co">#&gt;   Specificity       PPV       NPV  Accuracy Balanced Accuracy</span></span>
+<span><span class="co">#&gt; 1   0.9968354 0.9782609 0.8898305 0.9000000         0.7662749</span></span>
+<span><span class="co">#&gt; 2   0.9978903 0.9854015 0.8899341 0.9008333         0.7668023</span></span>
+<span><span class="co">#&gt; 3   0.9905063 0.9400000 0.8942857 0.9000000         0.7750151</span></span>
+<span><span class="co">#&gt; 4   0.9978903 0.9873418 0.9078695 0.9183333         0.8084690</span></span>
+<span><span class="co">#&gt; 5   0.9968354 0.9797297 0.8982890 0.9083333         0.7861161</span></span>
+<span><span class="co">#&gt; 6   0.9820675 0.9241071 0.9538934 0.9483333         0.9017480</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="reading-the-two-tables-together">Reading the two tables together<a class="anchor" aria-label="anchor" href="#reading-the-two-tables-together"></a>
@@ -447,7 +501,7 @@ against a clinician-administered reference.</li>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

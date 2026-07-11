@@ -57,6 +57,15 @@ A named list with the following elements:
 
   Character string with the user-provided description.
 
+- label:
+
+  Character string with the display label stored by
+  [`write_combinations`](https://tobiasrspiller.github.io/PTSDdiag/reference/write_combinations.md),
+  or `NA` for files written without one (including files from versions
+  before 0.4.0). Used by
+  [`as_definitions`](https://tobiasrspiller.github.io/PTSDdiag/reference/as_definitions.md)
+  to name the definition.
+
 - ptsddiag_version:
 
   Character string indicating which package version created the file.
@@ -65,8 +74,14 @@ A named list with the following elements:
 
   Character string with the creation timestamp.
 
-The `combinations`, `n_required`, and `clusters` elements can be passed
+The returned list carries class `ptsdiag_spec`, so it can be handed
 directly to
+[`as_definitions`](https://tobiasrspiller.github.io/PTSDdiag/reference/as_definitions.md)
+or
+[`evaluate_definitions`](https://tobiasrspiller.github.io/PTSDdiag/reference/evaluate_definitions.md)
+(which converts it automatically). For row-level diagnoses, the
+`combinations`, `n_required`, and `clusters` elements can also be passed
+to
 [`apply_symptom_combinations`](https://tobiasrspiller.github.io/PTSDdiag/reference/apply_symptom_combinations.md):
 
 
@@ -90,6 +105,11 @@ one currently installed, an informational message is displayed.
 [`write_combinations`](https://tobiasrspiller.github.io/PTSDdiag/reference/write_combinations.md)
 to export combinations to a JSON file.
 
+[`as_definitions`](https://tobiasrspiller.github.io/PTSDdiag/reference/as_definitions.md)
+to convert one or more imported specifications into the definitions list
+used by
+[`evaluate_definitions`](https://tobiasrspiller.github.io/PTSDdiag/reference/evaluate_definitions.md).
+
 [`apply_symptom_combinations`](https://tobiasrspiller.github.io/PTSDdiag/reference/apply_symptom_combinations.md)
 to apply imported combinations to new data.
 
@@ -104,7 +124,7 @@ my_combos <- list(
 tmp <- tempfile(fileext = ".json")
 write_combinations(my_combos, tmp, n_required = 4,
                    score_by = "balanced_accuracy")
-#> ✔ Combinations written to /tmp/RtmpYxrDd3/file1a8b4f2fec62.json
+#> ✔ Combinations written to /tmp/RtmpIP77bQ/file1b951b2c784.json
 
 # Read them back
 spec <- read_combinations(tmp)

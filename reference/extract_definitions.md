@@ -53,6 +53,9 @@ sample.
 ## See also
 
 [`evaluate_definitions`](https://tobiasrspiller.github.io/PTSDdiag/reference/evaluate_definitions.md),
+[`as_definitions`](https://tobiasrspiller.github.io/PTSDdiag/reference/as_definitions.md)
+for building the same object from combinations imported with
+[`read_combinations`](https://tobiasrspiller.github.io/PTSDdiag/reference/read_combinations.md),
 [`compare_optimizations`](https://tobiasrspiller.github.io/PTSDdiag/reference/compare_optimizations.md).
 
 ## Examples
