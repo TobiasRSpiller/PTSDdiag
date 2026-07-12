@@ -1,7 +1,17 @@
+## Resubmission
+
+The previous submission (0.4.0) was auto-rejected by the incoming pretests for
+a single additional issue: "Overall checktime 13 min > 10 min" on
+r-devel-windows (both flavors were otherwise Status OK). 0.4.1 reduces the
+check time — search-heavy tests are skipped on CRAN (the full suite runs on
+GitHub Actions for every push; CRAN keeps fast unit tests plus compact
+optimizer smoke tests) and vignettes rebuild on smaller data subsets. There
+are no functional changes relative to 0.4.0.
+
 ## Submission
 
 This is an update of the CRAN package PTSDdiag (current CRAN version: 0.1.0;
-this submission: 0.4.0). Highlights since 0.1.0:
+this submission: 0.4.1). Highlights since 0.1.0:
 
 * Multi-scenario optimization (`compare_optimizations()`) with summary
   tables, a symptom-frequency heatmap, and ICD-11 / CAPS-5 benchmarks.
@@ -43,7 +53,7 @@ See NEWS.md for the complete changelog.
   including \donttest examples and the PDF manual
 * GitHub Actions: macOS-latest (release), windows-latest (release),
   ubuntu-latest (devel, release, oldrel-1)
-* win-builder: last run for 0.3.5 — re-run for 0.4.0 before submitting
+* win-builder: R Under development (unstable) (2026-07-11 r90235 ucrt) — Status: OK
 
 ## Downstream dependencies
 

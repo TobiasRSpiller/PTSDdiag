@@ -26,13 +26,13 @@ The PCL-5 is completed by the patient; the CAPS-5 is administered by a clinician
 
 The general-population dataset `simulated_ptsd_genpop` ships both instruments for the same participants: the PCL-5 items `S1`–`S20` and paired CAPS-5 severity ratings `C1`–`C20`, simulated so the two total scores correlate about 0.8 (the level usually reported empirically). Because both come from one data frame, the PCL-5 and CAPS-5 views describe the same people in the same row order, which is exactly what a paired-instrument comparison requires.
 
-To analyse one instrument we standardise its 20 columns and park everything else, including the other instrument's columns, in `id_col`, so `rename_*` sees exactly 20 item columns. We use a 250-row subset for speed.
+To analyse one instrument we standardise its 20 columns and park everything else, including the other instrument's columns, in `id_col`, so `rename_*` sees exactly 20 item columns. We use a 120-row subset for speed.
 
 ```{r setup, message = FALSE}
 library(PTSDdiag)
 
 data("simulated_ptsd_genpop")
-gp   <- simulated_ptsd_genpop[1:250, ]
+gp   <- simulated_ptsd_genpop[1:120, ]
 demo <- c("patient_id", "age", "sex")
 
 # PCL-5 view: rename S1..S20; carry the CAPS-5 columns through untouched

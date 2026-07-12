@@ -33,13 +33,13 @@ The input must be the 20 PCL-5 items in their standard order, scored 0 to 4, wit
 
 ## Running the comparison in one call
 
-`compare_optimizations()` evaluates the three scenarios outlined above and returns one object that holds the per-scenario results. We request the three default optimized rules, add ICD-11 with `include_icd11 = TRUE`, and keep the ten best combinations per optimized rule with `n_top = 10`. The default `score_by = "balanced_accuracy"` ranks combinations by the mean of sensitivity and specificity, so the high prevalence of the clinical sample cannot dominate the ranking; the [Getting started](getting-started.html) vignette discusses this choice and the `"accuracy"` and `"sensitivity"` alternatives. To keep the vignette fast we use a 250-row subset of the bundled data.
+`compare_optimizations()` evaluates the three scenarios outlined above and returns one object that holds the per-scenario results. We request the three default optimized rules, add ICD-11 with `include_icd11 = TRUE`, and keep the ten best combinations per optimized rule with `n_top = 10`. The default `score_by = "balanced_accuracy"` ranks combinations by the mean of sensitivity and specificity, so the high prevalence of the clinical sample cannot dominate the ranking; the [Getting started](getting-started.html) vignette discusses this choice and the `"accuracy"` and `"sensitivity"` alternatives. To keep the vignette fast we use a 120-row subset of the bundled data.
 
 ```{r setup, message = FALSE}
 library(PTSDdiag)
 
 data("simulated_ptsd")
-ptsd <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+ptsd <- rename_ptsd_columns(simulated_ptsd[1:120, ],
                             id_col = c("patient_id", "age", "sex"))
 
 comp <- compare_optimizations(

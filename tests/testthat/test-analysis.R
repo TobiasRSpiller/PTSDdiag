@@ -1,4 +1,5 @@
 test_that("analyze_best_six_symptoms_four_required works correctly", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   # Create small test dataset
   test_data <- data.frame(
     matrix(sample(0:4, 20 * 50, replace = TRUE),
@@ -36,6 +37,7 @@ test_that("analyze_best_six_symptoms_four_required works correctly", {
 })
 
 test_that("analyze_best_six_symptoms_four_required_clusters works correctly", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   # Create small test dataset
   test_data <- data.frame(
     matrix(sample(0:4, 20 * 50, replace = TRUE),
@@ -232,6 +234,7 @@ test_that("optimize_combinations_clusters returns n_tied count", {
 # ---------------------------------------------------------------------------
 
 test_that("optimize_combinations carries ID columns into diagnosis_comparison", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   set.seed(7)
   raw <- data.frame(
     patient_id = sprintf("P%03d", 1:60),
@@ -248,6 +251,7 @@ test_that("optimize_combinations carries ID columns into diagnosis_comparison", 
 })
 
 test_that("optimize_combinations gives identical numeric results with vs without id_col", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   set.seed(11)
   base <- data.frame(matrix(sample(0:4, 20 * 80, replace = TRUE),
                             nrow = 80, ncol = 20))
@@ -271,6 +275,7 @@ test_that("optimize_combinations gives identical numeric results with vs without
 })
 
 test_that("optimize_combinations_clusters carries ID columns through", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   set.seed(13)
   raw <- data.frame(
     patient_id = sprintf("P%03d", 1:50),

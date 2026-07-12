@@ -26,7 +26,7 @@ In this vignette, one site has data from the veterans with a high PTSD prevalenc
 
 ## Requirements for the input data
 
-Each site standardizes its own data with `rename_ptsd_columns()`: the 20 PCL-5 items in their standard order, scored 0 to 4, with no missing values, plus any identifier columns named in `id_col`. The full contract is in the [Getting started](getting-started.html) vignette. For this vignette, we subset the veteran sample to 250 rows to keep the optimization fast.
+Each site standardizes its own data with `rename_ptsd_columns()`: the 20 PCL-5 items in their standard order, scored 0 to 4, with no missing values, plus any identifier columns named in `id_col`. The full contract is in the [Getting started](getting-started.html) vignette. For this vignette, we subset the veteran sample to 120 rows to keep the optimization fast.
 
 ## Site 1: deriving the definition in the veteran sample
 
@@ -37,7 +37,7 @@ library(PTSDdiag)
 library(dplyr)
 
 data("simulated_ptsd")
-vet <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+vet <- rename_ptsd_columns(simulated_ptsd[1:120, ],
                            id_col = c("patient_id", "age", "sex"))
 
 comp_vet <- compare_optimizations(

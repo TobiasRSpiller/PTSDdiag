@@ -1,4 +1,5 @@
 test_that("holdout_validation works correctly", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   # Create test data
   set.seed(42)
   test_data <- data.frame(
@@ -69,6 +70,7 @@ test_that("holdout_validation handles different train_ratio values", {
 })
 
 test_that("holdout_validation handles different score_by options", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   # Create test data
   set.seed(123)
   test_data <- data.frame(
@@ -196,6 +198,7 @@ test_that("cross_validation works correctly", {
 })
 
 test_that("cross_validation handles different k values", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   # Create test data
   test_data <- data.frame(
     matrix(sample(0:4, 20 * 50, replace = TRUE),
@@ -263,6 +266,7 @@ test_that("cross_validation validates input correctly", {
 })
 
 test_that("cross_validation combinations_summary works correctly", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   # Create test data with patterns that might repeat across folds
   set.seed(123)
   test_data <- data.frame(
@@ -305,6 +309,7 @@ test_that("cross_validation combinations_summary works correctly", {
 })
 
 test_that("holdout_validation produces consistent results with same seed", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   # Create test data
   test_data <- data.frame(
     matrix(sample(0:4, 20 * 50, replace = TRUE),
@@ -335,6 +340,7 @@ test_that("holdout_validation produces consistent results with same seed", {
 })
 
 test_that("holdout_validation returns data.frame by default and DT when requested", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   test_data <- data.frame(
     matrix(sample(0:4, 20 * 50, replace = TRUE), nrow = 50, ncol = 20)
   )
@@ -353,6 +359,7 @@ test_that("holdout_validation returns data.frame by default and DT when requeste
 })
 
 test_that("cross_validation returns data.frame by default and DT when requested", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   test_data <- data.frame(
     matrix(sample(0:4, 20 * 100, replace = TRUE), nrow = 100, ncol = 20)
   )
@@ -371,6 +378,7 @@ test_that("cross_validation returns data.frame by default and DT when requested"
 })
 
 test_that("cross_validation produces consistent results with same seed", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   # Create test data
   test_data <- data.frame(
     matrix(sample(0:4, 20 * 50, replace = TRUE),
@@ -472,6 +480,7 @@ test_that("holdout_validation rejects train_ratio that produces empty splits", {
 # ---------------------------------------------------------------------------
 
 test_that("holdout_validation carries ID columns into test_results", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   set.seed(31)
   raw <- data.frame(
     patient_id = sprintf("P%03d", 1:120),
@@ -494,6 +503,7 @@ test_that("holdout_validation carries ID columns into test_results", {
 })
 
 test_that("cross_validation carries ID columns into every fold_results entry", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   skip_if_not_installed("rsample")
   set.seed(37)
   raw <- data.frame(
