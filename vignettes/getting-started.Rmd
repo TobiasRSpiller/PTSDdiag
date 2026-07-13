@@ -46,18 +46,18 @@ dim(simulated_ptsd)
 names(simulated_ptsd)[1:6]
 ```
 
-To keep this vignette quick to build we work with a 250-row subset; the workflow is identical on the full dataset.
+To keep this vignette quick to build we work with a 120-row subset; the workflow is identical on the full dataset.
 
 Before renaming anything, `check_pcl5_data()` verifies the item columns in a single pass — exactly 20 non-identifier columns, numeric, integer scores 0 to 4, no missing values — and reports every problem at once rather than stopping at the first. On a freshly exported data file this turns fixing the input into a one-iteration job.
 
 ```{r preflight}
-check_pcl5_data(simulated_ptsd[1:250, ], id_col = c("patient_id", "age", "sex"))
+check_pcl5_data(simulated_ptsd[1:120, ], id_col = c("patient_id", "age", "sex"))
 ```
 
 With the input verified, we rename. We pass the three demographic columns to `id_col`. They stay attached to every participant through the rest of the workflow, which is what later lets us describe the sample without a separate merge.
 
 ```{r rename}
-ptsd <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+ptsd <- rename_ptsd_columns(simulated_ptsd[1:120, ],
                             id_col = c("patient_id", "age", "sex"))
 names(ptsd)[1:6]
 ```

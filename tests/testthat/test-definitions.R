@@ -19,6 +19,7 @@ make_comp <- function(n = 200, seed = 7) {
 # ---------------------------------------------------------------------------
 
 test_that("extract_definitions returns one entry per optimize scenario with rules from config", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   comp <- make_comp()
   defs <- extract_definitions(comp, n = 5)
 
@@ -32,6 +33,7 @@ test_that("extract_definitions returns one entry per optimize scenario with rule
 })
 
 test_that("extract_definitions caps n at the number available and validates inputs", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   comp <- make_comp()
   defs <- extract_definitions(comp, n = 50)  # more than n_top
   expect_true(all(vapply(defs, function(d) length(d$symptoms), integer(1)) == 8))
@@ -41,6 +43,7 @@ test_that("extract_definitions caps n at the number available and validates inpu
 })
 
 test_that("extract_definitions skips fixed scenarios", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   set.seed(11)
   df <- as.data.frame(matrix(sample(0:4, 20 * 200, replace = TRUE), nrow = 200,
                              ncol = 20))
@@ -57,6 +60,7 @@ test_that("extract_definitions skips fixed scenarios", {
 # ---------------------------------------------------------------------------
 
 test_that("evaluate_definitions returns a performance table with Accuracy and ICD-11", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   comp <- make_comp()
   defs <- extract_definitions(comp, n = 2)
 
@@ -76,6 +80,7 @@ test_that("evaluate_definitions returns a performance table with Accuracy and IC
 })
 
 test_that("evaluate_definitions can omit ICD-11", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   comp <- make_comp()
   defs <- extract_definitions(comp, n = 1)
   set.seed(22)
@@ -98,6 +103,7 @@ test_that("evaluate_definitions validates the definitions object", {
 })
 
 test_that("extract -> evaluate round-trips and carries id columns in input", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   set.seed(31)
   raw <- data.frame(
     patient_id = sprintf("P%03d", 1:200),
@@ -129,6 +135,21 @@ make_newdata <- function(n, seed) {
                              nrow = n, ncol = 20))
   names(df) <- paste0("symptom_", 1:20)
   df
+}
+
+# Hand-built definitions (no optimizer search) so the evaluate_definitions()
+# feature tests stay cheap enough to run on CRAN.
+make_defs <- function() {
+  list(
+    "4/6 Non-hierarchical" = list(
+      symptoms = list(c(1, 6, 8, 10, 15, 19), c(2, 7, 9, 11, 16, 20)),
+      n_required = 4, hierarchical = FALSE
+    ),
+    "4/6 Hierarchical" = list(
+      symptoms = list(c(1, 6, 8, 15, 17, 19), c(2, 7, 10, 14, 16, 20)),
+      n_required = 4, hierarchical = TRUE
+    )
+  )
 }
 
 # ---------------------------------------------------------------------------
@@ -252,8 +273,7 @@ test_that("custom clusters stored in a spec are used in evaluation", {
 # ---------------------------------------------------------------------------
 
 test_that("evaluate_definitions default output matches the v0.3.5 algorithm", {
-  comp <- make_comp()
-  defs <- extract_definitions(comp, n = 2)
+  defs <- make_defs()
   newdata <- make_newdata(150, 51)
 
   # The pre-0.4.0 implementation, replicated verbatim
@@ -287,8 +307,7 @@ test_that("evaluate_definitions default output matches the v0.3.5 algorithm", {
 # ---------------------------------------------------------------------------
 
 test_that("evaluate_definitions scores against an external reference", {
-  comp <- make_comp()
-  defs <- extract_definitions(comp, n = 1)
+  defs <- make_defs()
   newdata <- make_newdata(160, 52)
   set.seed(53)
   ref <- sample(c(TRUE, FALSE), 160, replace = TRUE)
@@ -344,8 +363,7 @@ test_that("evaluate_definitions scores against an external reference", {
 })
 
 test_that("evaluate_definitions validates the reference argument", {
-  comp <- make_comp()
-  defs <- extract_definitions(comp, n = 1)
+  defs <- make_defs()
   newdata <- make_newdata(50, 54)
 
   # 0/1 numeric coerces to logical
@@ -371,8 +389,7 @@ test_that("evaluate_definitions validates the reference argument", {
 })
 
 test_that("include_full_pcl5 defaults track the reference and can be overridden", {
-  comp <- make_comp()
-  defs <- extract_definitions(comp, n = 1)
+  defs <- make_defs()
   newdata <- make_newdata(80, 56)
   set.seed(57)
   ref <- sample(c(TRUE, FALSE), 80, replace = TRUE)
@@ -397,6 +414,7 @@ test_that("include_full_pcl5 defaults track the reference and can be overridden"
 # ---------------------------------------------------------------------------
 
 test_that("tidy output matches the summarize_top_combinations layout", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   comp <- make_comp()
   defs <- extract_definitions(comp, n = 2)
   newdata <- make_newdata(150, 58)
@@ -417,8 +435,7 @@ test_that("tidy output matches the summarize_top_combinations layout", {
 })
 
 test_that("tidy output agrees numerically with the formatted table", {
-  comp <- make_comp()
-  defs <- extract_definitions(comp, n = 2)
+  defs <- make_defs()
   newdata <- make_newdata(150, 59)
 
   tidy <- evaluate_definitions(newdata, defs, tidy = TRUE)
@@ -437,8 +454,7 @@ test_that("tidy output agrees numerically with the formatted table", {
 })
 
 test_that("as_percent scales the tidy metrics and requires tidy = TRUE", {
-  comp <- make_comp()
-  defs <- extract_definitions(comp, n = 1)
+  defs <- make_defs()
   newdata <- make_newdata(100, 60)
 
   tidy <- evaluate_definitions(newdata, defs, tidy = TRUE)
@@ -449,4 +465,23 @@ test_that("as_percent scales the tidy metrics and requires tidy = TRUE", {
 
   expect_error(evaluate_definitions(newdata, defs, as_percent = TRUE),
                "tidy = TRUE")
+})
+
+test_that("tidy output has the documented columns (CRAN-cheap)", {
+  # Literal-name twin of the summarize_top_combinations cross-consistency
+  # test above (which needs a real comparison object and is CI-only).
+  defs <- make_defs()
+  newdata <- make_newdata(80, 61)
+
+  tidy <- evaluate_definitions(newdata, defs, tidy = TRUE)
+  expect_equal(names(tidy),
+               c("Approach", "Rank", "Combination", "TP", "FN", "FP", "TN",
+                 "Sensitivity", "Specificity", "PPV", "NPV", "Accuracy",
+                 "Balanced Accuracy"))
+  for (a in unique(tidy$Approach)) {
+    expect_equal(tidy$Rank[tidy$Approach == a],
+                 seq_len(sum(tidy$Approach == a)))
+  }
+  expect_equal(tidy$Combination[tidy$Approach == "ICD-11"],
+               "2, 3, 6, 7, 17, 18")
 })

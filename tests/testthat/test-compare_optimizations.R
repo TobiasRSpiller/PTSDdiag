@@ -17,6 +17,7 @@ make_test_data <- function(n = 60, seed = 7, id = TRUE) {
 # ---------------------------------------------------------------------------
 
 test_that("compare_optimizations() defaults to the three preprint scenarios", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   set.seed(11)
   data <- make_test_data(n = 80, id = FALSE)
   comp <- compare_optimizations(data, n_top = 3, show_progress = FALSE)
@@ -125,6 +126,7 @@ test_that("include_icd11 = TRUE adds an ICD-11 fixed scenario", {
 })
 
 test_that("Fixed scenario accepts a user-supplied logical vector", {
+  skip_on_cran()   # search-heavy; runs on CI (full suite), not on CRAN
   set.seed(31)
   data <- make_test_data(n = 50, id = FALSE)
   my_dx <- sample(c(TRUE, FALSE), 50, replace = TRUE)

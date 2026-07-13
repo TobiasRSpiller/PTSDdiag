@@ -28,14 +28,14 @@ The input must be the 20 PCL-5 items in their standard order, scored 0 to 4, wit
 
 ## Internal validation
 
-`holdout_validation()` partitions the sample into a training set and a test set, derives the top combinations on the training set, and reports their performance on the held-out test set. We optimize by balanced accuracy, the package default, which weighs performance in the diagnosed and the non-diagnosed group equally; the [Getting started](getting-started.html) vignette explains this choice. To keep the vignette fast we work with a 250-row subset of the bundled data.
+`holdout_validation()` partitions the sample into a training set and a test set, derives the top combinations on the training set, and reports their performance on the held-out test set. We optimize by balanced accuracy, the package default, which weighs performance in the diagnosed and the non-diagnosed group equally; the [Getting started](getting-started.html) vignette explains this choice. To keep the vignette fast we work with a 120-row subset of the bundled data.
 
 ```{r holdout, message = FALSE}
 library(PTSDdiag)
 library(dplyr)
 
 data("simulated_ptsd")
-ptsd <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+ptsd <- rename_ptsd_columns(simulated_ptsd[1:120, ],
                             id_col = c("patient_id", "age", "sex"))
 
 ho <- holdout_validation(
@@ -58,7 +58,7 @@ ho$without_clusters$summary
 ```{r cv, message = FALSE}
 cv <- cross_validation(
   ptsd,
-  k          = 3,
+  k          = 2,
   n_symptoms = 6,
   n_required = 4,
   n_top      = 3,
@@ -71,24 +71,16 @@ cv$without_clusters$combinations_summary  # NULL if no combination repeats
 
 ## External validation in a second cohort
 
-To test the generalizability of definitions based on fewer symptoms, one needs to evaluate the derived definitions in a second, independent dataset. The package ships a second simulated dataset, `simulated_ptsd_genpop`, whose PTSD prevalence is about 21%, well below the 94% of the included clinical sample. Deriving in the clinical sample and validating in the community sample therefore probes exactly the prevalence shift described above. We again use a 250-row subset of each for speed.
+To test the generalizability of definitions based on fewer symptoms, one needs to evaluate the derived definitions in a second, independent dataset. The package ships a second simulated dataset, `simulated_ptsd_genpop`, whose PTSD prevalence is about 21%, well below the 94% of the included clinical sample. Deriving in the clinical sample and validating in the community sample therefore probes exactly the prevalence shift described above. We again use a 120-row subset of each for speed.
 
-The combinations are derived once, written to a small JSON file, and read back before being applied. The export step is what makes the rule portable across sites and analysts, without a need for data sharing or manual transcription.
+The rule we transport is the one the internal validation above already produced: the top combinations the holdout derivation selected on its training data. They are written to a small JSON file once, and read back before being applied. The export step is what makes the rule portable across sites and analysts, without a need for data sharing or manual transcription.
 
 ```{r external, message = FALSE}
 data("simulated_ptsd_genpop")
 
-# Derive in the clinical sample
-deriv <- optimize_combinations(ptsd,
-                               n_symptoms = 6,
-                               n_required = 4,
-                               n_top = 5,
-                               score_by = "balanced_accuracy",
-                               show_progress = FALSE)
-
-# Export for reuse
+# Export the holdout-derived combinations for reuse
 tmp <- tempfile(fileext = ".json")
-write_combinations(deriv$best_symptoms, tmp,
+write_combinations(ho$without_clusters$best_combinations, tmp,
                    n_required = 4,
                    score_by = "balanced_accuracy",
                    description = "Six-symptom, four-required definition")
@@ -98,7 +90,7 @@ write_combinations(deriv$best_symptoms, tmp,
 # use only the PCL-5 items, so we select those before standardising.
 spec   <- read_combinations(tmp)
 genpop <- rename_ptsd_columns(
-  simulated_ptsd_genpop[1:250, c("patient_id", "age", "sex", paste0("S", 1:20))],
+  simulated_ptsd_genpop[1:120, c("patient_id", "age", "sex", paste0("S", 1:20))],
   id_col = c("patient_id", "age", "sex")
 )
 
@@ -108,7 +100,7 @@ summarize_ptsd_changes(applied) %>%
   create_readable_summary()
 ```
 
-Compare this table with the derivation performance. The predictive values move with prevalence: in the lower-prevalence community sample, PPV falls and NPV rises, so a positive result from the same rule is less likely to correspond to a true case than it was in the clinic. Sensitivity and specificity are often more stable, but they are not immune to differences in case mix: here sensitivity is lower in the community sample, whose symptom profiles are milder than the clinic's, while specificity is slightly higher. Neither shift is a failure of the rule; both are properties of applying any fixed criterion across settings that differ in prevalence and severity, and revealing them is exactly what external validation is for.
+Compare this table with the holdout test performance above, keeping in mind that the clinical test split contains only a handful of non-cases at 94% prevalence, so its specificity and predictive values are coarse. The community sample reveals the shifts external validation exists to expose. NPV rises sharply: non-cases dominate this sample and the rules miss few of them. Sensitivity is lower, because the community sample's symptom profiles are milder than the clinic's, while specificity is high. PPV, in contrast, hardly moves here — the transported rules produce almost no false positives in this sample, so a positive result stays trustworthy even at one-fifth the prevalence; with a less specific rule, the same prevalence drop would pull PPV down instead. None of these shifts is a failure of the rule; all are properties of applying a fixed criterion across settings that differ in prevalence and severity, and revealing them is exactly what external validation is for.
 
 ## How special is the winning subset?
 
