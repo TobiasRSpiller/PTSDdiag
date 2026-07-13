@@ -25,7 +25,7 @@ paired-instrument comparison requires.
 
 To analyse one instrument we standardise its 20 columns and park
 everything else, including the other instrument’s columns, in `id_col`,
-so `rename_*` sees exactly 20 item columns. We use a 250-row subset for
+so `rename_*` sees exactly 20 item columns. We use a 120-row subset for
 speed.
 
 ``` r
@@ -33,7 +33,7 @@ speed.
 library(PTSDdiag)
 
 data("simulated_ptsd_genpop")
-gp   <- simulated_ptsd_genpop[1:250, ]
+gp   <- simulated_ptsd_genpop[1:120, ]
 demo <- c("patient_id", "age", "sex")
 
 # PCL-5 view: rename S1..S20; carry the CAPS-5 columns through untouched
@@ -54,7 +54,7 @@ PCL-5 diagnosis. It returns a single logical column, `PTSD_caps5`.
 
 caps5_dx <- create_caps5_diagnosis(caps5)
 mean(caps5_dx$PTSD_caps5) * 100
-#> [1] 20
+#> [1] 21.66667
 ```
 
 ## Comparing the PCL-5 and CAPS-5 diagnoses
@@ -76,17 +76,17 @@ compare_diagnostic_systems(
   reference  = "caps5"
 )
 #>              system n_diagnosed pct_diagnosed sensitivity specificity    ppv
-#> 1 DSM-5-TR (CAPS-5)          50          20.0        1.00        1.00 1.0000
-#> 2  DSM-5-TR (PCL-5)          52          20.8        0.64        0.90 0.6154
-#> 3    ICD-11 (PCL-5)          56          22.4        0.60        0.87 0.5357
+#> 1 DSM-5-TR (CAPS-5)          26         21.67      1.0000      1.0000 1.0000
+#> 2  DSM-5-TR (PCL-5)          28         23.33      0.7308      0.9043 0.6786
+#> 3    ICD-11 (PCL-5)          29         24.17      0.7308      0.8936 0.6552
 #>      npv n_false_negative pct_false_negative n_false_positive
-#> 1 1.0000                0                0.0                0
-#> 2 0.9091               18                7.2               20
-#> 3 0.8969               20                8.0               26
+#> 1 1.0000                0               0.00                0
+#> 2 0.9239                7               5.83                9
+#> 3 0.9231                7               5.83               10
 #>   pct_false_positive n_misclassified accuracy balanced_accuracy
-#> 1                0.0               0    1.000             1.000
-#> 2                8.0              38    0.848             0.770
-#> 3               10.4              46    0.816             0.735
+#> 1               0.00               0   1.0000            1.0000
+#> 2               7.50              16   0.8667            0.8175
+#> 3               8.33              17   0.8583            0.8122
 ```
 
 Because the two instruments are correlated here rather than random, the
@@ -122,25 +122,25 @@ comp <- compare_optimizations(
   show_progress = FALSE
 )
 #> ℹ Generated 13685 valid cluster-constrained combinations
-#> ℹ Evaluated 13685 combinations. Best: 1, 5, 6, 7, 11, 18
-#> ℹ Evaluated 38760 combinations. Best: 7, 10, 11, 15, 18, 19
+#> ℹ Evaluated 13685 combinations. Best: 2, 6, 7, 11, 16, 17 (26 additional tied)
+#> ℹ Evaluated 38760 combinations. Best: 2, 5, 6, 7, 11, 12 (2 additional tied)
 summarize_top_combinations(comp, top_n = 3, as_percent = TRUE)
-#>               Approach Rank              Combination TP FN FP  TN Sensitivity
-#> 1     4/6 Hierarchical    1    symptom_1_5_6_7_11_18 39 13  0 198    75.00000
-#> 2     4/6 Hierarchical    2   symptom_3_6_7_11_13_15 38 14  0 198    73.07692
-#> 3     4/6 Hierarchical    3    symptom_2_3_6_7_11_18 38 14  0 198    73.07692
-#> 4 4/6 Non-hierarchical    1 symptom_7_10_11_15_18_19 47  5  1 197    90.38462
-#> 5 4/6 Non-hierarchical    2  symptom_3_7_10_15_18_19 47  5  2 196    90.38462
-#> 6 4/6 Non-hierarchical    3  symptom_3_7_11_15_18_19 47  5  2 196    90.38462
-#> 7   CAPS-5 (reference)    1  PTSD_CAPS.5..reference. 32 20 18 180    61.53846
+#>               Approach Rank             Combination TP FN FP TN Sensitivity
+#> 1     4/6 Hierarchical    1  symptom_2_6_7_11_16_17 23  5  0 92    82.14286
+#> 2     4/6 Hierarchical    2    symptom_2_6_7_8_9_17 23  5  0 92    82.14286
+#> 3     4/6 Hierarchical    3   symptom_2_6_7_8_10_17 23  5  0 92    82.14286
+#> 4 4/6 Non-hierarchical    1   symptom_2_5_6_7_11_12 27  1  0 92    96.42857
+#> 5 4/6 Non-hierarchical    2   symptom_2_5_6_7_11_20 27  1  0 92    96.42857
+#> 6 4/6 Non-hierarchical    3  symptom_2_5_7_11_12_20 27  1  0 92    96.42857
+#> 7   CAPS-5 (reference)    1 PTSD_CAPS.5..reference. 19  9  7 85    67.85714
 #>   Specificity       PPV      NPV Accuracy Balanced Accuracy
-#> 1   100.00000 100.00000 93.83886     94.8          87.50000
-#> 2   100.00000 100.00000 93.39623     94.4          86.53846
-#> 3   100.00000 100.00000 93.39623     94.4          86.53846
-#> 4    99.49495  97.91667 97.52475     97.6          94.93978
-#> 5    98.98990  95.91837 97.51244     97.2          94.68726
-#> 6    98.98990  95.91837 97.51244     97.2          94.68726
-#> 7    90.90909  64.00000 90.00000     84.8          76.22378
+#> 1    100.0000 100.00000 94.84536 95.83333          91.07143
+#> 2    100.0000 100.00000 94.84536 95.83333          91.07143
+#> 3    100.0000 100.00000 94.84536 95.83333          91.07143
+#> 4    100.0000 100.00000 98.92473 99.16667          98.21429
+#> 5    100.0000 100.00000 98.92473 99.16667          98.21429
+#> 6    100.0000 100.00000 98.92473 99.16667          98.21429
+#> 7     92.3913  73.07692 90.42553 86.66667          80.12422
 ```
 
 ## Validating derived definitions against the CAPS-5 diagnosis
@@ -168,24 +168,24 @@ definitions <- extract_definitions(comp, n = 3)
 
 evaluate_definitions(ptsd, definitions,
                      reference = caps5_dx$PTSD_caps5, tidy = TRUE)
-#>               Approach Rank           Combination TP FN FP  TN Sensitivity
-#> 1     4/6 Hierarchical    1    1, 5, 6, 7, 11, 18 28 22 11 189        0.56
-#> 2     4/6 Hierarchical    2   3, 6, 7, 11, 13, 15 22 28 16 184        0.44
-#> 3     4/6 Hierarchical    3    2, 3, 6, 7, 11, 18 27 23 11 189        0.54
-#> 4 4/6 Non-hierarchical    1 7, 10, 11, 15, 18, 19 31 19 17 183        0.62
-#> 5 4/6 Non-hierarchical    2  3, 7, 10, 15, 18, 19 30 20 19 181        0.60
-#> 6 4/6 Non-hierarchical    3  3, 7, 11, 15, 18, 19 30 20 19 181        0.60
-#> 7   Full 20-item PCL-5    1                  <NA> 32 18 20 180        0.64
-#> 8               ICD-11    1    2, 3, 6, 7, 17, 18 30 20 26 174        0.60
-#>   Specificity       PPV       NPV Accuracy Balanced Accuracy
-#> 1       0.945 0.7179487 0.8957346    0.868            0.7525
-#> 2       0.920 0.5789474 0.8679245    0.824            0.6800
-#> 3       0.945 0.7105263 0.8915094    0.864            0.7425
-#> 4       0.915 0.6458333 0.9059406    0.856            0.7675
-#> 5       0.905 0.6122449 0.9004975    0.844            0.7525
-#> 6       0.905 0.6122449 0.9004975    0.844            0.7525
-#> 7       0.900 0.6153846 0.9090909    0.848            0.7700
-#> 8       0.870 0.5357143 0.8969072    0.816            0.7350
+#>               Approach Rank         Combination TP FN FP TN Sensitivity
+#> 1     4/6 Hierarchical    1 2, 6, 7, 11, 16, 17 17  9  6 88   0.6538462
+#> 2     4/6 Hierarchical    2   2, 6, 7, 8, 9, 17 17  9  6 88   0.6538462
+#> 3     4/6 Hierarchical    3  2, 6, 7, 8, 10, 17 17  9  6 88   0.6538462
+#> 4 4/6 Non-hierarchical    1  2, 5, 6, 7, 11, 12 19  7  8 86   0.7307692
+#> 5 4/6 Non-hierarchical    2  2, 5, 6, 7, 11, 20 19  7  8 86   0.7307692
+#> 6 4/6 Non-hierarchical    3 2, 5, 7, 11, 12, 20 19  7  8 86   0.7307692
+#> 7   Full 20-item PCL-5    1                <NA> 19  7  9 85   0.7307692
+#> 8               ICD-11    1  2, 3, 6, 7, 17, 18 19  7 10 84   0.7307692
+#>   Specificity       PPV       NPV  Accuracy Balanced Accuracy
+#> 1   0.9361702 0.7391304 0.9072165 0.8750000         0.7950082
+#> 2   0.9361702 0.7391304 0.9072165 0.8750000         0.7950082
+#> 3   0.9361702 0.7391304 0.9072165 0.8750000         0.7950082
+#> 4   0.9148936 0.7037037 0.9247312 0.8750000         0.8228314
+#> 5   0.9148936 0.7037037 0.9247312 0.8750000         0.8228314
+#> 6   0.9148936 0.7037037 0.9247312 0.8750000         0.8228314
+#> 7   0.9042553 0.6785714 0.9239130 0.8666667         0.8175123
+#> 8   0.8936170 0.6551724 0.9230769 0.8583333         0.8121931
 ```
 
 The `Combination` column is `NA` for the ceiling row, which applies all

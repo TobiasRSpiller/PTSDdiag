@@ -67,7 +67,7 @@ evaluated with exactly those clusters.
 tmp <- tempfile(fileext = ".json")
 write_combinations(list(c(1, 6, 8, 10, 15, 19), c(2, 7, 9, 11, 16, 20)),
                    tmp, n_required = 4, label = "4/6 Non-hierarchical")
-#> ✔ Combinations written to /tmp/RtmpIP77bQ/file1b9520f3f0d.json
+#> ✔ Combinations written to /tmp/RtmpDImZVB/file19df7cc38e4e.json
 
 # ... and the validation site turns the imported file into definitions
 spec <- read_combinations(tmp)

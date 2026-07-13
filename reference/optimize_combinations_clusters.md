@@ -160,8 +160,8 @@ results <- optimize_combinations_clusters(ptsd_data, n_symptoms = 5,
              n_required = 3, score_by = "balanced_accuracy",
              clusters = pcl5_clusters)
 #> ℹ Generated 3360 valid cluster-constrained combinations
-#> Evaluating combinations ■■■■■■■■                          23% | ETA:  3s
-#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■           72% | ETA:  1s
+#> Evaluating combinations ■■■■■■■■■■                        30% | ETA:  3s
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■    98% | ETA:  0s
 #> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
 #> ℹ Evaluated 3360 combinations. Best: 1, 6, 7, 11, 17
 

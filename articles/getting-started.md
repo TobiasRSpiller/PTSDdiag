@@ -71,7 +71,7 @@ names(simulated_ptsd)[1:6]
 #> [6] "S3"
 ```
 
-To keep this vignette quick to build we work with a 250-row subset; the
+To keep this vignette quick to build we work with a 120-row subset; the
 workflow is identical on the full dataset.
 
 Before renaming anything,
@@ -83,10 +83,10 @@ exported data file this turns fixing the input into a one-iteration job.
 
 ``` r
 
-check_pcl5_data(simulated_ptsd[1:250, ], id_col = c("patient_id", "age", "sex"))
+check_pcl5_data(simulated_ptsd[1:120, ], id_col = c("patient_id", "age", "sex"))
 #> ✔ Found exactly 20 non-ID columns; checking them positionally (DSM-5 item order
 #>   assumed).
-#> ✔ 250 rows.
+#> ✔ 120 rows.
 #> ✔ All item columns are numeric.
 #> ✔ No missing values.
 #> ✔ All scores are integers between 0 and 4.
@@ -100,7 +100,7 @@ without a separate merge.
 
 ``` r
 
-ptsd <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+ptsd <- rename_ptsd_columns(simulated_ptsd[1:120, ],
                             id_col = c("patient_id", "age", "sex"))
 names(ptsd)[1:6]
 #> [1] "patient_id" "age"        "sex"        "symptom_1"  "symptom_2" 
@@ -144,16 +144,16 @@ warn when a total-score column is present.
 
 desc <- calculate_ptsd_total(ptsd)
 mean(desc$total)
-#> [1] 58.224
+#> [1] 57.98333
 ```
 
-In this clinical-style sample, the mean PCL-5 total is 58.2 points and
-93% of participants meet the full criteria.
+In this clinical-style sample, the mean PCL-5 total is 58 points and 92%
+of participants meet the full criteria.
 
 ``` r
 
 mean(ptsd$PTSD_orig) * 100
-#> [1] 92.8
+#> [1] 92.5
 ```
 
 ## Identifying a symptom subset
@@ -182,8 +182,8 @@ minimizes false negatives only, which prioritizes not missing
 participants who meet the full criteria at the cost of more false
 positives. We use balanced accuracy here, and recommend it as the
 standard choice, because diagnostic samples are rarely balanced: in this
-sample 93% of participants meet the full criteria, so a rule that simply
-diagnosed everyone would already reach 93% accuracy while being useless
+sample 92% of participants meet the full criteria, so a rule that simply
+diagnosed everyone would already reach 92% accuracy while being useless
 for ruling anyone out. Balanced accuracy cannot be gamed this way,
 because it scores performance in the diagnosed and the non-diagnosed
 group separately.
@@ -207,13 +207,13 @@ res <- optimize_combinations(
 )
 res$best_symptoms
 #> [[1]]
-#> [1]  6  7  8 11 13 17
+#> [1]  2  3  6  7 11 12
 #> 
 #> [[2]]
-#> [1]  6  7 10 11 13 15
+#> [1]  2  6  7 11 12 16
 #> 
 #> [[3]]
-#> [1]  4  6  7  8 11 17
+#> [1]  3  4  6  7 11 12
 ```
 
 ## Diagnostic performance metrics
@@ -243,26 +243,26 @@ combination in `res$summary`, including `Accuracy` and
 ``` r
 
 res$summary
-#>                  Scenario  combination_id rank Total Diagnosed
-#> 1               PTSD_orig            <NA>   NA     232 (92.8%)
-#> 2  symptom_6_7_8_11_13_17  6_7_8_11_13_17    1       230 (92%)
-#> 3 symptom_6_7_10_11_13_15 6_7_10_11_13_15    2       230 (92%)
-#> 4   symptom_4_6_7_8_11_17   4_6_7_8_11_17    3     229 (91.6%)
+#>                 Scenario combination_id rank Total Diagnosed
+#> 1              PTSD_orig           <NA>   NA     111 (92.5%)
+#> 2  symptom_2_3_6_7_11_12  2_3_6_7_11_12    1    109 (90.83%)
+#> 3 symptom_2_6_7_11_12_16 2_6_7_11_12_16    2       108 (90%)
+#> 4  symptom_3_4_6_7_11_12  3_4_6_7_11_12    3    112 (93.33%)
 #>   Total Non-Diagnosed True Positive True Negative Newly Diagnosed
-#> 1           18 (7.2%)           232            18               0
-#> 2             20 (8%)           229            17               1
-#> 3             20 (8%)           229            17               1
-#> 4           21 (8.4%)           228            17               1
+#> 1            9 (7.5%)           111             9               0
+#> 2          11 (9.17%)           109             9               0
+#> 3            12 (10%)           108             9               0
+#> 4           8 (6.67%)           111             8               1
 #>   Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV
-#> 1                   0        250           0      1.0000      1.0000 1.0000
-#> 2                   3        246           4      0.9871      0.9444 0.9957
-#> 3                   3        246           4      0.9871      0.9444 0.9957
-#> 4                   4        245           5      0.9828      0.9444 0.9956
+#> 1                   0        120           0       1.000      1.0000 1.0000
+#> 2                   2        118           2       0.982      1.0000 1.0000
+#> 3                   3        117           3       0.973      1.0000 1.0000
+#> 4                   0        119           1       1.000      0.8889 0.9911
 #>      NPV Accuracy Balanced Accuracy
-#> 1 1.0000    1.000            1.0000
-#> 2 0.8500    0.984            0.9658
-#> 3 0.8500    0.984            0.9658
-#> 4 0.8095    0.980            0.9636
+#> 1 1.0000   1.0000            1.0000
+#> 2 0.8182   0.9833            0.9910
+#> 3 0.7500   0.9750            0.9865
+#> 4 1.0000   0.9917            0.9444
 ```
 
 ## Where next

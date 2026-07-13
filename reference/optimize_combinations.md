@@ -148,8 +148,8 @@ ptsd_data <- rename_ptsd_columns(simulated_ptsd[1:250, ],
 # optimized for balanced accuracy)
 results <- optimize_combinations(ptsd_data, n_symptoms = 6, n_required = 4,
              score_by = "balanced_accuracy")
-#> Evaluating combinations ■■■■■■■■                          23% | ETA:  3s
-#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■         80% | ETA:  1s
+#> Evaluating combinations ■■■■■■■                           18% | ETA:  4s
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■               59% | ETA:  2s
 #> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
 #> ℹ Evaluated 38760 combinations. Best: 6, 7, 8, 11, 13, 17 (1 additional tied)
 
@@ -157,6 +157,8 @@ results <- optimize_combinations(ptsd_data, n_symptoms = 6, n_required = 4,
 # this time minimizing total misclassifications
 results2 <- optimize_combinations(ptsd_data, n_symptoms = 5, n_required = 3,
               n_top = 5, score_by = "accuracy")
+#> Evaluating combinations ■■■■■■■■■■■■■■■■                  49% | ETA:  1s
+#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
 #> ℹ Evaluated 15504 combinations. Best: 3, 6, 7, 11, 15 (4 additional tied)
 
 # Get symptom numbers

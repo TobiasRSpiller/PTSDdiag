@@ -56,7 +56,7 @@ sensitivity and specificity, so the high prevalence of the clinical
 sample cannot dominate the ranking; the [Getting
 started](https://tobiasrspiller.github.io/PTSDdiag/articles/getting-started.md)
 vignette discusses this choice and the `"accuracy"` and `"sensitivity"`
-alternatives. To keep the vignette fast we use a 250-row subset of the
+alternatives. To keep the vignette fast we use a 120-row subset of the
 bundled data.
 
 ``` r
@@ -64,7 +64,7 @@ bundled data.
 library(PTSDdiag)
 
 data("simulated_ptsd")
-ptsd <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+ptsd <- rename_ptsd_columns(simulated_ptsd[1:120, ],
                             id_col = c("patient_id", "age", "sex"))
 
 comp <- compare_optimizations(
@@ -102,32 +102,32 @@ headline number when these definitions are compared; plain accuracy,
 
 tbl <- summarize_top_combinations(comp, top_n = 10, as_percent = TRUE)
 head(tbl, 12)
-#>                Approach Rank             Combination  TP FN FP TN Sensitivity
-#> 1      4/6 Hierarchical    1  symptom_1_6_7_13_15_17 213 19  0 18    91.81034
-#> 2      4/6 Hierarchical    2  symptom_1_3_7_13_15_17 213 19  0 18    91.81034
-#> 3      4/6 Hierarchical    3  symptom_1_3_6_13_16_19 213 19  0 18    91.81034
-#> 4      4/6 Hierarchical    4   symptom_1_4_6_7_11_17 213 19  0 18    91.81034
-#> 5      4/6 Hierarchical    5  symptom_1_6_7_11_15_17 212 20  0 18    91.37931
-#> 6      4/6 Hierarchical    6  symptom_1_6_7_11_15_18 212 20  0 18    91.37931
-#> 7      4/6 Hierarchical    7  symptom_1_3_6_13_15_17 212 20  0 18    91.37931
-#> 8      4/6 Hierarchical    8  symptom_1_6_7_13_15_18 212 20  0 18    91.37931
-#> 9      4/6 Hierarchical    9  symptom_1_3_7_13_15_18 212 20  0 18    91.37931
-#> 10     4/6 Hierarchical   10  symptom_1_4_7_13_15_17 212 20  0 18    91.37931
-#> 11 4/6 Non-hierarchical    1  symptom_6_7_8_11_13_17 229  3  1 17    98.70690
-#> 12 4/6 Non-hierarchical    2 symptom_6_7_10_11_13_15 229  3  1 17    98.70690
-#>    Specificity       PPV      NPV Accuracy Balanced Accuracy
-#> 1    100.00000 100.00000 48.64865     92.4          95.90517
-#> 2    100.00000 100.00000 48.64865     92.4          95.90517
-#> 3    100.00000 100.00000 48.64865     92.4          95.90517
-#> 4    100.00000 100.00000 48.64865     92.4          95.90517
-#> 5    100.00000 100.00000 47.36842     92.0          95.68966
-#> 6    100.00000 100.00000 47.36842     92.0          95.68966
-#> 7    100.00000 100.00000 47.36842     92.0          95.68966
-#> 8    100.00000 100.00000 47.36842     92.0          95.68966
-#> 9    100.00000 100.00000 47.36842     92.0          95.68966
-#> 10   100.00000 100.00000 47.36842     92.0          95.68966
-#> 11    94.44444  99.56522 85.00000     98.4          96.57567
-#> 12    94.44444  99.56522 85.00000     98.4          96.57567
+#>                Approach Rank            Combination  TP FN FP TN Sensitivity
+#> 1      4/6 Hierarchical    1 symptom_1_4_7_11_15_17 103  8  0  9    92.79279
+#> 2      4/6 Hierarchical    2 symptom_1_4_7_11_15_18 103  8  0  9    92.79279
+#> 3      4/6 Hierarchical    3 symptom_1_5_7_11_15_17 103  8  0  9    92.79279
+#> 4      4/6 Hierarchical    4 symptom_1_5_7_11_15_18 103  8  0  9    92.79279
+#> 5      4/6 Hierarchical    5 symptom_1_6_7_11_15_17 102  9  0  9    91.89189
+#> 6      4/6 Hierarchical    6 symptom_1_6_7_11_15_18 102  9  0  9    91.89189
+#> 7      4/6 Hierarchical    7 symptom_5_6_7_11_15_16 102  9  0  9    91.89189
+#> 8      4/6 Hierarchical    8 symptom_5_6_7_11_15_17 102  9  0  9    91.89189
+#> 9      4/6 Hierarchical    9 symptom_5_6_7_11_15_18 102  9  0  9    91.89189
+#> 10     4/6 Hierarchical   10 symptom_1_2_7_11_15_17 102  9  0  9    91.89189
+#> 11 4/6 Non-hierarchical    1  symptom_2_3_6_7_11_12 109  2  0  9    98.19820
+#> 12 4/6 Non-hierarchical    2 symptom_2_6_7_11_12_16 108  3  0  9    97.29730
+#>    Specificity PPV      NPV Accuracy Balanced Accuracy
+#> 1          100 100 52.94118 93.33333          96.39640
+#> 2          100 100 52.94118 93.33333          96.39640
+#> 3          100 100 52.94118 93.33333          96.39640
+#> 4          100 100 52.94118 93.33333          96.39640
+#> 5          100 100 50.00000 92.50000          95.94595
+#> 6          100 100 50.00000 92.50000          95.94595
+#> 7          100 100 50.00000 92.50000          95.94595
+#> 8          100 100 50.00000 92.50000          95.94595
+#> 9          100 100 50.00000 92.50000          95.94595
+#> 10         100 100 50.00000 92.50000          95.94595
+#> 11         100 100 81.81818 98.33333          99.09910
+#> 12         100 100 75.00000 97.50000          98.64865
 ```
 
 ## Core symptoms across definitions
@@ -171,25 +171,25 @@ knitr::kable(
 
 | Symptom | 4/6 Hierarchical | 4/6 Non-hierarchical | 3/6 Non-hierarchical | ICD-11 | OVERALL |
 |---:|---:|---:|---:|---:|---:|
-| 1 | 10 | 0 | 0 | 0 | 10 |
-| 2 | 0 | 0 | 1 | 1 | 1 |
-| 3 | 4 | 0 | 1 | 1 | 5 |
-| 4 | 2 | 2 | 7 | 0 | 11 |
-| 5 | 0 | 0 | 1 | 0 | 1 |
-| 6 | 7 | 10 | 8 | 1 | 25 |
-| 7 | 8 | 10 | 10 | 1 | 28 |
-| 8 | 0 | 4 | 1 | 0 | 5 |
-| 9 | 0 | 0 | 1 | 0 | 1 |
-| 10 | 0 | 3 | 2 | 0 | 5 |
-| 11 | 3 | 10 | 2 | 0 | 15 |
-| 12 | 0 | 3 | 6 | 0 | 9 |
-| 13 | 7 | 4 | 3 | 0 | 14 |
-| 14 | 0 | 0 | 0 | 0 | 0 |
-| 15 | 8 | 4 | 10 | 0 | 22 |
-| 16 | 1 | 3 | 3 | 0 | 7 |
-| 17 | 6 | 4 | 0 | 1 | 10 |
-| 18 | 3 | 3 | 0 | 1 | 6 |
-| 19 | 1 | 0 | 4 | 0 | 5 |
+| 1 | 7 | 0 | 4 | 0 | 11 |
+| 2 | 1 | 2 | 6 | 1 | 9 |
+| 3 | 0 | 4 | 0 | 1 | 4 |
+| 4 | 2 | 2 | 0 | 0 | 4 |
+| 5 | 5 | 5 | 6 | 0 | 16 |
+| 6 | 5 | 10 | 10 | 1 | 25 |
+| 7 | 10 | 10 | 9 | 1 | 29 |
+| 8 | 0 | 0 | 6 | 0 | 6 |
+| 9 | 0 | 1 | 2 | 0 | 3 |
+| 10 | 0 | 0 | 5 | 0 | 5 |
+| 11 | 10 | 10 | 0 | 0 | 20 |
+| 12 | 0 | 10 | 8 | 0 | 18 |
+| 13 | 0 | 1 | 0 | 0 | 1 |
+| 14 | 0 | 0 | 2 | 0 | 2 |
+| 15 | 10 | 2 | 0 | 0 | 12 |
+| 16 | 1 | 1 | 2 | 0 | 4 |
+| 17 | 5 | 1 | 0 | 1 | 6 |
+| 18 | 4 | 0 | 0 | 1 | 4 |
+| 19 | 0 | 1 | 0 | 0 | 1 |
 | 20 | 0 | 0 | 0 | 0 | 0 |
 
 Number of times each PCL-5 item is selected among the top combinations -

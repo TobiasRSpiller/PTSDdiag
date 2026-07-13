@@ -127,7 +127,7 @@ tmp <- tempfile(fileext = ".json")
 write_combinations(my_combos, tmp, n_required = 4,
                    score_by = "balanced_accuracy",
                    description = "Example non-hierarchical combinations")
-#> ✔ Combinations written to /tmp/RtmpIP77bQ/file1b9519629da.json
+#> ✔ Combinations written to /tmp/RtmpDImZVB/file19df4fad4de8.json
 
 # Can also pass a full optimization result directly:
 # write_combinations(optimization_result, tmp, n_required = 4)

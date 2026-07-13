@@ -39,7 +39,7 @@ default, which weighs performance in the diagnosed and the non-diagnosed
 group equally; the [Getting
 started](https://tobiasrspiller.github.io/PTSDdiag/articles/getting-started.md)
 vignette explains this choice. To keep the vignette fast we work with a
-250-row subset of the bundled data.
+120-row subset of the bundled data.
 
 ``` r
 
@@ -47,7 +47,7 @@ library(PTSDdiag)
 library(dplyr)
 
 data("simulated_ptsd")
-ptsd <- rename_ptsd_columns(simulated_ptsd[1:250, ],
+ptsd <- rename_ptsd_columns(simulated_ptsd[1:120, ],
                             id_col = c("patient_id", "age", "sex"))
 
 ho <- holdout_validation(
@@ -61,34 +61,29 @@ ho <- holdout_validation(
 )
 ho$without_clusters$best_combinations
 #> [[1]]
-#> [1]  2  6  7 11 12 15
+#> [1]  2  3  6  7 11 12
 #> 
 #> [[2]]
-#> [1]  2  6  7 11 12 19
+#> [1]  2  6  7  9 11 12
 #> 
 #> [[3]]
-#> [1]  2  6  7 11 12 20
+#> [1]  2  6  7  9 11 14
 ho$without_clusters$summary
-#>                 Scenario combination_id rank Total Diagnosed
-#> 1              PTSD_orig           <NA>   NA     67 (89.33%)
-#> 2 symptom_2_6_7_11_12_15 2_6_7_11_12_15    1        69 (92%)
-#> 3 symptom_2_6_7_11_12_19 2_6_7_11_12_19    2        69 (92%)
-#> 4 symptom_2_6_7_11_12_20 2_6_7_11_12_20    3     68 (90.67%)
-#>   Total Non-Diagnosed True Positive True Negative Newly Diagnosed
-#> 1          8 (10.67%)            67             8               0
-#> 2              6 (8%)            67             6               2
-#> 3              6 (8%)            67             6               2
-#> 4           7 (9.33%)            65             5               3
-#>   Newly Non-Diagnosed True Cases False Cases Sensitivity Specificity    PPV
-#> 1                   0         75           0      1.0000       1.000 1.0000
-#> 2                   0         73           2      1.0000       0.750 0.9710
-#> 3                   0         73           2      1.0000       0.750 0.9710
-#> 4                   2         70           5      0.9701       0.625 0.9559
-#>      NPV Accuracy Balanced Accuracy
-#> 1 1.0000   1.0000            1.0000
-#> 2 1.0000   0.9733            0.8750
-#> 3 1.0000   0.9733            0.8750
-#> 4 0.7143   0.9333            0.7976
+#>                Scenario combination_id rank Total Diagnosed Total Non-Diagnosed
+#> 1             PTSD_orig           <NA>   NA     34 (94.44%)           2 (5.56%)
+#> 2 symptom_2_3_6_7_11_12  2_3_6_7_11_12    1     32 (88.89%)          4 (11.11%)
+#> 3 symptom_2_6_7_9_11_12  2_6_7_9_11_12    2     34 (94.44%)           2 (5.56%)
+#> 4 symptom_2_6_7_9_11_14  2_6_7_9_11_14    3     32 (88.89%)          4 (11.11%)
+#>   True Positive True Negative Newly Diagnosed Newly Non-Diagnosed True Cases
+#> 1            34             2               0                   0         36
+#> 2            32             2               0                   2         34
+#> 3            33             1               1                   1         34
+#> 4            31             1               1                   3         32
+#>   False Cases Sensitivity Specificity    PPV  NPV Accuracy Balanced Accuracy
+#> 1           0      1.0000         1.0 1.0000 1.00   1.0000            1.0000
+#> 2           2      0.9412         1.0 1.0000 0.50   0.9444            0.9706
+#> 3           2      0.9706         0.5 0.9706 0.50   0.9444            0.7353
+#> 4           4      0.9118         0.5 0.9688 0.25   0.8889            0.7059
 ```
 
 `score_by = "balanced_accuracy"` maximizes the mean of sensitivity and
@@ -106,7 +101,7 @@ that recur across folds are reported in `combinations_summary`.
 
 cv <- cross_validation(
   ptsd,
-  k          = 3,
+  k          = 2,
   n_symptoms = 6,
   n_required = 4,
   n_top      = 3,
@@ -114,63 +109,47 @@ cv <- cross_validation(
   seed       = 42
 )
 cv$without_clusters$summary_by_fold
-#>      Split                Scenario Total Diagnosed Total Non-Diagnosed
-#> 1  Split 1               PTSD_orig     78 (92.86%)           6 (7.14%)
-#> 2  Split 1  symptom_2_6_7_11_12_15     80 (95.24%)           4 (4.76%)
-#> 3  Split 1  symptom_2_6_7_11_12_19     80 (95.24%)           4 (4.76%)
-#> 4  Split 1  symptom_2_6_7_11_12_16     78 (92.86%)           6 (7.14%)
-#> 5  Split 2               PTSD_orig     78 (93.98%)           5 (6.02%)
-#> 6  Split 2  symptom_6_7_8_11_13_17     75 (90.36%)           8 (9.64%)
-#> 7  Split 2 symptom_6_7_11_12_16_17     74 (89.16%)          9 (10.84%)
-#> 8  Split 2    symptom_2_4_6_7_9_12     76 (91.57%)           7 (8.43%)
-#> 9  Split 3               PTSD_orig     76 (91.57%)           7 (8.43%)
-#> 10 Split 3  symptom_3_6_7_18_19_20     79 (95.18%)           4 (4.82%)
-#> 11 Split 3   symptom_3_4_6_7_12_20     76 (91.57%)           7 (8.43%)
-#> 12 Split 3  symptom_3_4_6_12_15_16     77 (92.77%)           6 (7.23%)
-#>    True Positive True Negative Newly Diagnosed Newly Non-Diagnosed True Cases
-#> 1             78             6               0                   0         84
-#> 2             78             4               2                   0         82
-#> 3             78             4               2                   0         82
-#> 4             77             5               1                   1         82
-#> 5             78             5               0                   0         83
-#> 6             75             5               0                   3         80
-#> 7             74             5               0                   4         79
-#> 8             74             3               2                   4         77
-#> 9             76             7               0                   0         83
-#> 10            74             2               5                   2         76
-#> 11            73             4               3                   3         77
-#> 12            74             4               3                   2         78
-#>    False Cases Sensitivity Specificity    PPV    NPV Accuracy Balanced Accuracy
-#> 1            0      1.0000      1.0000 1.0000 1.0000   1.0000            1.0000
-#> 2            2      1.0000      0.6667 0.9750 1.0000   0.9762            0.8333
-#> 3            2      1.0000      0.6667 0.9750 1.0000   0.9762            0.8333
-#> 4            2      0.9872      0.8333 0.9872 0.8333   0.9762            0.9103
-#> 5            0      1.0000      1.0000 1.0000 1.0000   1.0000            1.0000
-#> 6            3      0.9615      1.0000 1.0000 0.6250   0.9639            0.9808
-#> 7            4      0.9487      1.0000 1.0000 0.5556   0.9518            0.9744
-#> 8            6      0.9487      0.6000 0.9737 0.4286   0.9277            0.7744
-#> 9            0      1.0000      1.0000 1.0000 1.0000   1.0000            1.0000
-#> 10           7      0.9737      0.2857 0.9367 0.5000   0.9157            0.6297
-#> 11           6      0.9605      0.5714 0.9605 0.5714   0.9277            0.7660
-#> 12           5      0.9737      0.5714 0.9610 0.6667   0.9398            0.7726
-#>     combination_id rank
-#> 1             <NA>   NA
-#> 2   2_6_7_11_12_15    1
-#> 3   2_6_7_11_12_19    2
-#> 4   2_6_7_11_12_16    3
-#> 5             <NA>   NA
-#> 6   6_7_8_11_13_17    1
-#> 7  6_7_11_12_16_17    2
-#> 8     2_4_6_7_9_12    3
-#> 9             <NA>   NA
-#> 10  3_6_7_18_19_20    1
-#> 11   3_4_6_7_12_20    2
-#> 12  3_4_6_12_15_16    3
+#>     Split               Scenario Total Diagnosed Total Non-Diagnosed
+#> 1 Split 1              PTSD_orig     58 (96.67%)           2 (3.33%)
+#> 2 Split 1  symptom_2_3_6_7_11_12     56 (93.33%)           4 (6.67%)
+#> 3 Split 1 symptom_2_6_7_11_12_16     56 (93.33%)           4 (6.67%)
+#> 4 Split 1  symptom_1_3_6_7_11_12        57 (95%)              3 (5%)
+#> 5 Split 2              PTSD_orig     53 (88.33%)          7 (11.67%)
+#> 6 Split 2  symptom_1_2_5_6_11_12        57 (95%)              3 (5%)
+#> 7 Split 2  symptom_1_3_4_5_11_12        54 (90%)             6 (10%)
+#> 8 Split 2  symptom_1_3_5_6_11_12     55 (91.67%)           5 (8.33%)
+#>   True Positive True Negative Newly Diagnosed Newly Non-Diagnosed True Cases
+#> 1            58             2               0                   0         60
+#> 2            56             2               0                   2         58
+#> 3            56             2               0                   2         58
+#> 4            57             2               0                   1         59
+#> 5            53             7               0                   0         60
+#> 6            52             2               5                   1         54
+#> 7            50             3               4                   3         53
+#> 8            52             4               3                   1         56
+#>   False Cases Sensitivity Specificity    PPV    NPV Accuracy Balanced Accuracy
+#> 1           0      1.0000      1.0000 1.0000 1.0000   1.0000            1.0000
+#> 2           2      0.9655      1.0000 1.0000 0.5000   0.9667            0.9828
+#> 3           2      0.9655      1.0000 1.0000 0.5000   0.9667            0.9828
+#> 4           1      0.9828      1.0000 1.0000 0.6667   0.9833            0.9914
+#> 5           0      1.0000      1.0000 1.0000 1.0000   1.0000            1.0000
+#> 6           6      0.9811      0.2857 0.9123 0.6667   0.9000            0.6334
+#> 7           7      0.9434      0.4286 0.9259 0.5000   0.8833            0.6860
+#> 8           4      0.9811      0.5714 0.9455 0.8000   0.9333            0.7763
+#>   combination_id rank
+#> 1           <NA>   NA
+#> 2  2_3_6_7_11_12    1
+#> 3 2_6_7_11_12_16    2
+#> 4  1_3_6_7_11_12    3
+#> 5           <NA>   NA
+#> 6  1_2_5_6_11_12    1
+#> 7  1_3_4_5_11_12    2
+#> 8  1_3_5_6_11_12    3
 cv$without_clusters$combinations_summary  # NULL if no combination repeats
 #> # A tibble: 1 × 17
 #>   Scenario  combination_id Splits_Appeared Total_Diagnosed Total_Non_Diagnosed
 #>   <chr>     <chr>                    <int> <chr>           <chr>              
-#> 1 PTSD_orig NA                           3 77.33 (92.8%)   6 (7.2%)           
+#> 1 PTSD_orig NA                           2 55.5 (92.5%)    4.5 (7.5%)         
 #> # ℹ 12 more variables: True_Positive <dbl>, True_Negative <dbl>,
 #> #   Newly_Diagnosed <dbl>, Newly_Non_Diagnosed <dbl>, True_Cases <dbl>,
 #> #   False_Cases <dbl>, Sensitivity <dbl>, Specificity <dbl>, PPV <dbl>,
@@ -185,29 +164,23 @@ dataset. The package ships a second simulated dataset,
 `simulated_ptsd_genpop`, whose PTSD prevalence is about 21%, well below
 the 94% of the included clinical sample. Deriving in the clinical sample
 and validating in the community sample therefore probes exactly the
-prevalence shift described above. We again use a 250-row subset of each
+prevalence shift described above. We again use a 120-row subset of each
 for speed.
 
-The combinations are derived once, written to a small JSON file, and
-read back before being applied. The export step is what makes the rule
-portable across sites and analysts, without a need for data sharing or
-manual transcription.
+The rule we transport is the one the internal validation above already
+produced: the top combinations the holdout derivation selected on its
+training data. They are written to a small JSON file once, and read back
+before being applied. The export step is what makes the rule portable
+across sites and analysts, without a need for data sharing or manual
+transcription.
 
 ``` r
 
 data("simulated_ptsd_genpop")
 
-# Derive in the clinical sample
-deriv <- optimize_combinations(ptsd,
-                               n_symptoms = 6,
-                               n_required = 4,
-                               n_top = 5,
-                               score_by = "balanced_accuracy",
-                               show_progress = FALSE)
-
-# Export for reuse
+# Export the holdout-derived combinations for reuse
 tmp <- tempfile(fileext = ".json")
-write_combinations(deriv$best_symptoms, tmp,
+write_combinations(ho$without_clusters$best_combinations, tmp,
                    n_required = 4,
                    score_by = "balanced_accuracy",
                    description = "Six-symptom, four-required definition")
@@ -217,7 +190,7 @@ write_combinations(deriv$best_symptoms, tmp,
 # use only the PCL-5 items, so we select those before standardising.
 spec   <- read_combinations(tmp)
 genpop <- rename_ptsd_columns(
-  simulated_ptsd_genpop[1:250, c("patient_id", "age", "sex", paste0("S", 1:20))],
+  simulated_ptsd_genpop[1:120, c("patient_id", "age", "sex", paste0("S", 1:20))],
   id_col = c("patient_id", "age", "sex")
 )
 
@@ -225,40 +198,37 @@ applied <- apply_symptom_combinations(genpop, spec$combinations,
                                       n_required = spec$n_required)
 summarize_ptsd_changes(applied) %>%
   create_readable_summary()
-#>                  Scenario Total Diagnosed Total Non-Diagnosed True Positive
-#> 1               PTSD_orig      52 (20.8%)         198 (79.2%)            52
-#> 2  symptom_6_7_8_11_13_17        45 (18%)           205 (82%)            42
-#> 3 symptom_6_7_10_11_13_15        45 (18%)           205 (82%)            43
-#> 4   symptom_4_6_7_8_11_17      43 (17.2%)         207 (82.8%)            41
-#> 5  symptom_4_6_7_10_11_15        45 (18%)           205 (82%)            42
-#> 6  symptom_6_7_8_11_13_18        45 (18%)           205 (82%)            42
+#>                Scenario Total Diagnosed Total Non-Diagnosed True Positive
+#> 1             PTSD_orig     28 (23.33%)         92 (76.67%)            28
+#> 2 symptom_2_3_6_7_11_12     25 (20.83%)         95 (79.17%)            25
+#> 3 symptom_2_6_7_9_11_12        24 (20%)            96 (80%)            24
+#> 4 symptom_2_6_7_9_11_14        24 (20%)            96 (80%)            23
 #>   True Negative Newly Diagnosed Newly Non-Diagnosed True Cases False Cases
-#> 1           198               0                   0        250           0
-#> 2           195               3                  10        237          13
-#> 3           196               2                   9        239          11
-#> 4           196               2                  11        237          13
-#> 5           195               3                  10        237          13
-#> 6           195               3                  10        237          13
+#> 1            92               0                   0        120           0
+#> 2            92               0                   3        117           3
+#> 3            92               0                   4        116           4
+#> 4            91               1                   5        114           6
 #>   Sensitivity Specificity    PPV    NPV Accuracy Balanced Accuracy
-#> 1      1.0000      1.0000 1.0000 1.0000    1.000            1.0000
-#> 2      0.8077      0.9848 0.9333 0.9512    0.948            0.8963
-#> 3      0.8269      0.9899 0.9556 0.9561    0.956            0.9084
-#> 4      0.7885      0.9899 0.9535 0.9469    0.948            0.8892
-#> 5      0.8077      0.9848 0.9333 0.9512    0.948            0.8963
-#> 6      0.8077      0.9848 0.9333 0.9512    0.948            0.8963
+#> 1      1.0000      1.0000 1.0000 1.0000   1.0000            1.0000
+#> 2      0.8929      1.0000 1.0000 0.9684   0.9750            0.9464
+#> 3      0.8571      1.0000 1.0000 0.9583   0.9667            0.9286
+#> 4      0.8214      0.9891 0.9583 0.9479   0.9500            0.9053
 ```
 
-Compare this table with the derivation performance. The predictive
-values move with prevalence: in the lower-prevalence community sample,
-PPV falls and NPV rises, so a positive result from the same rule is less
-likely to correspond to a true case than it was in the clinic.
-Sensitivity and specificity are often more stable, but they are not
-immune to differences in case mix: here sensitivity is lower in the
-community sample, whose symptom profiles are milder than the clinic’s,
-while specificity is slightly higher. Neither shift is a failure of the
-rule; both are properties of applying any fixed criterion across
-settings that differ in prevalence and severity, and revealing them is
-exactly what external validation is for.
+Compare this table with the holdout test performance above, keeping in
+mind that the clinical test split contains only a handful of non-cases
+at 94% prevalence, so its specificity and predictive values are coarse.
+The community sample reveals the shifts external validation exists to
+expose. NPV rises sharply: non-cases dominate this sample and the rules
+miss few of them. Sensitivity is lower, because the community sample’s
+symptom profiles are milder than the clinic’s, while specificity is
+high. PPV, in contrast, hardly moves here — the transported rules
+produce almost no false positives in this sample, so a positive result
+stays trustworthy even at one-fifth the prevalence; with a less specific
+rule, the same prevalence drop would pull PPV down instead. None of
+these shifts is a failure of the rule; all are properties of applying a
+fixed criterion across settings that differ in prevalence and severity,
+and revealing them is exactly what external validation is for.
 
 ## How special is the winning subset?
 
@@ -284,13 +254,13 @@ nrow(curve)
 #> [1] 4845
 head(curve, 3)
 #>   rank combination_id  tp fn fp tn sensitivity specificity ppv       npv
-#> 1    1      6_7_12_17 227  5  0 18   0.9784483           1   1 0.7826087
-#> 2    2       4_6_7_12 226  6  0 18   0.9741379           1   1 0.7500000
-#> 3    3       4_6_7_19 225  7  0 18   0.9698276           1   1 0.7200000
-#>   accuracy balanced_accuracy
-#> 1    0.980         0.9892241
-#> 2    0.976         0.9870690
-#> 3    0.972         0.9849138
+#> 1    1      6_7_11_12 111  0  0  9    1.000000           1   1 1.0000000
+#> 2    2       4_6_7_12 110  1  0  9    0.990991           1   1 0.9000000
+#> 3    3       4_6_7_11 109  2  0  9    0.981982           1   1 0.8181818
+#>    accuracy balanced_accuracy
+#> 1 1.0000000         1.0000000
+#> 2 0.9916667         0.9954955
+#> 3 0.9833333         0.9909910
 
 plot(curve$rank, curve$balanced_accuracy, type = "l", log = "x",
      xlab = "Combination rank (log scale)", ylab = "Balanced accuracy")

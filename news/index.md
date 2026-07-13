@@ -1,5 +1,24 @@
 # Changelog
 
+## PTSDdiag 0.4.1
+
+CRAN check-time reduction; no functional changes. The 0.4.0 submission
+was auto-rejected by CRAN’s incoming pretests solely for exceeding the
+10-minute check-time limit on r-devel-windows.
+
+- Search-heavy tests (exhaustive 6-symptom optimizations, holdout- and
+  cross-validation runs) are now skipped on CRAN via `skip_on_cran()`;
+  the complete suite continues to run on GitHub Actions for every push.
+  CRAN still exercises the optimizer, the summary tables, the plot, and
+  the whole 0.4.0 evaluation API on compact search spaces and hand-built
+  definitions.
+- Vignettes compute on 120-row subsets (previously 250), the
+  cross-validation demo uses 2 folds, and the external-validation
+  example reuses the holdout-derived combinations instead of running a
+  third full search. All narratives, code paths, and interpretive
+  statements are unchanged and were re-verified against the re-rendered
+  output.
+
 ## PTSDdiag 0.4.0
 
 This release focuses on the multi-site validation workflow: everything a

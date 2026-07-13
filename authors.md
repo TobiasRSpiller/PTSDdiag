@@ -32,13 +32,13 @@ OSF Preprints.
     }
 
 Weidmann L, Spiller T, Schüepp F (2026). *PTSDdiag: Optimize PTSD
-Diagnostic Criteria*. R package version 0.4.0,
+Diagnostic Criteria*. R package version 0.4.1,
 <https://tobiasrspiller.github.io/PTSDdiag/>.
 
     @Manual{,
       title = {PTSDdiag: Optimize PTSD Diagnostic Criteria},
       author = {Laura Weidmann and Tobias R. Spiller and Flavio A. Schüepp},
       year = {2026},
-      note = {R package version 0.4.0},
+      note = {R package version 0.4.1},
       url = {https://tobiasrspiller.github.io/PTSDdiag/},
     }

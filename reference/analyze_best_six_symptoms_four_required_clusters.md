@@ -132,8 +132,8 @@ results <- analyze_best_six_symptoms_four_required_clusters(ptsd_data)
 #> 0.2.1.
 #> ℹ Please use `optimize_combinations_clusters()` instead.
 #> ℹ Generated 13685 valid cluster-constrained combinations
-#> Evaluating combinations ■■■■■■■■■                         26% | ETA:  3s
-#> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■         80% | ETA:  1s
+#> Evaluating combinations ■■■■■■■■                          24% | ETA:  3s
+#> Evaluating combinations ■■■■■■■■■■■                       32% | ETA:  3s
 #> Evaluating combinations ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% | ETA:  0s
 #> ℹ Evaluated 13685 combinations. Best: 5, 6, 7, 11, 15, 16 (31 additional tied)
 
